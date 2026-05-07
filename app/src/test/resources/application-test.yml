@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:16-alpine:///mvpsaas_test
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  flyway:
+    enabled: true
+  data:
+    redis:
+      url: redis://localhost:6379
+
+auth:
+  jwks-url: https://test.clerk.accounts.dev/.well-known/jwks.json
+  issuer: https://test.clerk.accounts.dev
+
+stripe:
+  api-key: sk_test_dummy
+  webhook-secret: whsec_dummy
+  price-id:
+    starter: price_test_starter
+    pro: price_test_pro
+
+resend:
+  api-key: re_test_dummy
+
+sentry:
+  dsn:
+
+app:
+  base-url: http://localhost:8080
+
+logging:
+  level:
+    org.granchi.mvpsaas: WARN

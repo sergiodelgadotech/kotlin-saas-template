@@ -1,0 +1,33 @@
+# Local development overrides — never commit secrets here
+# Copy this to application-local.yml and fill in your values
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mvpsaas
+    username: mvpsaas
+    password: mvpsaas
+  thymeleaf:
+    cache: false
+
+auth:
+  # Zitadel JWKS: https://<your-zitadel-domain>/oauth/v2/keys
+  jwks-url: http://localhost:8089/oauth/v2/keys
+  # Zitadel issuer — matches the domain Zitadel runs on
+  issuer: http://localhost:8089
+
+stripe:
+  api-key: sk_test_REPLACE_ME
+  webhook-secret: whsec_REPLACE_ME
+  price-id:
+    starter: price_REPLACE_ME
+    pro: price_REPLACE_ME
+
+resend:
+  api-key: re_REPLACE_ME
+
+app:
+  base-url: http://localhost:8080
+
+logging:
+  level:
+    org.granchi.mvpsaas: DEBUG
+    org.springframework.security: DEBUG

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold" th:text="${organization.name} + ' — Dashboard'">Dashboard</h1>
+        <span class="badge badge-primary" th:text="${subscription.plan}">STARTER</span>
+    </div>
+
+    <!-- Stats — se recargan cada 30s via HTMX -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+         hx-get="/dashboard/stats"
+         hx-trigger="load, every 30s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <div class="skeleton h-24 rounded-box"></div>
+        <div class="skeleton h-24 rounded-box"></div>
+        <div class="skeleton h-24 rounded-box"></div>
+    </div>
+
+    <!-- Actividad reciente via SSE -->
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Recent Activity</h2>
+            <div id="activity-feed"
+                 hx-ext="sse"
+                 sse-connect="/dashboard/activity-stream"
+                 sse-swap="message"
+                 hx-swap="beforeend">
+                <p class="text-base-content/50 text-sm">Waiting for activity...</p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

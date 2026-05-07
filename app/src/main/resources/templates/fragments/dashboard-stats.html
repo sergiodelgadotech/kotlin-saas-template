@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- This fragment is returned by /dashboard/stats for HTMX polling -->
+<th:block th:fragment="stats">
+    <div class="stat bg-base-100 rounded-box shadow-sm">
+        <div class="stat-title">Organization</div>
+        <div class="stat-value text-lg" th:text="${organization.name}">-</div>
+        <div class="stat-desc" th:text="${organization.plan}">starter</div>
+    </div>
+    <!-- Add your domain-specific stats here -->
+</th:block>
+</body>
+</html>

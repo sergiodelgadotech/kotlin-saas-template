@@ -1,0 +1,33 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Local config — never commit secrets
+application-local.yml
+*.env
+.env
+
+# Terraform
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.backup
+infra/.terraform.lock.hcl
+infra/terraform.tfvars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (for Tailwind CLI in web module)
+node_modules/
+web/assets/css/output.css
+
+# Compiled
+*.class
+*.jar

@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: mvp-saas-template
+  datasource:
+    url: ${DATABASE_URL}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+  thymeleaf:
+    cache: true
+
+auth:
+  jwks-url: ${AUTH_JWKS_URL}
+  issuer: ${AUTH_ISSUER}
+
+stripe:
+  api-key: ${STRIPE_API_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  price-id:
+    starter: ${STRIPE_PRICE_STARTER}
+    pro: ${STRIPE_PRICE_PRO}
+
+resend:
+  api-key: ${RESEND_API_KEY}
+
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${RAILWAY_ENVIRONMENT:local}
+  traces-sample-rate: 0.2
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+
+org:
+  jobrunr:
+    background-job-server:
+      enabled: true
+      worker-count: 2
+    job-scheduler:
+      enabled: true
+    dashboard:
+      enabled: true
+      port: 8000    # http://localhost:8000 — never expose publicly
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

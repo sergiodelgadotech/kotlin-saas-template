@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="w-56 min-h-screen bg-base-100 border-r border-base-300 p-4">
+    <ul class="menu w-full">
+        <li>
+            <a href="/dashboard"
+               th:classappend="${#httpServletRequest.requestURI == '/dashboard'} ? 'active' : ''">
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="/organization/members"
+               th:classappend="${#httpServletRequest.requestURI.startsWith('/organization')} ? 'active' : ''">
+                Team
+            </a>
+        </li>
+        <li>
+            <a href="/billing"
+               th:classappend="${#httpServletRequest.requestURI == '/billing'} ? 'active' : ''">
+                Billing
+            </a>
+        </li>
+        <!-- Add your domain-specific menu items here -->
+    </ul>
+</aside>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Billing</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-2xl font-bold mb-8">Billing</h1>
+
+    <!-- Current plan -->
+    <div class="card bg-base-100 shadow-sm mb-8">
+        <div class="card-body">
+            <h2 class="card-title">Current Plan</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-3xl font-bold" th:text="${subscription.plan}">STARTER</span>
+                <span class="badge"
+                      th:classappend="${subscription.status.name() == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
+                      th:text="${subscription.status}">ACTIVE</span>
+            </div>
+            <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
+                Renews <span th:text="${#temporals.format(subscription.currentPeriodEnd, 'dd MMM yyyy')}"></span>
+            </p>
+            <div class="card-actions mt-4">
+                <form th:action="@{/billing/portal}" method="post">
+                    <button class="btn btn-outline btn-sm">Manage Subscription</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade options -->
+    <div th:if="${subscription.plan.name() == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card bg-base-100 shadow-sm border-2 border-primary">
+            <div class="card-body">
+                <h2 class="card-title">Pro</h2>
+                <p class="text-3xl font-bold">€79<span class="text-base font-normal text-base-content/60">/mo</span></p>
+                <ul class="mt-4 space-y-2 text-sm">
+                    <li>✓ Unlimited users</li>
+                    <li>✓ 100 GB storage</li>
+                    <li>✓ Priority support</li>
+                </ul>
+                <div class="card-actions mt-4">
+                    <form th:action="@{/billing/checkout}" method="post">
+                        <input type="hidden" name="plan" value="PRO">
+                        <button class="btn btn-primary">Upgrade to Pro</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
