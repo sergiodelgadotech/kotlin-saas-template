@@ -88,7 +88,7 @@ Starter is published to `~/.m2` via `./gradlew publishToMavenLocal` during a mig
 
 ### Plan 0 — Rename `mvp-saas-template` → `kotlin-saas-template`
 
-**Scope:** Repo rename, GitHub remote update, Kotlin package `org.granchi.mvpsaas` → `org.granchi.saastemplate`, `MvpSaasApplication` → `SaasTemplateApplication`, all doc/config references.
+**Scope:** Repo rename, GitHub remote update, Kotlin package `org.granchi.mvpsaas` → `org.granchi.saastemplate`, `SaasTemplateApplication` → `SaasTemplateApplication`, all doc/config references.
 
 **Starter changes:** None.
 

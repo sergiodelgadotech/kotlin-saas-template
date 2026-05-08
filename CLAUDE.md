@@ -58,7 +58,7 @@ When working in this repo, **do not duplicate code from the starter**. If you ne
 ```
 app/
 ├── src/main/kotlin/org/granchi/mvpsaas/
-│   ├── MvpSaasApplication.kt
+│   ├── SaasTemplateApplication.kt
 │   ├── config/             ← MemberTenantResolver, WebMvcConfig, SecurityConfig, RedisConfig, ...
 │   ├── organization/       ← multi-tenant: Organization, Member entity + Service + Controller
 │   ├── billing/            ← Stripe webhooks, Subscription, BillingService
