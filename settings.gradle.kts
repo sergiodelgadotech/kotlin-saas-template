@@ -5,7 +5,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = "mvp-saas-template"
+rootProject.name = "kotlin-saas-template"
 include("app", "web", "infra")
 
 dependencyResolutionManagement {
