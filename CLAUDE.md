@@ -128,6 +128,16 @@ kotlin-saas-starter = "0.2.0"   # ← bump here
 
 Read the starter's `CHANGELOG.md` for breaking changes.
 
+## Planning workflow
+
+Implementation plans live as **GitHub issues**, not markdown files in the repo. Specs stay as frozen design records in `docs/superpowers/specs/`; plans are tracked at:
+
+- **Project board:** <https://github.com/users/serandel/projects/6> ("Starter/template split") — surfaces issues from this repo and `kotlin-saas-starter` together. The custom `Plan` field groups items by plan number.
+- **Labels:** plan issues carry `plan` and `starter-split`; cross-repo plans also carry `cross-repo` and a `> **Companion:**` blockquote at the top of the body linking the partner issue in the other repo.
+- **Sequencing:** each plan issue has a `### Blocked by` task list whose items auto-check when the referenced issues close.
+
+When a new plan is needed, create the issue (or pair of issues for cross-repo work) — don't write a new markdown plan file. Specs remain markdown in `docs/superpowers/specs/`.
+
 ## Architectural conventions
 
 These conventions are checked by Konsist tests in `src/test/kotlin/.../architecture/`:

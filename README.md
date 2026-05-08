@@ -83,6 +83,10 @@ Open http://localhost:8080
 └── .github/      CI/CD workflows
 ```
 
+## Project tracking
+
+Active development is tracked on the [Starter/template split project](https://github.com/users/serandel/projects/6), which spans this repo and the [kotlin-saas-starter](https://github.com/serandel/kotlin-saas-starter) library.
+
 ## Deploying to Railway
 
 1. Create a Railway project and add PostgreSQL + Redis services
