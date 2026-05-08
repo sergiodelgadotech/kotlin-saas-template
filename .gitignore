@@ -1,7 +1,6 @@
 # Gradle
 .gradle/
 build/
-!gradle/wrapper/gradle-wrapper.jar
 
 # IDE
 .idea/
@@ -31,3 +30,4 @@ web/assets/css/output.css
 # Compiled
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
