@@ -2,9 +2,9 @@
 # Copy this to application-local.yml and fill in your values
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/mvpsaas
-    username: mvpsaas
-    password: mvpsaas
+    url: jdbc:postgresql://localhost:5432/saastemplate
+    username: saastemplate
+    password: saastemplate
   thymeleaf:
     cache: false
 
@@ -29,5 +29,5 @@ app:
 
 logging:
   level:
-    org.granchi.mvpsaas: DEBUG
+    org.granchi.saastemplate: DEBUG
     org.springframework.security: DEBUG

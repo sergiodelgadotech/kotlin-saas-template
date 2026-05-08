@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:16-alpine:///mvpsaas_test
+    url: jdbc:tc:postgresql:16-alpine:///saastemplate_test
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   flyway:
     enabled: true
@@ -30,4 +30,4 @@ app:
 
 logging:
   level:
-    org.granchi.mvpsaas: WARN
+    org.granchi.saastemplate: WARN

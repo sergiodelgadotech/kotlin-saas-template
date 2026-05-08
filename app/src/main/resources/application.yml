@@ -1,6 +1,6 @@
 spring:
   application:
-    name: mvp-saas-template
+    name: kotlin-saas-template
   datasource:
     url: ${DATABASE_URL}
     driver-class-name: org.postgresql.Driver
