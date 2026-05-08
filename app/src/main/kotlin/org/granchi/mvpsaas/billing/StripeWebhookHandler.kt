@@ -33,11 +33,15 @@ class StripeWebhookHandler(
             return
         }
 
+        // Stripe Java 32+ moved currentPeriodEnd from Subscription to its items.
+        // Single-item subscriptions: read from the first item.
+        val periodEnd = stripeSub.items.data.firstOrNull()?.currentPeriodEnd
+            ?: error("Subscription ${stripeSub.id} has no items; cannot determine current period end")
         subscriptionRepository.save(sub.copy(
             stripeSubscriptionId = stripeSub.id,
             plan     = mapPlan(stripeSub),
             status   = mapStatus(stripeSub.status),
-            currentPeriodEnd  = java.time.Instant.ofEpochSecond(stripeSub.currentPeriodEnd),
+            currentPeriodEnd  = java.time.Instant.ofEpochSecond(periodEnd),
             cancelAtPeriodEnd = stripeSub.cancelAtPeriodEnd
         ))
     }

@@ -81,9 +81,9 @@ class AnalysisPipeline(
 
         aggregated
             .groupBy("client", "article")
-            .forEach { group ->
-                val client  = group["client"][0] as String
-                val article = group["article"][0] as String
+            .forEach { (key, group) ->
+                val client  = key["client"] as String
+                val article = key["article"] as String
 
                 for (window in AnalysisResult.Window.entries) {
                     val windowed = applyWindow(group, window)

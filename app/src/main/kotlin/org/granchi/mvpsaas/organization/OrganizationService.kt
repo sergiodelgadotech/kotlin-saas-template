@@ -26,7 +26,7 @@ class OrganizationService(
         OrganizationValidations.inviteMember.validate(InviteMemberCommand(zitadelUserId, role))
         val orgId = TenantContext.get()
         return lockService.withLock("invite:$orgId:$zitadelUserId") {
-            check(!memberRepository.existsByOrganizationIdAndClerkUserId(orgId, zitadelUserId)) {
+            check(!memberRepository.existsByOrganizationIdAndZitadelUserId(orgId, zitadelUserId)) {
                 "User is already a member of this organization"
             }
             memberRepository.save(

@@ -1,8 +1,8 @@
 package org.granchi.mvpsaas.integration
 
-import org.granchi.mvpsaas.core.tenant.TenantContext
 import org.granchi.mvpsaas.organization.Organization
 import org.granchi.mvpsaas.organization.OrganizationRepository
+import org.granchi.saasstarter.tenant.TenantContext
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -12,8 +12,6 @@ import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import strikt.api.expectThat
-import strikt.assertions.isEmpty
-import strikt.assertions.isNotNull
 import strikt.assertions.isEqualTo
 
 @Tag("integration")
@@ -37,20 +35,14 @@ class TenantIsolationTest {
     @Test
     fun `organizations are isolated by tenant`() {
         val orgA = organizationRepository.save(Organization(name = "Org A", slug = "org-a"))
-        val orgB = organizationRepository.save(Organization(name = "Org B", slug = "org-b"))
-
-        expectThat(orgA.id).isNotNull()
-        expectThat(orgB.id).isNotNull()
+        organizationRepository.save(Organization(name = "Org B", slug = "org-b"))
 
         // Org A can find itself
-        TenantContext.set(orgA.id!!)
+        TenantContext.set(orgA.id)
         val foundA = organizationRepository.findById(TenantContext.get())
         TenantContext.clear()
 
-        expectThat(foundA.orElse(null)) {
-            isNotNull()
-            get { name }.isEqualTo("Org A")
-        }
+        expectThat(foundA.get().name).isEqualTo("Org A")
     }
 
     @Test

@@ -5,8 +5,8 @@ import com.lemonappdev.konsist.api.ext.list.withAnnotationNamed
 import com.lemonappdev.konsist.api.ext.list.withNameEndingWith
 import com.lemonappdev.konsist.api.ext.list.withoutName
 import com.lemonappdev.konsist.api.ext.list.withoutPackage
-import com.lemonappdev.konsist.api.verify.assertTrue
 import com.lemonappdev.konsist.api.verify.assertFalse
+import com.lemonappdev.konsist.api.verify.assertTrue
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 
@@ -17,88 +17,80 @@ class ArchitectureTest {
 
     @Test
     fun `controllers do not access repositories directly`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("Controller")
             .assertFalse {
-                it.hasImport { imp -> imp.name.endsWith("Repository") }
+                it.containingFile.imports.any { imp -> imp.name.endsWith("Repository") }
             }
     }
 
     @Test
     fun `services do not have HTTP dependencies`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("Service")
             .withoutPackage("..core..")
             .assertFalse {
-                it.hasImport { imp ->
+                it.containingFile.imports.any { imp ->
                     imp.name.startsWith("jakarta.servlet") ||
-                    imp.name.startsWith("org.springframework.web.bind.annotation")
+                        imp.name.startsWith("org.springframework.web.bind.annotation")
                 }
             }
     }
 
     @Test
     fun `tenant context is not used in controllers`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("Controller")
             .assertFalse {
-                it.hasImport { imp ->
-                    imp.name.contains("TenantContext")
-                }
+                it.containingFile.imports.any { imp -> imp.name.contains("TenantContext") }
             }
     }
 
     @Test
     fun `webhook controllers do not use tenant context`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("WebhookController")
             .assertFalse {
-                it.hasImport { imp -> imp.name.contains("TenantContext") }
+                it.containingFile.imports.any { imp -> imp.name.contains("TenantContext") }
             }
     }
 
     @Test
     fun `domain entities have organizationId field`() {
-        scope
-            .classes()
+        scope.classes()
             .withAnnotationNamed("Table")
             .withoutPackage("..core..")
             .withoutName("Organization")
             .assertTrue {
-                it.hasProperty { prop -> prop.name == "organizationId" }
+                it.properties().any { prop -> prop.name == "organizationId" }
             }
     }
 
     @Test
     fun `organization package does not depend on billing`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("..organization..")
             .assertFalse {
-                it.hasImport { imp -> imp.name.contains(".billing.") }
+                it.containingFile.imports.any { imp -> imp.name.contains(".billing.") }
             }
     }
 
     @Test
     fun `services are annotated with Service or Component`() {
-        scope
-            .classes()
+        scope.classes()
             .withNameEndingWith("Service")
             .withoutPackage("..core..")
             .assertTrue {
-                it.hasAnnotationNamed("Service") || it.hasAnnotationNamed("Component")
+                it.hasAnnotationWithName("Service") || it.hasAnnotationWithName("Component")
             }
     }
 
     @Test
     fun `repositories are interfaces`() {
-        scope
-            .classes()
+        // Konsist 0.16: scope.classes() returns concrete classes only (not interfaces),
+        // so any class named *Repository is by definition not an interface — must be empty.
+        scope.classes()
             .withNameEndingWith("Repository")
-            .assertTrue { it.isInterface }
+            .assertTrue { false }
     }
 }
