@@ -1,2 +1,3 @@
 - [Sibling repo locations](repo_locations.md) — kotlin-saas-starter is at `../kotlin-saas-starter`, work in it directly
 - [Project board status automation](feedback_project_board_automation.md) — auto-move plan issues: In Progress on start, Done+close on user-confirmed completion
+- [Publishing kotlin-saas-starter to mavenLocal](feedback_starter_publish_to_maven_local.md) — run publishToMavenLocal in sibling repo without asking when template needs an updated starter
