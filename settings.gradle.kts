@@ -1,9 +1,17 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "mvp-saas-template"
 include("app", "web", "infra")
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
+        mavenLocal()
         mavenCentral()
         // kotlin-saas-starter is published to GitHub Packages
         maven {
@@ -14,12 +22,6 @@ dependencyResolutionManagement {
                 password = providers.gradleProperty("gpr.token").orNull
                     ?: System.getenv("GITHUB_TOKEN")
             }
-        }
-    }
-
-    versionCatalogs {
-        create("libs") {
-            from(files("gradle/libs.versions.toml"))
         }
     }
 }

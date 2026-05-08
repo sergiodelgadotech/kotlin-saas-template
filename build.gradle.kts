@@ -5,9 +5,3 @@ plugins {
     alias(libs.plugins.spring.dep)      apply false
     alias(libs.plugins.mokkery)         apply false
 }
-
-subprojects {
-    repositories {
-        mavenCentral()
-    }
-}
