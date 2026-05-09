@@ -6,6 +6,7 @@ import org.jetbrains.kotlinx.dataframe.api.*
 import org.jetbrains.kotlinx.dataframe.io.readCSV
 import org.jobrunr.jobs.annotations.Job
 import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Service
@@ -25,7 +26,7 @@ data class AnalysisResult(
     val runId: UUID,                   // groups all results from one run
     val client: String,
     val article: String,
-    val window: Window,
+    @Column("time_window") val window: Window,
     val slope: Double,
     val intercept: Double,
     val rSquared: Double,

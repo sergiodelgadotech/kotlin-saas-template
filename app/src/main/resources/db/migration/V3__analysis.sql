@@ -7,7 +7,7 @@ CREATE TABLE analysis_results (
     run_id                   UUID         NOT NULL,   -- groups all results from one pipeline run
     client                   VARCHAR(255) NOT NULL,
     article                  VARCHAR(255) NOT NULL,
-    window                   VARCHAR(50)  NOT NULL,   -- LAST_PRICE_INCREASE | LAST_3_MONTHS | LAST_6_MONTHS
+    time_window              VARCHAR(50)  NOT NULL,   -- LAST_PRICE_INCREASE | LAST_3_MONTHS | LAST_6_MONTHS
     slope                    DOUBLE PRECISION NOT NULL,
     intercept                DOUBLE PRECISION NOT NULL,
     r_squared                DOUBLE PRECISION NOT NULL,
