@@ -8,26 +8,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
+import org.springframework.test.context.ActiveProfiles
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 
 @Tag("integration")
 @SpringBootTest
-@Testcontainers
+@ActiveProfiles("test")
 class TenantIsolationTest {
-
-    companion object {
-        @Container
-        @JvmStatic
-        val postgres = PostgreSQLContainer<Nothing>("postgres:16-alpine").apply {
-            withDatabaseName("mvpsaas_test")
-            withUsername("test")
-            withPassword("test")
-        }
-    }
 
     @Autowired
     lateinit var organizationRepository: OrganizationRepository
