@@ -18,7 +18,7 @@ variable "cloudflare_zone_id" {
 variable "project_name" {
   description = "Project name in Railway"
   type        = string
-  default     = "mvp-saas"
+  default     = "kotlin-saas-template"
 }
 
 variable "railway_app_domain" {

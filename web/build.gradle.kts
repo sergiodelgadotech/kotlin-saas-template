@@ -15,7 +15,7 @@ tasks.register<Exec>("deploy") {
     description = "Deploy static site to Cloudflare Pages"
     dependsOn("buildCss")
     commandLine("npx", "wrangler", "pages", "deploy", ".",
-        "--project-name=mvp-saas-web"
+        "--project-name=kotlin-saas-web"
     )
 }
 
