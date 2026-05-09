@@ -1,10 +1,10 @@
-# CLAUDE.md — mvp-saas-template
+# CLAUDE.md — kotlin-saas-template
 
 This file gives Claude Code the context to work on this repository effectively. Read it first.
 
 ## What this repo is
 
-`mvp-saas-template` is a **complete Spring Boot application** that serves as the canonical example of a B2B SaaS built on top of `kotlin-saas-starter`. It is meant to be:
+`kotlin-saas-template` is a **complete Spring Boot application** that serves as the canonical example of a B2B SaaS built on top of `kotlin-saas-starter`. It is meant to be:
 
 1. **Forked when starting a new SaaS** — the starting skeleton for any new product
 2. **A reference implementation** — when in doubt about how to wire something, look here first
@@ -19,7 +19,7 @@ kotlin-saas-starter    →    Maven artifact at GitHub Packages
                                     ↑
                                     │ implementation("org.granchi:kotlin-saas-starter:X.Y.Z")
                                     │
-                              mvp-saas-template
+                              kotlin-saas-template
                               (this repo)
 ```
 
@@ -57,7 +57,7 @@ When working in this repo, **do not duplicate code from the starter**. If you ne
 
 ```
 app/
-├── src/main/kotlin/org/granchi/mvpsaas/
+├── src/main/kotlin/org/granchi/saastemplate/
 │   ├── SaasTemplateApplication.kt
 │   ├── config/             ← MemberTenantResolver, WebMvcConfig, SecurityConfig, RedisConfig, ...
 │   ├── organization/       ← multi-tenant: Organization, Member entity + Service + Controller

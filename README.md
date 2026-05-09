@@ -1,4 +1,4 @@
-# MVP SaaS Template
+# Kotlin SaaS Template
 
 Production-ready template for B2B SaaS products. Kotlin + Spring Boot + Thymeleaf + HTMX.
 
@@ -37,8 +37,8 @@ ClerkJwtFilter → TenantInterceptor → TenantContext → Service → Repositor
 ### 2. Clone and configure
 
 ```bash
-git clone https://github.com/granchi/mvp-saas-template
-cd mvp-saas-template
+git clone https://github.com/granchi/kotlin-saas-template
+cd kotlin-saas-template
 
 # Copy and fill in your local config
 cp app/src/main/resources/application-local.yml.example \
@@ -96,7 +96,7 @@ Active development is tracked on the [Starter/template split project](https://gi
 
 ## Adding your domain
 
-Replace all occurrences of `org.granchi.mvpsaas` with your own package, and update:
+Replace all occurrences of `org.granchi.saastemplate` with your own package, and update:
 - `settings.gradle.kts` → `rootProject.name`
 - `application.yml` → `spring.application.name`
 - `infra/variables.tf` → `project_name` default
