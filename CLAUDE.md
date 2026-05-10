@@ -2,6 +2,11 @@
 
 This file gives Claude Code the context to work on this repository effectively. Read it first.
 
+## Workflow Conventions
+
+- Use trunk-based development; do NOT propose feature branches.
+- `kotlin-saas-starter` lives at `../kotlin-saas-starter` (real local clone). Do NOT clone fresh into `/tmp`.
+
 ## What this repo is
 
 `kotlin-saas-template` is a **complete Spring Boot application** that serves as the canonical example of a B2B SaaS built on top of `kotlin-saas-starter`. It is meant to be:
