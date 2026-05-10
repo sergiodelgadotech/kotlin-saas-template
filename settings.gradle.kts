@@ -15,7 +15,7 @@ dependencyResolutionManagement {
         mavenCentral()
         // kotlin-saas-starter is published to GitHub Packages
         maven {
-            url = uri("https://maven.pkg.github.com/granchi/kotlin-saas-starter")
+            url = uri("https://maven.pkg.github.com/serandel/kotlin-saas-starter")
             credentials {
                 username = providers.gradleProperty("gpr.user").orNull
                     ?: System.getenv("GITHUB_ACTOR")
