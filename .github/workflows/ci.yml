@@ -12,11 +12,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
-        with:
-          repository: SergioDelgado-tech/kotlin-saas-starter
-          path: ../kotlin-saas-starter
-
       - uses: actions/setup-java@v4
         with:
           java-version: '21'
