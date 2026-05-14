@@ -27,13 +27,13 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :app:test
+        run: ./gradlew :app:test --refresh-dependencies
 
       - name: Integration tests
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew :app:integrationTest
+        run: ./gradlew :app:integrationTest --refresh-dependencies
 
   deploy:
     needs: test
