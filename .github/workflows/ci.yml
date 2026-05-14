@@ -23,6 +23,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Diagnose starter resolution
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :app:dependencies --configuration compileClasspath --refresh-dependencies --info 2>&1 | grep -E "kotlin-saas-starter|maven\.pkg|Searched|status code|GET|Received" || true
+
       - name: Unit + Architecture tests
         env:
           GITHUB_ACTOR: ${{ github.actor }}
