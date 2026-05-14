@@ -98,6 +98,12 @@ cp app/src/main/resources/application-local.yml.example \
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 
+### Composite build
+
+When `../kotlin-saas-starter` is checked out alongside this repo, `settings.gradle.kts` automatically substitutes it for the published Maven artifact. Edits in the sibling repo are picked up by the next template build — no `publishToMavenLocal` step required.
+
+Without the sibling directory (forks, CI), the `includeBuild` block is dormant and the starter resolves from GitHub Packages as a normal Maven dependency.
+
 ### Tests
 
 ```bash

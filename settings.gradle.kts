@@ -8,10 +8,14 @@ pluginManagement {
 rootProject.name = "kotlin-saas-template"
 include("app", "web", "infra")
 
+val starterPath = file("../kotlin-saas-starter")
+if (starterPath.exists()) {
+    includeBuild(starterPath)
+}
+
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
-        mavenLocal()
         mavenCentral()
         // kotlin-saas-starter is published to GitHub Packages
         maven {
