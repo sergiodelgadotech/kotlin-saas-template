@@ -137,7 +137,7 @@ Read the starter's `CHANGELOG.md` for breaking changes.
 
 Implementation plans live as **GitHub issues**, not markdown files in the repo. Specs stay as frozen design records in `docs/superpowers/specs/`; plans are tracked at:
 
-- **Project board:** <https://github.com/users/serandel/projects/6> ("Starter/template split") — surfaces issues from this repo and `kotlin-saas-starter` together. The custom `Plan` field groups items by plan number.
+- **Project board:** <https://github.com/orgs/SergioDelgado-tech/projects/1> ("Starter/template split") — surfaces issues from this repo and `kotlin-saas-starter` together. The custom `Plan` field groups items by plan number.
 - **Labels:** plan issues carry `plan` and `starter-split`; cross-repo plans also carry `cross-repo` and a `> **Companion:**` blockquote at the top of the body linking the partner issue in the other repo.
 - **Sequencing:** each plan issue has a `### Blocked by` task list whose items auto-check when the referenced issues close.
 
