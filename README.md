@@ -83,6 +83,19 @@ Open http://localhost:8080
 └── .github/      CI/CD workflows
 ```
 
+## Dependency updates
+
+Renovate is configured (`.github/renovate.json`) to open PRs for outdated dependencies daily before 6 AM (Europe/Madrid).
+
+**Setup required when forking:**
+1. Install the [Renovate GitHub App](https://github.com/apps/renovate) and enable it for this repo.
+2. Renovate authenticates against GitHub Packages automatically using the platform token — no extra secrets needed for `kotlin-saas-starter`.
+
+**What gets updated:**
+- `kotlin-saas-starter` → dedicated PR per release with title `chore(deps): bump kotlin-saas-starter to X.Y.Z`
+- Other Gradle deps (minor/patch) → grouped into a single PR
+- GitHub Actions, Docker images, Terraform providers → each grouped by type
+
 ## Project tracking
 
 Active development is tracked on the [Starter/template split project](https://github.com/users/serandel/projects/6), which spans this repo and the [kotlin-saas-starter](https://github.com/serandel/kotlin-saas-starter) library.

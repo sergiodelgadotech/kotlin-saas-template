@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Madrid",
+  "schedule": ["before 6am"],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "description": "kotlin-saas-starter always gets a dedicated PR",
+      "matchPackageNames": ["org.granchi:kotlin-saas-starter"],
+      "prTitle": "chore(deps): bump kotlin-saas-starter to {{newVersion}}"
+    },
+    {
+      "description": "Group non-major Gradle dependency updates",
+      "matchManagers": ["gradle", "gradle-wrapper", "gradle-version-catalog"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "excludePackageNames": ["org.granchi:kotlin-saas-starter"],
+      "groupName": "gradle dependencies (non-major)"
+    },
+    {
+      "description": "Group non-major GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github-actions (non-major)"
+    },
+    {
+      "description": "Group non-major Docker image updates",
+      "matchManagers": ["docker-compose"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "docker images (non-major)"
+    },
+    {
+      "description": "Group non-major Terraform provider updates",
+      "matchManagers": ["terraform"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "terraform providers (non-major)"
+    }
+  ]
+}
