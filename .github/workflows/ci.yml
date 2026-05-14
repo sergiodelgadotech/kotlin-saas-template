@@ -8,12 +8,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: SergioDelgado-tech/kotlin-saas-starter
+          path: ../kotlin-saas-starter
 
       - uses: actions/setup-java@v4
         with:
@@ -24,15 +26,9 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Unit + Architecture tests
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :app:test
 
       - name: Integration tests
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew :app:integrationTest
 
   deploy:
