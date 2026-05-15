@@ -31,3 +31,9 @@ app:
 logging:
   level:
     org.granchi.saastemplate: WARN
+
+jobrunr:
+  background-job-server:
+    enabled: false
+  dashboard:
+    enabled: false
