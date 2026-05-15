@@ -28,6 +28,7 @@ spring-boot-data-jdbc   = { module = "org.springframework.boot:spring-boot-start
 spring-boot-redis       = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 spring-boot-validation  = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-session-redis    = { module = "org.springframework.session:spring-session-data-redis" }
 thymeleaf-layout        = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
 flyway-core             = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }

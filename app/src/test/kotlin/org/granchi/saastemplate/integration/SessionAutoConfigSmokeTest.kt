@@ -10,10 +10,10 @@ import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoCo
 import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Profile
 import org.springframework.session.SessionRepository
-import org.springframework.test.context.DynamicPropertyRegistry
-import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -32,6 +32,9 @@ import strikt.assertions.isNotNull
 )
 class SessionAutoConfigSmokeTest {
 
+    // @Profile prevents this from being picked up by SaasTemplateApplication's
+    // component scan during full-context integration tests (which use the "test" profile)
+    @Profile("!test")
     @SpringBootApplication(
         exclude = [
             DataSourceAutoConfiguration::class,
@@ -44,14 +47,9 @@ class SessionAutoConfigSmokeTest {
 
     companion object {
         @Container
+        @ServiceConnection(name = "redis")
         @JvmField
         val redis: GenericContainer<*> = GenericContainer("redis:7-alpine").withExposedPorts(6379)
-
-        @DynamicPropertySource
-        @JvmStatic
-        fun redisProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.data.redis.url") { "redis://${redis.host}:${redis.getMappedPort(6379)}" }
-        }
     }
 
     @Autowired

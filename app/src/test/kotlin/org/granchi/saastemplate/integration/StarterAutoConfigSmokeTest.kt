@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
+import org.springframework.context.annotation.Profile
 import strikt.api.expectThat
 import strikt.assertions.hasSize
 import strikt.assertions.isTrue
@@ -29,6 +30,9 @@ import strikt.assertions.isTrue
 )
 class StarterAutoConfigSmokeTest {
 
+    // @Profile prevents this from being picked up by SaasTemplateApplication's
+    // component scan during full-context integration tests (which use the "test" profile)
+    @Profile("!test")
     @SpringBootApplication(
         exclude = [
             DataSourceAutoConfiguration::class,

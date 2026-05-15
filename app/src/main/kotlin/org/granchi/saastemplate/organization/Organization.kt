@@ -7,7 +7,7 @@ import java.util.UUID
 
 @Table("organizations")
 data class Organization(
-    @Id val id: UUID = UUID.randomUUID(),
+    @Id val id: UUID? = null,
     val name: String,
     val slug: String,
     val plan: String = "starter",
@@ -16,7 +16,7 @@ data class Organization(
 
 @Table("members")
 data class Member(
-    @Id val id: UUID = UUID.randomUUID(),
+    @Id val id: UUID? = null,
     val organizationId: UUID,
     val zitadelUserId: String,
     val role: Role = Role.MEMBER,

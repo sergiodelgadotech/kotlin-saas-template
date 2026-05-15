@@ -50,6 +50,7 @@ dependencies {
 
     // ── Tests ────────────────────────────────────────────────────────────────
     testImplementation(libs.spring.boot.test)
+    testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.postgres)
     testImplementation(libs.playwright)
