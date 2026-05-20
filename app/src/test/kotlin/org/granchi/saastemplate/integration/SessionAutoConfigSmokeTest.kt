@@ -4,6 +4,7 @@ import org.granchi.saasstarter.autoconfigure.SessionAutoConfiguration
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.granchi.saasstarter.autoconfigure.JobRunrAutoConfiguration as StarterJobRunrAutoConfiguration
 import org.jobrunr.spring.autoconfigure.JobRunrAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
@@ -41,6 +42,7 @@ class SessionAutoConfigSmokeTest {
             FlywayAutoConfiguration::class,
             RedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
+            StarterJobRunrAutoConfiguration::class,
         ],
     )
     class SmokeTestApp
