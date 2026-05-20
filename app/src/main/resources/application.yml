@@ -13,6 +13,20 @@ spring:
   thymeleaf:
     cache: true
 
+saasstarter:
+  cache:
+    default-ttl: 10m
+    configurations:
+      # Tenant lookup — hit on every request, short TTL to pick up membership changes fast
+      tenant-by-user:
+        ttl: 5m
+      # Organization data — changes rarely
+      organization:
+        ttl: 30m
+      # Subscription status — needs to be fresh for billing checks
+      subscription:
+        ttl: 5m
+
 auth:
   jwks-url: ${AUTH_JWKS_URL}
   issuer: ${AUTH_ISSUER}
