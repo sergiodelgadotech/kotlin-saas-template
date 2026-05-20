@@ -58,6 +58,13 @@ dependencies {
     testImplementation(libs.strikt.core)
 }
 
+// kotlin-saas-starter is pinned to main-SNAPSHOT during active development.
+// Tell Gradle never to cache it so CI always resolves the latest published snapshot.
+// Locally the composite build substitutes the sibling source, so this has no effect there.
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor(0, java.util.concurrent.TimeUnit.SECONDS)
+}
+
 tasks.register<Test>("unitTest")           { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
 tasks.register<Test>("integrationTest")    { useJUnitPlatform { includeTags("integration") } }
 tasks.register<Test>("e2eTest")            { useJUnitPlatform { includeTags("e2e") } }
