@@ -38,8 +38,11 @@ class StarterAutoConfigSmokeTest {
             DataSourceAutoConfiguration::class,
             FlywayAutoConfiguration::class,
             RedisAutoConfiguration::class,
+            org.granchi.saasstarter.autoconfigure.RedisAutoConfiguration::class,
+            org.granchi.saasstarter.autoconfigure.SessionAutoConfiguration::class,
             RedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
+            org.granchi.saasstarter.autoconfigure.JobRunrAutoConfiguration::class,
         ],
     )
     class SmokeTestApp
