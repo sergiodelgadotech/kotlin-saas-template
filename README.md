@@ -1,5 +1,11 @@
 # Kotlin SaaS Template
 
+[![CI](https://github.com/sergiodelgadotech/kotlin-saas-template/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sergiodelgadotech/kotlin-saas-template/actions/workflows/ci.yml) [![starter stable](https://img.shields.io/github/v/release/sergiodelgadotech/kotlin-saas-starter?label=starter%20%28stable%29&color=blue)](https://github.com/sergiodelgadotech/kotlin-saas-starter/releases/latest) [![starter snapshot](https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsergiodelgadotech%2Fkotlin-saas-starter%2Frelease-please--branches--main--components--kotlin-saas-starter%2Fgradle.properties&search=version%3D%28.*%29&replace=%241-SNAPSHOT&label=starter%20%28snapshot%29&color=orange)](https://github.com/orgs/sergiodelgadotech/packages?repo_name=kotlin-saas-starter) [![current pin](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsergiodelgadotech%2Fkotlin-saas-template%2Fmain%2Fgradle%2Flibs.versions.toml&query=%24.versions.kotlin-saas-starter&label=current%20pin&color=informational)](gradle/libs.versions.toml)
+<!-- Snapshot badge reads gradle.properties from the starter's release-please PR branch
+     (release-please--branches--main--components--kotlin-saas-starter). If that branch
+     doesn't exist (brief window after a release before the next conventional commit),
+     the badge renders an error. Update the URL if release-please's branch naming changes. -->
+
 Production-ready template for B2B SaaS products. Kotlin + Spring Boot + Thymeleaf + HTMX.
 
 ## Stack
@@ -37,7 +43,7 @@ ClerkJwtFilter → TenantInterceptor → TenantContext → Service → Repositor
 ### 2. Clone and configure
 
 ```bash
-git clone https://github.com/granchi/kotlin-saas-template
+git clone https://github.com/sergiodelgadotech/kotlin-saas-template
 cd kotlin-saas-template
 
 # Copy and fill in your local config
@@ -98,7 +104,7 @@ Renovate is configured (`.github/renovate.json`) to open PRs for outdated depend
 
 ## Project tracking
 
-Active development is tracked on the [Starter/template split project](https://github.com/users/serandel/projects/6), which spans this repo and the [kotlin-saas-starter](https://github.com/serandel/kotlin-saas-starter) library.
+Active development is tracked on the [Starter/template split project](https://github.com/orgs/sergiodelgadotech/projects/1), which spans this repo and the [kotlin-saas-starter](https://github.com/sergiodelgadotech/kotlin-saas-starter) library.
 
 ## Deploying to Railway
 
