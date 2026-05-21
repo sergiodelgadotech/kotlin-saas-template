@@ -26,6 +26,20 @@ saasstarter:
       # Subscription status — needs to be fresh for billing checks
       subscription:
         ttl: 5m
+  tenant:
+    path-patterns:
+      - /app/**
+      - /dashboard/**
+      - /billing/**
+      - /organization/**
+    exclude-path-patterns:
+      - /webhooks/**
+      - /
+      - /pricing
+      - /docs/**
+  rate-limit:
+    path-patterns:
+      - /webhooks/**
 
 auth:
   jwks-url: ${AUTH_JWKS_URL}
