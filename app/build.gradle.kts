@@ -1,9 +1,10 @@
+import java.util.concurrent.TimeUnit
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dep)
-    alias(libs.plugins.mokkery)
 }
 
 kotlin {
@@ -56,13 +57,16 @@ dependencies {
     testImplementation(libs.playwright)
     testImplementation(libs.konsist)
     testImplementation(libs.strikt.core)
+
+    // Gradle 9's useJUnitPlatform() no longer auto-adds the launcher.
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 // kotlin-saas-starter is pinned to main-SNAPSHOT during active development.
 // Tell Gradle never to cache it so CI always resolves the latest published snapshot.
 // Locally the composite build substitutes the sibling source, so this has no effect there.
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor(0, java.util.concurrent.TimeUnit.SECONDS)
+    resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
 }
 
 tasks.register<Test>("unitTest")           { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }

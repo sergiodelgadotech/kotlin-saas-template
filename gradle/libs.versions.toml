@@ -1,6 +1,6 @@
 [versions]
 kotlin-saas-starter = "0.6.0-SNAPSHOT"
-kotlin            = "2.0.21"
+kotlin            = "2.3.21"
 spring-boot       = "3.4.1"
 spring-dep        = "1.1.7"
 flyway            = "10.20.1"
@@ -12,7 +12,6 @@ jobrunr             = "7.3.1"
 konform              = "0.9.0"
 konsist           = "0.16.1"
 strikt            = "0.35.1"
-mokkery           = "2.5.1"
 auth0-jwt         = "4.4.0"
 auth0-jwks        = "0.22.1"
 stripe            = "32.1.0"
@@ -40,6 +39,7 @@ auth0-jwks              = { module = "com.auth0:jwks-rsa", version.ref = "auth0-
 stripe                  = { module = "com.stripe:stripe-java", version.ref = "stripe" }
 resend                  = { module = "com.resend:resend-java", version.ref = "resend" }
 sentry                  = { module = "io.sentry:sentry-spring-boot-starter-jakarta", version.ref = "sentry" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 testcontainers-junit    = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 playwright              = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
@@ -57,4 +57,3 @@ kotlin-jvm    = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 spring-boot   = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dep    = { id = "io.spring.dependency-management", version.ref = "spring-dep" }
-mokkery       = { id = "dev.mokkery", version.ref = "mokkery" }
