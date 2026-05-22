@@ -1,5 +1,6 @@
 package org.granchi.saastemplate.integration
 
+import org.granchi.saasstarter.autoconfigure.OrganizationAutoConfiguration
 import org.granchi.saasstarter.autoconfigure.SaasStarterAutoConfiguration
 import org.granchi.saasstarter.autoconfigure.SaasStarterProperties
 import org.jobrunr.spring.autoconfigure.JobRunrAutoConfiguration
@@ -43,6 +44,7 @@ class StarterAutoConfigSmokeTest {
             RedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
             org.granchi.saasstarter.autoconfigure.JobRunrAutoConfiguration::class,
+            OrganizationAutoConfiguration::class,
         ],
     )
     class SmokeTestApp

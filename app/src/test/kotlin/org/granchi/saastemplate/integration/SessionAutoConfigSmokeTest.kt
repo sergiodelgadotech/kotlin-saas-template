@@ -1,5 +1,6 @@
 package org.granchi.saastemplate.integration
 
+import org.granchi.saasstarter.autoconfigure.OrganizationAutoConfiguration
 import org.granchi.saasstarter.autoconfigure.SessionAutoConfiguration
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -43,6 +44,7 @@ class SessionAutoConfigSmokeTest {
             RedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
             StarterJobRunrAutoConfiguration::class,
+            OrganizationAutoConfiguration::class,
         ],
     )
     class SmokeTestApp
