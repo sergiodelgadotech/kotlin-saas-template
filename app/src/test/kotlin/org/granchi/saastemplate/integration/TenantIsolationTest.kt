@@ -1,8 +1,8 @@
 package org.granchi.saastemplate.integration
 
 import org.granchi.saastemplate.SaasTemplateApplication
-import org.granchi.saastemplate.organization.Organization
-import org.granchi.saastemplate.organization.OrganizationRepository
+import org.granchi.saasstarter.organization.Organization
+import org.granchi.saasstarter.organization.OrganizationRepository
 import org.granchi.saasstarter.tenant.TenantContext
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -39,7 +39,7 @@ class TenantIsolationTest {
         val orgA = organizationRepository.save(Organization(name = "Org A", slug = "org-a"))
         organizationRepository.save(Organization(name = "Org B", slug = "org-b"))
 
-        TenantContext.set(orgA.id!!)
+        TenantContext.set(orgA.id)
         val foundA = organizationRepository.findById(TenantContext.get())
         TenantContext.clear()
 

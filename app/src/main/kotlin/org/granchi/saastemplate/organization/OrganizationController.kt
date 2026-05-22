@@ -1,5 +1,6 @@
 package org.granchi.saastemplate.organization
 
+import org.granchi.saasstarter.organization.OrganizationService
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping

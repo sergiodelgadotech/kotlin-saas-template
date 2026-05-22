@@ -1,6 +1,6 @@
 package org.granchi.saastemplate.config
 
-import org.granchi.saastemplate.organization.MemberRepository
+import org.granchi.saasstarter.organization.MemberRepository
 import org.granchi.saasstarter.tenant.TenantResolver
 import org.springframework.stereotype.Component
 import java.util.UUID
