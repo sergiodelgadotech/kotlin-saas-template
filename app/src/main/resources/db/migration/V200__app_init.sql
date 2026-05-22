@@ -1,25 +1,6 @@
--- V1__init.sql
--- Complete app schema. JobRunr owns its own tables via DatabaseCreator.
-
-CREATE TABLE organizations (
-    id         UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    name       VARCHAR(255) NOT NULL,
-    slug       VARCHAR(100) NOT NULL UNIQUE,
-    plan       VARCHAR(50)  NOT NULL DEFAULT 'starter',
-    created_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-);
-
-CREATE TABLE members (
-    id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
-    organization_id UUID         NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    zitadel_user_id VARCHAR(255) NOT NULL UNIQUE,
-    role            VARCHAR(50)  NOT NULL DEFAULT 'member',
-    created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
-);
-
--- Critical: this index is hit on every authenticated request
-CREATE INDEX idx_members_zitadel_user_id ON members(zitadel_user_id);
-CREATE INDEX idx_members_organization_id ON members(organization_id);
+-- V200__app_init.sql
+-- App-specific tables. Multi-tenant baseline (organizations, members) lives
+-- in kotlin-saas-starter's V100__starter_baseline.sql.
 
 CREATE TABLE subscriptions (
     id                     UUID         PRIMARY KEY DEFAULT gen_random_uuid(),

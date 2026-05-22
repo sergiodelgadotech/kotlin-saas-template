@@ -6,7 +6,9 @@ spring:
     driver-class-name: org.postgresql.Driver
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations:
+      - classpath:db/migration
+      - classpath:db/migration/saasstarter
   data:
     redis:
       url: ${REDIS_URL:redis://localhost:6379}
