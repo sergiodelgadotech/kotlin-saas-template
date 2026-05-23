@@ -17,6 +17,8 @@ Add `.devcontainer/` configurations to both repos so contributors can open a ful
 - Template devcontainer integrates with the existing `docker-compose.yml` (Postgres, Redis, Zitadel).
 - Starter devcontainer is standalone; Testcontainers handles service lifecycle during tests.
 - Composite build (`../kotlin-saas-starter`) is **not** wired inside the template devcontainer — the starter resolves from GitHub Packages (same as CI). Migrate to a workspace-level mount if day-to-day development proves this too limiting.
+- **Claude Code CLI is installed in both containers** via the [Claude Code Dev Container Feature](https://github.com/anthropics/devcontainer-features/tree/main/src/claude-code) (`ghcr.io/anthropics/devcontainer-features/claude-code:1.0`). Auth and settings persist across rebuilds via a named Docker volume at `~/.claude`.
+- **Java 25 LTS** is used in both devcontainers (`mcr.microsoft.com/devcontainers/java:25`). Both build files are bumped to `jvmToolchain(25)` in the same commit so the devcontainer JDK and Gradle toolchain target stay in sync.
 
 ---
 
@@ -35,6 +37,11 @@ Add `.devcontainer/` configurations to both repos so contributors can open a ful
 - **dockerComposeFile:** `["../docker-compose.yml", "docker-compose.extend.yml"]`
 - **service:** `dev`
 - **workspaceFolder:** `/workspace`
+- **features:**
+  - `ghcr.io/anthropics/devcontainer-features/claude-code:1.0` — installs Claude Code CLI; also adds the Claude Code VS Code extension when opened in VS Code/Cursor
+- **mounts:**
+  - `source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume` — persists Claude Code auth and settings across container rebuilds, isolated per project via `${devcontainerId}`
+- **remoteUser:** `vscode` _(the `mcr.microsoft.com/devcontainers/java` image ships with a non-root user named `vscode`; the name is unrelated to the VS Code editor and works identically with JetBrains Gateway)_
 - **postCreateCommand:**
   ```bash
   ./gradlew dependencies && \
@@ -52,6 +59,7 @@ Add `.devcontainer/` configurations to both repos so contributors can open a ful
   - `vscjava.vscode-java-pack` — Java extension pack (debugger, Maven/Gradle explorer, etc.)
   - `vscjava.vscode-spring-boot-dashboard` — Spring Boot run/debug dashboard
   - `ms-azuretools.vscode-docker` — Docker explorer
+  - _(Claude Code extension is added automatically by the feature above)_
 - **JetBrains:** No extensions configured in devcontainer.json — Gateway downloads its IDE backend into the container and handles plugins via its own marketplace.
 
 ### docker-compose.extend.yml
@@ -61,7 +69,7 @@ Adds a `dev` service to the compose project:
 ```yaml
 services:
   dev:
-    image: mcr.microsoft.com/devcontainers/java:21
+    image: mcr.microsoft.com/devcontainers/java:25
     volumes:
       - ..:/workspace:cached
     command: sleep infinity
@@ -98,10 +106,14 @@ Zitadel is not listed in `depends_on` because it takes longer to initialize and 
 
 ### devcontainer.json
 
-- **image:** `mcr.microsoft.com/devcontainers/java:21`
+- **image:** `mcr.microsoft.com/devcontainers/java:25`
 - **workspaceFolder:** `/workspace`
+- **remoteUser:** `vscode` _(same note as template — just the image's built-in non-root user)_
 - **features:**
   - `ghcr.io/devcontainers/features/docker-outside-of-docker:1` — mounts the host Docker socket so Testcontainers can launch containers during `./gradlew test`
+  - `ghcr.io/anthropics/devcontainer-features/claude-code:1.0` — installs Claude Code CLI; also adds the Claude Code VS Code extension when opened in VS Code/Cursor
+- **mounts:**
+  - `source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume` — persists Claude Code auth and settings across container rebuilds, isolated per project
 - **postCreateCommand:** `./gradlew dependencies`
 - **remoteEnv:** `GITHUB_ACTOR`, `GITHUB_TOKEN` (only needed if the starter's own tests pull any GitHub Packages dependencies)
 - **VS Code extensions:**
@@ -109,6 +121,7 @@ Zitadel is not listed in `depends_on` because it takes longer to initialize and 
   - `vscjava.vscode-java-pack`
   - `ms-azuretools.vscode-docker`
   - (no Spring Boot Dashboard — the starter is a library, not a runnable app)
+  - _(Claude Code extension is added automatically by the feature above)_
 - **JetBrains:** Same as template — Gateway handles it.
 
 ---
@@ -129,3 +142,5 @@ Before closing a PR, verify:
 2. `./gradlew :app:test` passes inside the container (template).
 3. `./gradlew test` passes inside the container (starter — Testcontainers must be able to pull images).
 4. `./gradlew :app:bootRun --args='--spring.profiles.active=local'` starts the app and connects to Postgres and Redis (template).
+5. `claude --version` works inside both containers (confirms the Claude Code feature installed correctly).
+6. After running `claude` once and authenticating, rebuild the container and confirm authentication is preserved (the `~/.claude` volume persists across rebuilds).
