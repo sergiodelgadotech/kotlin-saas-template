@@ -48,14 +48,15 @@ The quickest way to get a fully-wired environment is to open the project in a de
   |---|---|
   | `GITHUB_ACTOR` | Your GitHub username |
   | `GITHUB_TOKEN` | Personal access token with `read:packages` scope |
-  | `AUTH_JWKS_URL` | Zitadel admin console |
-  | `AUTH_ISSUER` | Zitadel admin console |
+  | `AUTH_JWKS_URL` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089/oauth/v2/keys` |
+  | `AUTH_ISSUER` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089` |
   | `STRIPE_API_KEY` | Stripe dashboard |
   | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Webhooks |
   | `STRIPE_PRICE_STARTER` | Stripe Price ID for Starter plan |
   | `STRIPE_PRICE_PRO` | Stripe Price ID for Pro plan |
   | `RESEND_API_KEY` | Resend dashboard |
   | `SENTRY_DSN` | Sentry dashboard |
+  | `APP_BASE_URL` | Optional — defaults to `http://localhost:8080` |
 
 **VS Code / Cursor**
 
@@ -65,11 +66,21 @@ Open the repo folder, then run the command **Dev Containers: Reopen in Container
 
 Open Gateway → **Connect to Dev Container** → select the cloned repo folder. Gateway reads `.devcontainer/devcontainer.json` and spins up the same environment.
 
+**Start the app**
+
+Once inside the container, run:
+
+```bash
+./gradlew :app:bootRun
+```
+
+> **Do not** activate the `local` Spring profile inside the devcontainer. The database, Redis, and all secret env vars are already set by the container environment — `application-local.yml` is not needed and will override the correct values if the `local` profile is active.
+
 **Notes**
 
 - `claude` is available in the integrated terminal. Run it once after the container starts to authenticate.
 - `remoteUser` is `vscode` — this is the built-in non-root user in the `mcr.microsoft.com/devcontainers/java` image. The name is unrelated to the VS Code editor and works identically with JetBrains Gateway and Cursor.
-- `application-local.yml` is copied automatically from the example file, but the secrets inside it are sourced from the host env vars listed above. Ensure those are set before opening the container.
+- `DATABASE_URL`, `REDIS_URL`, and all secret env vars are supplied by the container environment. The host-shell env vars listed in the prerequisites table are forwarded into the container by `remoteEnv` in `devcontainer.json`. Ensure those are set before opening the container.
 - Zitadel starts in the background but is not a container startup dependency — it takes longer to initialise than Postgres and Redis. Wait for it to become healthy before testing auth flows.
 
 ### 1. Prerequisites (manual local setup)

@@ -5,8 +5,10 @@ services:
       - ..:/workspace:cached
     command: sleep infinity
     environment:
-      DATABASE_URL: jdbc:postgresql://postgres:5432/saastemplate
+      DATABASE_URL: jdbc:postgresql://postgres:5432/saastemplate?user=saastemplate&password=saastemplate
       REDIS_URL: redis://redis:6379
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
