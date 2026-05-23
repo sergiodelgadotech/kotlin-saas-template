@@ -1,0 +1,36 @@
+{
+  "name": "kotlin-saas-template",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ],
+  "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
+  "remoteEnv": {
+    "GITHUB_ACTOR": "${localEnv:GITHUB_ACTOR}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "AUTH_JWKS_URL": "${localEnv:AUTH_JWKS_URL}",
+    "AUTH_ISSUER": "${localEnv:AUTH_ISSUER}",
+    "STRIPE_API_KEY": "${localEnv:STRIPE_API_KEY}",
+    "STRIPE_WEBHOOK_SECRET": "${localEnv:STRIPE_WEBHOOK_SECRET}",
+    "STRIPE_PRICE_STARTER": "${localEnv:STRIPE_PRICE_STARTER}",
+    "STRIPE_PRICE_PRO": "${localEnv:STRIPE_PRICE_PRO}",
+    "RESEND_API_KEY": "${localEnv:RESEND_API_KEY}",
+    "SENTRY_DSN": "${localEnv:SENTRY_DSN}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "fwcd.kotlin",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-spring-boot-dashboard",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  }
+}

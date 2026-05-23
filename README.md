@@ -34,9 +34,47 @@ ClerkJwtFilter → TenantInterceptor → TenantContext → Service → Repositor
 
 ## Getting started
 
-### 1. Prerequisites
+### Develop in a devcontainer
 
-- JDK 21
+The quickest way to get a fully-wired environment is to open the project in a devcontainer. It provisions JDK 25, Gradle, Postgres, Redis, Zitadel, and the Claude Code CLI automatically — no manual setup required.
+
+**Prerequisites**
+
+- Docker Desktop (or Docker Engine + Docker Compose v2)
+- VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-remote.remote-containers), Cursor, **or** JetBrains Gateway
+- The following env vars exported in your host shell before opening the container:
+
+  | Variable | Where to get it |
+  |---|---|
+  | `GITHUB_ACTOR` | Your GitHub username |
+  | `GITHUB_TOKEN` | Personal access token with `read:packages` scope |
+  | `AUTH_JWKS_URL` | Zitadel admin console |
+  | `AUTH_ISSUER` | Zitadel admin console |
+  | `STRIPE_API_KEY` | Stripe dashboard |
+  | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Webhooks |
+  | `STRIPE_PRICE_STARTER` | Stripe Price ID for Starter plan |
+  | `STRIPE_PRICE_PRO` | Stripe Price ID for Pro plan |
+  | `RESEND_API_KEY` | Resend dashboard |
+  | `SENTRY_DSN` | Sentry dashboard |
+
+**VS Code / Cursor**
+
+Open the repo folder, then run the command **Dev Containers: Reopen in Container** (via the Command Palette or the green bottom-left button). VS Code will build and start the containers, run `./gradlew dependencies` to warm up the dependency cache, and copy `application-local.yml.example` to `application-local.yml` automatically.
+
+**JetBrains Gateway**
+
+Open Gateway → **Connect to Dev Container** → select the cloned repo folder. Gateway reads `.devcontainer/devcontainer.json` and spins up the same environment.
+
+**Notes**
+
+- `claude` is available in the integrated terminal. Run it once after the container starts to authenticate.
+- `remoteUser` is `vscode` — this is the built-in non-root user in the `mcr.microsoft.com/devcontainers/java` image. The name is unrelated to the VS Code editor and works identically with JetBrains Gateway and Cursor.
+- `application-local.yml` is copied automatically from the example file, but the secrets inside it are sourced from the host env vars listed above. Ensure those are set before opening the container.
+- Zitadel starts in the background but is not a container startup dependency — it takes longer to initialise than Postgres and Redis. Wait for it to become healthy before testing auth flows.
+
+### 1. Prerequisites (manual local setup)
+
+- JDK 25
 - Docker (for local PostgreSQL + Redis)
 - Node.js (for Tailwind CLI)
 
