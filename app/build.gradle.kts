@@ -66,8 +66,16 @@ dependencies {
 // kotlin-saas-starter is pinned to main-SNAPSHOT during active development.
 // Tell Gradle never to cache it so CI always resolves the latest published snapshot.
 // Locally the composite build substitutes the sibling source, so this has no effect there.
+//
+// Force ASM 9.8: Spring Boot 3.5.x manages ASM to 9.7.1, but JobRunr uses ASM to parse
+// job-lambda bytecode at runtime. With jvmToolchain(25) the compiled classes are Java 25
+// (major version 69), which ASM 9.7.1 cannot read. ASM 9.8 adds support for Java 25.
+// Spring Framework uses its own shaded ASM inside spring-core and is unaffected by this.
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
+    resolutionStrategy {
+        cacheChangingModulesFor(0, TimeUnit.SECONDS)
+        force(libs.asm)
+    }
 }
 
 tasks.register<Test>("unitTest") {
