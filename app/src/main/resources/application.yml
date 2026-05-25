@@ -42,17 +42,21 @@ saasstarter:
   rate-limit:
     path-patterns:
       - /webhooks/**
+  billing:
+    api-key: ${STRIPE_API_KEY}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+    success-url: ${APP_BASE_URL:http://localhost:8080}/billing?success=true
+    cancel-url: ${APP_BASE_URL:http://localhost:8080}/billing
+    portal-return-url: ${APP_BASE_URL:http://localhost:8080}/billing
+    plan-prices:
+      STARTER: ${STRIPE_PRICE_STARTER}
+      PRO: ${STRIPE_PRICE_PRO}
+      # ENTERPRISE not currently sold; uncomment when ready
+      # ENTERPRISE: ${STRIPE_PRICE_ENTERPRISE}
 
 auth:
   jwks-url: ${AUTH_JWKS_URL}
   issuer: ${AUTH_ISSUER}
-
-stripe:
-  api-key: ${STRIPE_API_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
-  price-id:
-    starter: ${STRIPE_PRICE_STARTER}
-    pro: ${STRIPE_PRICE_PRO}
 
 resend:
   api-key: ${RESEND_API_KEY}

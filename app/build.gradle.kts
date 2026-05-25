@@ -37,7 +37,7 @@ dependencies {
     implementation(libs.jobrunr.spring)
 
     // ── External services ────────────────────────────────────────────────────
-    implementation(libs.stripe)
+    // stripe is inherited transitively from kotlin-saas-starter (api dependency)
     implementation(libs.resend)
     implementation(libs.sentry)
 
@@ -70,8 +70,24 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.SECONDS)
 }
 
-tasks.register<Test>("unitTest")           { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
-tasks.register<Test>("integrationTest")    { useJUnitPlatform { includeTags("integration") } }
-tasks.register<Test>("e2eTest")            { useJUnitPlatform { includeTags("e2e") } }
-tasks.register<Test>("architectureTest")   { useJUnitPlatform { includeTags("architecture") } }
-tasks.test                                 { useJUnitPlatform { excludeTags("integration", "e2e") } }
+tasks.register<Test>("unitTest") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { excludeTags("integration", "e2e", "architecture") }
+}
+tasks.register<Test>("integrationTest") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("integration") }
+}
+tasks.register<Test>("e2eTest") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("e2e") }
+}
+tasks.register<Test>("architectureTest") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform { includeTags("architecture") }
+}
+tasks.test { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }

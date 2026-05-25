@@ -12,12 +12,16 @@ auth:
   jwks-url: https://test.clerk.accounts.dev/.well-known/jwks.json
   issuer: https://test.clerk.accounts.dev
 
-stripe:
-  api-key: sk_test_dummy
-  webhook-secret: whsec_dummy
-  price-id:
-    starter: price_test_starter
-    pro: price_test_pro
+saasstarter:
+  billing:
+    api-key: sk_test_dummy_for_tests
+    webhook-secret: whsec_dummy
+    success-url: http://localhost:8080/billing?success=true
+    cancel-url: http://localhost:8080/billing
+    portal-return-url: http://localhost:8080/billing
+    plan-prices:
+      STARTER: price_test_starter
+      PRO: price_test_pro
 
 resend:
   api-key: re_test_dummy

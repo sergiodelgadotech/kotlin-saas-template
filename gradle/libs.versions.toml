@@ -1,7 +1,7 @@
 [versions]
 kotlin-saas-starter = "0.6.0-SNAPSHOT"
 kotlin            = "2.3.21"
-spring-boot       = "3.4.1"
+spring-boot       = "3.5.14"
 spring-dep        = "1.1.7"
 flyway            = "10.20.1"
 testcontainers    = "1.20.4"

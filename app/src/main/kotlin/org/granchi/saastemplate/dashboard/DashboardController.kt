@@ -1,6 +1,6 @@
 package org.granchi.saastemplate.dashboard
 
-import org.granchi.saastemplate.billing.BillingService
+import org.granchi.saasstarter.billing.BillingService
 import org.granchi.saasstarter.organization.OrganizationService
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller

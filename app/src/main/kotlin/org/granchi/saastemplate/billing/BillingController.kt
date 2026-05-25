@@ -2,7 +2,10 @@ package org.granchi.saastemplate.billing
 
 import com.stripe.exception.SignatureVerificationException
 import com.stripe.net.Webhook
-import org.springframework.beans.factory.annotation.Value
+import org.granchi.saasstarter.autoconfigure.SaasStarterProperties
+import org.granchi.saasstarter.billing.BillingService
+import org.granchi.saasstarter.billing.DefaultBillingPlan
+import org.granchi.saasstarter.billing.StripeWebhookHandler
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -16,18 +19,18 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/webhooks/stripe")
-class StripeWebhookController(private val webhookHandler: StripeWebhookHandler) {
-
-    @Value("\${stripe.webhook-secret}")
-    private lateinit var webhookSecret: String
+class StripeWebhookController(
+    private val webhookHandler: StripeWebhookHandler,
+    private val properties: SaasStarterProperties,
+) {
 
     @PostMapping
     fun handle(
         @RequestBody payload: String,
-        @RequestHeader("Stripe-Signature") signature: String
+        @RequestHeader("Stripe-Signature") signature: String,
     ): ResponseEntity<Unit> {
         val event = try {
-            Webhook.constructEvent(payload, signature, webhookSecret)
+            Webhook.constructEvent(payload, signature, properties.billing.webhookSecret)
         } catch (e: SignatureVerificationException) {
             return ResponseEntity.badRequest().build()
         }
@@ -47,7 +50,7 @@ class BillingController(private val billingService: BillingService) {
     }
 
     @PostMapping("/checkout")
-    fun checkout(@RequestParam plan: Subscription.Plan): String {
+    fun checkout(@RequestParam plan: DefaultBillingPlan): String {
         val url = billingService.createCheckoutSession(plan)
         return "redirect:$url"
     }
