@@ -20,6 +20,7 @@ dependencies {
 
     // ── Spring Boot ──────────────────────────────────────────────────────────
     implementation(libs.spring.boot.web)
+    implementation(libs.spring.boot.actuator)
     implementation(libs.spring.boot.thymeleaf)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.data.jdbc)
@@ -83,19 +84,20 @@ tasks.register<Test>("unitTest") {
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform { excludeTags("integration", "e2e", "architecture") }
 }
-tasks.register<Test>("integrationTest") {
+val integrationTest = tasks.register<Test>("integrationTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform { includeTags("integration") }
 }
-tasks.register<Test>("e2eTest") {
+val e2eTest = tasks.register<Test>("e2eTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform { includeTags("e2e") }
 }
-tasks.register<Test>("architectureTest") {
+val architectureTest = tasks.register<Test>("architectureTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform { includeTags("architecture") }
 }
 tasks.test { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
+tasks.check { dependsOn(integrationTest, e2eTest, architectureTest) }
