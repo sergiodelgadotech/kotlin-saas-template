@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Validation Error</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-lg mx-auto mt-12">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-warning">422 — Validation Error</h1>
+                <ul class="mt-4 list-disc list-inside text-sm" th:if="${errors}">
+                    <li th:each="err : ${errors}" th:text="${err}"></li>
+                </ul>
+                <div class="card-actions mt-4">
+                    <a href="javascript:history.back()" class="btn btn-sm">Go back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

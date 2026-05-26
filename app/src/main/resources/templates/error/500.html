@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Server Error</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-lg mx-auto mt-12">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-error">500 — Server Error</h1>
+                <p class="mt-2 text-sm text-base-content/70">An unexpected error occurred. Please try again later.</p>
+                <div class="card-actions mt-4">
+                    <a href="/dashboard" class="btn btn-sm btn-primary">Go to dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

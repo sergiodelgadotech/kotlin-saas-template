@@ -8,11 +8,12 @@ spring:
   thymeleaf:
     cache: false
 
-auth:
-  # Zitadel JWKS: https://<your-zitadel-domain>/oauth/v2/keys
-  jwks-url: http://localhost:8089/oauth/v2/keys
-  # Zitadel issuer — matches the domain Zitadel runs on
-  issuer: http://localhost:8089
+saasstarter:
+  security:
+    # Zitadel JWKS: https://<your-zitadel-domain>/oauth/v2/keys
+    jwks-url: http://localhost:8089/oauth/v2/keys
+    # Zitadel issuer — matches the domain Zitadel runs on
+    issuer: http://localhost:8089
 
 stripe:
   api-key: sk_test_REPLACE_ME

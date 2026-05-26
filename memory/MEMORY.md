@@ -3,3 +3,4 @@
 - [Check off plan-issue checkboxes as substeps complete](feedback_plan_issue_checkboxes.md) — tick `- [ ]` → `- [x]` in the plan issue's body as substeps land, not just at task boundaries
 - [Trunk-based development — commit on main](feedback_trunk_based_development.md) — both repos commit directly to main; skip feature branches and worktrees
 - [Prefer @ServiceConnection over @DynamicPropertySource](feedback_serviceconnection_over_dynamicpropertysource.md) — always use @ServiceConnection for Testcontainers wiring in Spring Boot tests
+- [Run ./gradlew check at end of ticket](feedback_run_check_at_end.md) — use `check` as final verification; note integrationTest/architectureTest not yet wired into check

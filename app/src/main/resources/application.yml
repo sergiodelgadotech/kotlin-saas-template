@@ -53,10 +53,9 @@ saasstarter:
       PRO: ${STRIPE_PRICE_PRO}
       # ENTERPRISE not currently sold; uncomment when ready
       # ENTERPRISE: ${STRIPE_PRICE_ENTERPRISE}
-
-auth:
-  jwks-url: ${AUTH_JWKS_URL}
-  issuer: ${AUTH_ISSUER}
+  security:
+    jwks-url: ${AUTH_JWKS_URL:}
+    issuer: ${AUTH_ISSUER:}
 
 resend:
   api-key: ${RESEND_API_KEY}
