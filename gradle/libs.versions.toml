@@ -47,7 +47,7 @@ testcontainers-junit    = { module = "org.testcontainers:junit-jupiter", version
 testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
 playwright              = { module = "com.microsoft.playwright:playwright", version.ref = "playwright" }
 konsist                 = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
-kotlin-saas-starter     = { module = "org.granchi:kotlin-saas-starter", version.ref = "kotlin-saas-starter" }
+kotlin-saas-starter     = { module = "tech.sergiodelgado:kotlin-saas-starter", version.ref = "kotlin-saas-starter" }
 konform                 = { module = "io.konform:konform", version.ref = "konform" }
 jobrunr-spring          = { module = "org.jobrunr:jobrunr-spring-boot-3-starter", version.ref = "jobrunr" }
 asm                     = { module = "org.ow2.asm:asm", version.ref = "asm" }

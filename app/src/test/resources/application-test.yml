@@ -33,7 +33,7 @@ app:
 
 logging:
   level:
-    org.granchi.saastemplate: WARN
+    tech.sergiodelgado.saastemplate: WARN
 
 org:
   jobrunr:
