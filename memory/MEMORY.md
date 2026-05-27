@@ -4,3 +4,5 @@
 - [Trunk-based development — commit on main](feedback_trunk_based_development.md) — both repos commit directly to main; skip feature branches and worktrees
 - [Prefer @ServiceConnection over @DynamicPropertySource](feedback_serviceconnection_over_dynamicpropertysource.md) — always use @ServiceConnection for Testcontainers wiring in Spring Boot tests
 - [Run ./gradlew check at end of ticket](feedback_run_check_at_end.md) — use `check` as final verification; note integrationTest/architectureTest not yet wired into check
+- [Commit type for CI work](feedback_commit_type_ci_work.md) — Use ci: or chore: for CI commits — never feat(ci): or fix(ci): which pollute the changelog
+- [Commit type for runtime infra swaps](feedback_commit_type_production_infra.md) — Use perf: for performance-motivated runtime swaps (e.g. Tomcat → Jetty); not feat: or chore:

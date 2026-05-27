@@ -19,7 +19,10 @@ dependencies {
     implementation(libs.kotlin.saas.starter)
 
     // ── Spring Boot ──────────────────────────────────────────────────────────
-    implementation(libs.spring.boot.web)
+    implementation(libs.spring.boot.web) {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
+    implementation(libs.spring.boot.jetty)
     implementation(libs.spring.boot.actuator)
     implementation(libs.spring.boot.thymeleaf)
     implementation(libs.spring.boot.security)

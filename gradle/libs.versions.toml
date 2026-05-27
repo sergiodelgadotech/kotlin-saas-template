@@ -23,6 +23,7 @@ thymeleaf-layout  = "3.3.0"
 
 [libraries]
 spring-boot-web         = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-jetty       = { module = "org.springframework.boot:spring-boot-starter-jetty" }
 spring-boot-actuator    = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-thymeleaf   = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-boot-security    = { module = "org.springframework.boot:spring-boot-starter-security" }
