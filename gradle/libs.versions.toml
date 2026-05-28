@@ -14,8 +14,9 @@ konform              = "0.9.0"
 konsist           = "0.16.1"
 strikt            = "0.35.1"
 mockk             = "1.14.9"
-auth0-jwt         = "4.4.0"
-auth0-jwks        = "0.22.1"
+auth0-jwt                 = "4.4.0"
+auth0-jwks                = "0.22.1"
+dependency-license-report = "3.1.2"
 stripe            = "32.1.0"
 resend            = "3.2.0"
 sentry            = "7.18.0"
@@ -59,7 +60,8 @@ strikt-core             = { module = "io.strikt:strikt-core", version.ref = "str
 mockk                   = { module = "io.mockk:mockk", version.ref = "mockk" }
 
 [plugins]
-kotlin-jvm    = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
-spring-boot   = { id = "org.springframework.boot", version.ref = "spring-boot" }
-spring-dep    = { id = "io.spring.dependency-management", version.ref = "spring-dep" }
+kotlin-jvm                = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring             = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+spring-boot               = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dep                = { id = "io.spring.dependency-management", version.ref = "spring-dep" }
+dependency-license-report = { id = "com.github.jk1.dependency-license-report", version.ref = "dependency-license-report" }

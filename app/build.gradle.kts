@@ -1,10 +1,12 @@
 import java.util.concurrent.TimeUnit
+import com.github.jk1.license.render.JsonReportRenderer
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dep)
+    alias(libs.plugins.dependency.license.report)
 }
 
 kotlin {
@@ -12,6 +14,11 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll("-Xjsr305=strict")
     }
+}
+
+licenseReport {
+    configurations = arrayOf("runtimeClasspath")
+    renderers = arrayOf(JsonReportRenderer("licenses.json"))
 }
 
 dependencies {
