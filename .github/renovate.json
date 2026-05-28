@@ -10,8 +10,9 @@
   "automerge": false,
   "packageRules": [
     {
-      "description": "kotlin-saas-starter always gets a dedicated PR",
+      "description": "kotlin-saas-starter always gets a dedicated PR; lives on GitHub Packages not Maven Central",
       "matchPackageNames": ["tech.sergiodelgado:kotlin-saas-starter"],
+      "registryUrls": ["https://maven.pkg.github.com/sergiodelgadotech/kotlin-saas-starter"],
       "groupName": null,
       "prTitle": "chore(deps): bump kotlin-saas-starter to {{newVersion}}"
     },
@@ -59,8 +60,14 @@
       "automerge": false
     },
     {
-      "description": "Zitadel is pinned to :latest — disable until properly versioned (see issue)",
+      "description": "Zitadel is pinned to :latest — disable until properly versioned (see issue #28)",
       "matchPackageNames": ["ghcr.io/zitadel/zitadel"],
+      "enabled": false
+    },
+    {
+      "description": "Railway Terraform provider is not published to the Terraform registry — skip",
+      "matchManagers": ["terraform"],
+      "matchPackageNames": ["terraform-community-modules/railway"],
       "enabled": false
     }
   ]
