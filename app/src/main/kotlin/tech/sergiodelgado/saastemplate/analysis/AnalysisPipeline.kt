@@ -135,11 +135,13 @@ class AnalysisPipeline(
     private fun fitOls(df: DataFrame<*>): smile.regression.LinearModel? = try {
         // X = time index (0, 1, 2, ...), Y = avg_price
         val n = df.rowsCount()
-        val x = Array(n) { i -> doubleArrayOf(i.toDouble()) }
+        val xData = DoubleArray(n) { i -> i.toDouble() }
         val y = df["avg_price"].toList().map { it as Double }.toDoubleArray()
 
-        val smileDF = smile.data.DataFrame.of(x, "period")
-            .merge(smile.data.vector.DoubleVector.of("avg_price", y))
+        val smileDF = smile.data.DataFrame(
+            smile.data.vector.DoubleVector("period", xData),
+            smile.data.vector.DoubleVector("avg_price", y)
+        )
 
         OLS.fit(Formula.lhs("avg_price"), smileDF)
     } catch (e: Exception) {
