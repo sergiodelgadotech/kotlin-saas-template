@@ -18,7 +18,7 @@ auth0-jwt                 = "4.5.2"
 auth0-jwks                = "0.24.1"
 dependency-license-report = "3.1.2"
 stripe            = "32.1.0"
-resend            = "3.2.0"
+resend            = "4.13.0"
 sentry            = "7.22.6"
 thymeleaf-layout  = "4.0.1"
 
