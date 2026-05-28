@@ -31,3 +31,7 @@ web/assets/css/output.css
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+
+# Claude Code — ephemeral files
+.claude/scheduled_tasks.lock
+.claude/com/
