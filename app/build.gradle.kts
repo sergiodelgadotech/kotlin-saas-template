@@ -111,3 +111,48 @@ val architectureTest = tasks.register<Test>("architectureTest") {
 }
 tasks.test { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
 tasks.check { dependsOn(integrationTest, e2eTest, architectureTest) }
+
+// ── NOTICE generation ─────────────────────────────────────────────────────────
+tasks.register("generateNotice") {
+    dependsOn("generateLicenseReport")
+
+    val reportFile = layout.buildDirectory.file("reports/dependency-license/licenses.json")
+    inputs.file(reportFile)
+    outputs.file(rootProject.file("NOTICE"))
+
+    doLast {
+        @Suppress("UNCHECKED_CAST")
+        val json = groovy.json.JsonSlurper().parse(reportFile.get().asFile) as Map<String, Any?>
+        @Suppress("UNCHECKED_CAST")
+        val deps = (json["dependencies"] as? List<Map<String, Any?>>).orEmpty()
+
+        val content = buildString {
+            appendLine("kotlin-saas-template")
+            appendLine("Copyright (c) 2026 Sergio Delgado")
+            appendLine()
+            appendLine("This product includes the following third-party components:")
+            deps.sortedBy { it["moduleName"] as? String ?: "" }.forEach { dep ->
+                val name = dep["moduleName"] as? String ?: run {
+                    logger.warn("generateNotice: skipping dependency with no moduleName: $dep")
+                    return@forEach
+                }
+                val version = dep["moduleVersion"] as? String ?: ""
+                val license = dep["moduleLicense"] as? String ?: "Unknown"
+                val url     = dep["moduleLicenseUrl"] as? String
+                appendLine()
+                appendLine("------------------------------------------------------------------------")
+                appendLine("$name:$version")
+                appendLine("License: $license")
+                if (url != null) appendLine(url)
+            }
+            appendLine("------------------------------------------------------------------------")
+        }
+
+        rootProject.file("NOTICE").writeText(content)
+        logger.lifecycle("NOTICE written to ${rootProject.file("NOTICE").absolutePath}")
+    }
+}
+
+tasks.named("build") {
+    dependsOn("generateNotice")
+}

@@ -1,0 +1,1033 @@
+kotlin-saas-template
+Copyright (c) 2026 Sergio Delgado
+
+This product includes the following third-party components:
+
+------------------------------------------------------------------------
+ch.qos.logback:logback-classic:1.5.32
+License: GNU Lesser General Public License
+https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+------------------------------------------------------------------------
+ch.qos.logback:logback-core:1.5.32
+License: GNU Lesser General Public License
+https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+
+------------------------------------------------------------------------
+ch.randelshofer:fastdoubleparser:2.0.1
+License: MIT; link=https://github.com/wrandelshofer/FastDoubleParser/blob/9a3ccae38254c9bf84b5e6a218a47675bf80ed9f/LICENSE
+
+------------------------------------------------------------------------
+com.auth0:java-jwt:4.4.0
+License: The MIT License (MIT)
+https://raw.githubusercontent.com/auth0/java-jwt/master/LICENSE
+
+------------------------------------------------------------------------
+com.auth0:jwks-rsa:0.22.1
+License: The MIT License (MIT)
+https://raw.githubusercontent.com/auth0/jwks-rsa-java/master/LICENSE
+
+------------------------------------------------------------------------
+com.epam:parso:2.0.14
+License: Apache License v2
+http://www.apache.org/licenses/LICENSE-2.0.html
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.core:jackson-annotations:2.21
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.core:jackson-core:2.21.2
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.core:jackson-databind:2.21.2
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.dataformat:jackson-dataformat-toml:2.21.2
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.21.2
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.2
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson.module:jackson-module-parameter-names:2.21.2
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml.jackson:jackson-bom:2.21.2
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.fasterxml:classmate:1.7.3
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.github.haifengl:smile-base:3.1.1
+License: GNU General Public License, Version 3
+https://opensource.org/licenses/GPL-3.0
+
+------------------------------------------------------------------------
+com.github.haifengl:smile-core:3.1.1
+License: GNU General Public License, Version 3
+https://opensource.org/licenses/GPL-3.0
+
+------------------------------------------------------------------------
+com.github.haifengl:smile-kotlin:3.1.1
+License: GNU General Public License, Version 3
+https://opensource.org/licenses/GPL-3.0
+
+------------------------------------------------------------------------
+com.github.haifengl:smile-nlp:3.1.1
+License: GNU General Public License, Version 3
+https://opensource.org/licenses/GPL-3.0
+
+------------------------------------------------------------------------
+com.github.virtuald:curvesapi:1.08
+License: BSD License
+http://opensource.org/licenses/BSD-3-Clause
+
+------------------------------------------------------------------------
+com.google.code.findbugs:jsr305:3.0.2
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.google.code.gson:gson:2.13.2
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.google.errorprone:error_prone_annotations:2.41.0
+License: Apache 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.google.flatbuffers:flatbuffers-java:24.3.25
+License: Apache License V2.0
+https://raw.githubusercontent.com/google/flatbuffers/master/LICENSE
+
+------------------------------------------------------------------------
+com.google.guava:failureaccess:1.0.1
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.google.guava:guava:32.1.1-jre
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.google.guava:guava-parent:32.1.1-jre
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.resend:resend-java:3.2.0
+License: The MIT License
+https://opensource.org/licenses/MIT
+
+------------------------------------------------------------------------
+com.squareup.okhttp3:okhttp:4.11.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.squareup.okio:okio:3.2.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.squareup.okio:okio-jvm:3.2.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.squareup:kotlinpoet:1.18.1
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.squareup:kotlinpoet-jvm:1.18.1
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.stripe:stripe-java:29.1.0
+License: The MIT License
+https://opensource.org/licenses/MIT
+
+------------------------------------------------------------------------
+com.zaxxer:HikariCP:6.3.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+com.zaxxer:SparseBitSet:1.3
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+commons-codec:commons-codec:1.18.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+commons-io:commons-io:2.18.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.github.oshai:kotlin-logging:7.0.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.github.oshai:kotlin-logging-jvm:7.0.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.konform:konform:0.9.0
+License: MIT
+https://opensource.org/licenses/MIT
+
+------------------------------------------------------------------------
+io.konform:konform-jvm:0.11.1
+License: MIT
+https://opensource.org/licenses/MIT
+
+------------------------------------------------------------------------
+io.lettuce:lettuce-core:6.6.0.RELEASE
+License: MIT
+https://github.com/redis/lettuce/blob/main/LICENSE
+
+------------------------------------------------------------------------
+io.micrometer:micrometer-commons:1.15.11
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.micrometer:micrometer-core:1.15.11
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.micrometer:micrometer-jakarta9:1.15.11
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.micrometer:micrometer-observation:1.15.11
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.netty:netty-buffer:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-codec:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-common:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-handler:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-resolver:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-transport:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.netty:netty-transport-native-unix-common:4.1.132.Final
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+io.projectreactor:reactor-core:3.7.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+io.sentry:sentry:7.18.0
+License: MIT
+http://www.opensource.org/licenses/mit-license.php
+
+------------------------------------------------------------------------
+io.sentry:sentry-spring-boot-jakarta:7.18.0
+License: MIT
+http://www.opensource.org/licenses/mit-license.php
+
+------------------------------------------------------------------------
+io.sentry:sentry-spring-boot-starter-jakarta:7.18.0
+License: MIT
+http://www.opensource.org/licenses/mit-license.php
+
+------------------------------------------------------------------------
+io.sentry:sentry-spring-jakarta:7.18.0
+License: MIT
+http://www.opensource.org/licenses/mit-license.php
+
+------------------------------------------------------------------------
+jakarta.activation:jakarta.activation-api:2.1.4
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.annotation:jakarta.annotation-api:2.1.1
+License: GPL2 w/ CPE
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.enterprise:jakarta.enterprise.cdi-api:4.0.1
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.enterprise:jakarta.enterprise.lang-model:4.0.1
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.inject:jakarta.inject-api:2.0.1
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+jakarta.interceptor:jakarta.interceptor-api:2.1.0
+License: GPL2 w/ CPE
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.servlet:jakarta.servlet-api:6.0.0
+License: GPL2 w/ CPE
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.transaction:jakarta.transaction-api:2.0.1
+License: GPL2 w/ CPE
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.validation:jakarta.validation-api:3.0.2
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.websocket:jakarta.websocket-api:2.1.1
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.websocket:jakarta.websocket-client-api:2.1.1
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+jakarta.xml.bind:jakarta.xml.bind-api:4.0.4
+License: GNU General Public License, version 2 with the GNU Classpath Exception
+https://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+nz.net.ultraq.groovy:groovy-extensions:2.1.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+nz.net.ultraq.thymeleaf:thymeleaf-expression-processor:3.2.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+ognl:ognl:3.3.4
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.arrow:arrow-format:18.1.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.arrow:arrow-memory-core:18.1.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.arrow:arrow-memory-unsafe:18.1.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.arrow:arrow-vector:18.1.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.commons:commons-collections4:4.4
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.commons:commons-compress:1.27.1
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.commons:commons-csv:1.12.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.commons:commons-lang3:3.17.0
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.commons:commons-math3:3.6.1
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.groovy:groovy:4.0.31
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.groovy:groovy-bom:4.0.31
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.logging.log4j:log4j-api:2.24.3
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.logging.log4j:log4j-to-slf4j:2.24.3
+License: Apache-2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.poi:poi:5.3.0
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.poi:poi-ooxml:5.3.0
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.poi:poi-ooxml-lite:5.3.0
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.tomcat.embed:tomcat-embed-el:10.1.54
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.apache.xmlbeans:xmlbeans:5.2.1
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.attoparser:attoparser:2.0.7.RELEASE
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.bytedeco:arpack-ng:3.9.1-1.5.10
+License: GPLv2 with Classpath exception
+http://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+org.bytedeco:javacpp:1.5.10
+License: GPLv2 with Classpath exception
+http://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+org.bytedeco:openblas:0.3.26-1.5.10
+License: GPLv2 with Classpath exception
+http://www.gnu.org/software/classpath/license.html
+
+------------------------------------------------------------------------
+org.checkerframework:checker-qual:3.52.0
+License: The MIT License
+http://opensource.org/licenses/MIT
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-client:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-common:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-server:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jetty-server:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-servlet:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10:jetty-ee10-annotations:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10:jetty-ee10-plus:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10:jetty-ee10-servlet:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10:jetty-ee10-servlets:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.ee10:jetty-ee10-webapp:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.websocket:jetty-websocket-core-client:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.websocket:jetty-websocket-core-common:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.websocket:jetty-websocket-core-server:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.websocket:jetty-websocket-jetty-api:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty.websocket:jetty-websocket-jetty-common:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-alpn-client:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-client:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-ee:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-http:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-io:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-plus:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-security:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-server:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-session:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-util:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.eclipse.jetty:jetty-xml:12.0.34
+License: EPL-2.0
+https://www.eclipse.org/legal/epl-2.0/
+
+------------------------------------------------------------------------
+org.flywaydb:flyway-core:10.20.1
+License: Apache License, Version 2.0
+https://flywaydb.org/licenses/flyway-oss
+
+------------------------------------------------------------------------
+org.flywaydb:flyway-database-postgresql:10.20.1
+License: Apache License, Version 2.0
+https://flywaydb.org/licenses/flyway-oss
+
+------------------------------------------------------------------------
+org.hdrhistogram:HdrHistogram:2.2.2
+License: Public Domain, per Creative Commons CC0
+http://creativecommons.org/publicdomain/zero/1.0/
+
+------------------------------------------------------------------------
+org.hibernate.validator:hibernate-validator:8.0.3.Final
+License: Apache License 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.javassist:javassist:3.29.0-GA
+License: MPL 1.1
+http://www.mozilla.org/MPL/MPL-1.1.html
+
+------------------------------------------------------------------------
+org.jboss.logging:jboss-logging:3.6.3.Final
+License: Apache License 2.0
+https://repository.jboss.org/licenses/apache-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlin:kotlin-reflect:2.3.21
+License: Apache-2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlin:kotlin-stdlib:2.3.21
+License: Apache-2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlin:kotlin-stdlib-common:2.3.21
+License: Apache-2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.21
+License: Apache-2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.21
+License: Apache-2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe-arrow:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe-core:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe-excel:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe-jdbc:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:dataframe-openapi:0.15.0
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.6.1
+License: The Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jetbrains:annotations:13.0
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.jobrunr:jobrunr:7.5.1
+License: GNU Lesser General Public License v3.0 or later
+https://github.com/jobrunr/jobrunr/blob/master/License.md#lgpl-v3-license
+
+------------------------------------------------------------------------
+org.jobrunr:jobrunr-bom:v7.5.1
+License: GNU Lesser General Public License v3.0 or later
+https://github.com/jobrunr/jobrunr/blob/master/License.md#lgpl-v3-license
+
+------------------------------------------------------------------------
+org.jobrunr:jobrunr-spring-boot-3-starter:7.5.1
+License: GNU Lesser General Public License v3.0 or later
+https://github.com/jobrunr/jobrunr/blob/master/License.md#lgpl-v3-license
+
+------------------------------------------------------------------------
+org.latencyutils:LatencyUtils:2.0.3
+License: Public Domain, per Creative Commons CC0
+http://creativecommons.org/publicdomain/zero/1.0/
+
+------------------------------------------------------------------------
+org.mariadb.jdbc:mariadb-java-client:3.5.8
+License: LGPL-2.1-or-later
+
+
+------------------------------------------------------------------------
+org.ow2.asm:asm:9.8
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.ow2.asm:asm-commons:9.9.1
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.ow2.asm:asm-tree:9.9.1
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.postgresql:postgresql:42.7.10
+License: BSD-2-Clause
+https://jdbc.postgresql.org/about/license.html
+
+------------------------------------------------------------------------
+org.reactivestreams:reactive-streams:1.0.4
+License: MIT-0
+https://spdx.org/licenses/MIT-0.html
+
+------------------------------------------------------------------------
+org.slf4j:jul-to-slf4j:2.0.17
+License: MIT
+https://opensource.org/license/mit
+
+------------------------------------------------------------------------
+org.slf4j:slf4j-api:2.0.17
+License: MIT
+https://opensource.org/license/mit
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-actuator:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-actuator-autoconfigure:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-autoconfigure:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-dependencies:3.4.4
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-actuator:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-data-jdbc:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-data-redis:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-jdbc:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-jetty:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-json:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-logging:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-security:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-thymeleaf:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-validation:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.boot:spring-boot-starter-web:3.5.14
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.data:spring-data-commons:3.5.11
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.data:spring-data-jdbc:3.5.11
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.data:spring-data-keyvalue:3.5.11
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.data:spring-data-redis:3.5.11
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.data:spring-data-relational:3.5.11
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.security:spring-security-config:6.5.10
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.security:spring-security-core:6.5.10
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.security:spring-security-crypto:6.5.10
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.security:spring-security-web:6.5.10
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.session:spring-session-core:3.5.6
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework.session:spring-session-data-redis:3.5.6
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-aop:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-beans:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-context:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-context-support:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-core:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-expression:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-jcl:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-jdbc:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-oxm:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-tx:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-web:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.springframework:spring-webmvc:6.2.18
+License: Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------
+org.thymeleaf:thymeleaf:3.1.5.RELEASE
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.thymeleaf:thymeleaf-spring6:3.1.5.RELEASE
+License: The Apache Software License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.unbescape:unbescape:1.1.6.RELEASE
+License: The Apache Software License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+org.yaml:snakeyaml:2.4
+License: Apache License, Version 2.0
+http://www.apache.org/licenses/LICENSE-2.0.txt
+
+------------------------------------------------------------------------
+redis.clients.authentication:redis-authx-core:0.1.1-beta2
+License: MIT
+https://github.com/redis/redis-authx-core/blob/master/LICENSE
+
+------------------------------------------------------------------------
+tech.sergiodelgado:kotlin-saas-starter:0.5.0
+License: Unknown
+------------------------------------------------------------------------
