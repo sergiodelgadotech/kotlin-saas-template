@@ -184,3 +184,9 @@ Replace all occurrences of `org.granchi.saastemplate` with your own package, and
 | `RESEND_API_KEY` | From Resend dashboard |
 | `SENTRY_DSN` | From Sentry dashboard |
 | `APP_BASE_URL` | e.g. `https://app.yourdomain.com` |
+
+## Third-party notices
+
+`NOTICE` at the repo root lists all runtime dependencies and their licenses.
+It is regenerated automatically on every `./gradlew build`.
+If you update a dependency version, commit the updated `NOTICE` alongside the version bump.
