@@ -20,7 +20,7 @@ dependency-license-report = "3.1.2"
 stripe            = "32.1.0"
 resend            = "3.2.0"
 sentry            = "7.22.6"
-thymeleaf-layout  = "3.4.0"
+thymeleaf-layout  = "4.0.1"
 
 [libraries]
 spring-boot-web         = { module = "org.springframework.boot:spring-boot-starter-web" }
