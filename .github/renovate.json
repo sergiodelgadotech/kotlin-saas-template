@@ -4,17 +4,22 @@
   "timezone": "Europe/Madrid",
   "schedule": ["before 6am"],
   "labels": ["dependencies"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "automerge": false,
   "packageRules": [
     {
       "description": "kotlin-saas-starter always gets a dedicated PR",
-      "matchPackageNames": ["org.granchi:kotlin-saas-starter"],
+      "matchPackageNames": ["tech.sergiodelgado:kotlin-saas-starter"],
+      "groupName": null,
       "prTitle": "chore(deps): bump kotlin-saas-starter to {{newVersion}}"
     },
     {
       "description": "Group non-major Gradle dependency updates",
       "matchManagers": ["gradle", "gradle-wrapper", "gradle-version-catalog"],
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackageNames": ["org.granchi:kotlin-saas-starter"],
+      "excludePackageNames": ["tech.sergiodelgado:kotlin-saas-starter"],
       "groupName": "gradle dependencies (non-major)"
     },
     {
@@ -27,6 +32,7 @@
       "description": "Group non-major Docker image updates",
       "matchManagers": ["docker-compose"],
       "matchUpdateTypes": ["minor", "patch"],
+      "excludePackageNames": ["ghcr.io/zitadel/zitadel"],
       "groupName": "docker images (non-major)"
     },
     {
@@ -44,6 +50,18 @@
       ],
       "matchUpdateTypes": ["major"],
       "groupName": "Spring ecosystem (major)"
+    },
+    {
+      "description": "Security fixes use fix(deps): so they appear in the changelog",
+      "matchCategories": ["security"],
+      "semanticCommitType": "fix",
+      "groupName": null,
+      "automerge": false
+    },
+    {
+      "description": "Zitadel is pinned to :latest — disable until properly versioned (see issue)",
+      "matchPackageNames": ["ghcr.io/zitadel/zitadel"],
+      "enabled": false
     }
   ]
 }
