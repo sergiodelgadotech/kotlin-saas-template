@@ -45,10 +45,10 @@
     },
     {
       "description": "Group Spring ecosystem major updates into one PR",
-      "matchPackagePatterns": [
-        "^org\\.springframework",
-        "^org\\.jobrunr:jobrunr-spring-boot-.*-starter$",
-        "^org\\.jetbrains\\.kotlin"
+      "matchPackageNames": [
+        "/^org\\.springframework/",
+        "/^org\\.jobrunr:jobrunr-spring-boot-.*-starter$/",
+        "/^org\\.jetbrains\\.kotlin/"
       ],
       "matchUpdateTypes": ["major"],
       "groupName": "Spring ecosystem (major)"
