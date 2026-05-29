@@ -21,8 +21,10 @@
       "description": "Group non-major Gradle dependency updates",
       "matchManagers": ["gradle", "gradle-wrapper", "gradle-version-catalog"],
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackageNames": ["tech.sergiodelgado:kotlin-saas-starter"],
-      "groupName": "gradle dependencies (non-major)"
+      "groupName": "gradle dependencies (non-major)",
+      "matchPackageNames": [
+        "!tech.sergiodelgado:kotlin-saas-starter"
+      ]
     },
     {
       "description": "Group non-major GitHub Actions updates",
@@ -34,8 +36,10 @@
       "description": "Group non-major Docker image updates",
       "matchManagers": ["docker-compose"],
       "matchUpdateTypes": ["minor", "patch"],
-      "excludePackageNames": ["ghcr.io/zitadel/zitadel"],
-      "groupName": "docker images (non-major)"
+      "groupName": "docker images (non-major)",
+      "matchPackageNames": [
+        "!ghcr.io/zitadel/zitadel"
+      ]
     },
     {
       "description": "Group non-major Terraform provider updates",
