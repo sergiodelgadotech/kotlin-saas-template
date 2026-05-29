@@ -1,6 +1,7 @@
 [versions]
 kotlin-saas-starter = "0.6.0-SNAPSHOT"
 kotlin            = "2.3.21"
+kover             = "0.9.8"
 spring-boot       = "3.5.14"
 spring-dep        = "1.1.7"
 flyway            = "12.7.0"
@@ -65,3 +66,4 @@ kotlin-spring             = { id = "org.jetbrains.kotlin.plugin.spring", version
 spring-boot               = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-dep                = { id = "io.spring.dependency-management", version.ref = "spring-dep" }
 dependency-license-report = { id = "com.github.jk1.dependency-license-report", version.ref = "dependency-license-report" }
+kover                     = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dep)
     alias(libs.plugins.dependency.license.report)
+    alias(libs.plugins.kover)
 }
 
 kotlin {
@@ -110,7 +111,7 @@ val architectureTest = tasks.register<Test>("architectureTest") {
     useJUnitPlatform { includeTags("architecture") }
 }
 tasks.test { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
-tasks.check { dependsOn(integrationTest, e2eTest, architectureTest) }
+tasks.check { dependsOn(integrationTest, e2eTest, architectureTest, tasks.named("koverVerify")) }
 
 // ── NOTICE generation ─────────────────────────────────────────────────────────
 tasks.register("generateNotice") {
@@ -150,6 +151,18 @@ tasks.register("generateNotice") {
 
         rootProject.file("NOTICE").writeText(content)
         logger.lifecycle("NOTICE written to ${rootProject.file("NOTICE").absolutePath}")
+    }
+}
+
+kover {
+    reports {
+        total {
+            verify {
+                rule {
+                    minBound(80)
+                }
+            }
+        }
     }
 }
 
