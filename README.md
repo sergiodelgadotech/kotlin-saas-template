@@ -169,6 +169,34 @@ Replace all occurrences of `org.granchi.saastemplate` with your own package, and
 - `application.yml` → `spring.application.name`
 - `infra/variables.tf` → `project_name` default
 
+## Observability
+
+Logs, metrics, and traces are shipped via OpenTelemetry to **Grafana Cloud free tier** (10k Prometheus series, 50 GB logs, 50 GB traces, 14-day retention — forever-free).
+
+### Grafana Cloud setup
+
+1. Sign up at [grafana.com](https://grafana.com) and create a stack.
+2. In your stack, go to **Connections → Add new connection → OpenTelemetry (OTLP)**.
+3. Generate an API token and copy the OTLP endpoint URL.
+4. Set two env vars in your Railway deployment:
+
+| Variable | Value |
+|---|---|
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP endpoint from Grafana Cloud (e.g. `https://otlp-gateway-prod-eu-west-0.grafana.net/otlp`) |
+| `OTEL_EXPORTER_OTLP_HEADERS` | `Authorization=Basic <base64(instanceId:token)>` |
+| `APP_ENV` | `production` (switches Logback to JSON output; defaults to `local`) |
+| `OTEL_TRACING_SAMPLING` | Sampling probability `0.0`–`1.0` (defaults to `1.0`) |
+
+Traces, metrics, and structured logs (with `tenant_id`, `correlation_id`, `traceId` fields) will appear in Grafana within ~30 seconds of the first request.
+
+### Alternative backends
+
+The OTLP exporter is backend-agnostic. To switch to Axiom, New Relic, Honeycomb, or a self-hosted collector, change `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS` — no code changes required.
+
+### Production note
+
+`/actuator/prometheus`, `/actuator/info`, and `/actuator/metrics` are permitted without authentication so Grafana Cloud's Prometheus scraper can reach them. In production, restrict these paths to your internal/monitoring network via Railway's private networking or a reverse proxy.
+
 ## Environment variables
 
 | Variable | Description |
@@ -184,6 +212,10 @@ Replace all occurrences of `org.granchi.saastemplate` with your own package, and
 | `RESEND_API_KEY` | From Resend dashboard |
 | `SENTRY_DSN` | From Sentry dashboard |
 | `APP_BASE_URL` | e.g. `https://app.yourdomain.com` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Grafana Cloud OTLP endpoint (or any OTLP-compatible backend) |
+| `OTEL_EXPORTER_OTLP_HEADERS` | Bearer/Basic auth header for the OTLP endpoint |
+| `APP_ENV` | `production` for JSON logs; omit for plain local logs |
+| `OTEL_TRACING_SAMPLING` | Trace sampling probability (default `1.0`) |
 
 ## Third-party notices
 
