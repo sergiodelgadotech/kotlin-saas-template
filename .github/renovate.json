@@ -38,10 +38,7 @@
       "description": "Group non-major Docker image updates",
       "matchManagers": ["docker-compose"],
       "matchUpdateTypes": ["minor", "patch"],
-      "groupName": "docker images (non-major)",
-      "matchPackageNames": [
-        "!ghcr.io/zitadel/zitadel"
-      ]
+      "groupName": "docker images (non-major)"
     },
     {
       "description": "Group non-major Terraform provider updates",
@@ -66,10 +63,5 @@
       "groupName": null,
       "automerge": false
     },
-    {
-      "description": "Zitadel is pinned to :latest — disable until properly versioned (see issue #28)",
-      "matchPackageNames": ["ghcr.io/zitadel/zitadel"],
-      "enabled": false
-    }
   ]
 }
