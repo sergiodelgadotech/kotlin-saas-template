@@ -15,7 +15,9 @@
       "matchPackageNames": ["tech.sergiodelgado:kotlin-saas-starter"],
       "registryUrls": ["https://maven.pkg.github.com/sergiodelgadotech/kotlin-saas-starter"],
       "groupName": null,
-      "prTitle": "chore(deps): bump kotlin-saas-starter to {{newVersion}}"
+      "commitMessageAction": "bump",
+      "commitMessageTopic": "kotlin-saas-starter",
+      "commitMessageExtra": "to {{newVersion}}"
     },
     {
       "description": "Group non-major Gradle dependency updates",
