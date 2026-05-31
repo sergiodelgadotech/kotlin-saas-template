@@ -35,9 +35,8 @@ logging:
   level:
     tech.sergiodelgado.saastemplate: WARN
 
-org:
-  jobrunr:
-    background-job-server:
-      enabled: false
-    dashboard:
-      enabled: false
+jobrunr:
+  background-job-server:
+    enabled: false
+  dashboard:
+    enabled: false

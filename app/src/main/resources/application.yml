@@ -1,4 +1,6 @@
 spring:
+  session:
+    timeout: 24h
   application:
     name: kotlin-saas-template
   datasource:
@@ -68,16 +70,15 @@ sentry:
 app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
 
-org:
-  jobrunr:
-    background-job-server:
-      enabled: true
-      worker-count: 2
-    job-scheduler:
-      enabled: true
-    dashboard:
-      enabled: true
-      port: 8000    # http://localhost:8000 — never expose publicly
+jobrunr:
+  background-job-server:
+    enabled: true
+    worker-count: 2
+  job-scheduler:
+    enabled: true
+  dashboard:
+    enabled: true
+    port: 8000    # http://localhost:8000 — never expose publicly
 
 server:
   port: ${PORT:8080}

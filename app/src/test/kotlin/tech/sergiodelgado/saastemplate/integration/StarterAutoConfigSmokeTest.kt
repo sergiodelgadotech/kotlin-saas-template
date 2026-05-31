@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration as RedisAutoConfiguration
+import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Profile
@@ -42,7 +42,7 @@ class StarterAutoConfigSmokeTest {
             RedisAutoConfiguration::class,
             tech.sergiodelgado.saasstarter.autoconfigure.RedisAutoConfiguration::class,
             tech.sergiodelgado.saasstarter.autoconfigure.SessionAutoConfiguration::class,
-            RedisRepositoriesAutoConfiguration::class,
+            DataRedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
             tech.sergiodelgado.saasstarter.autoconfigure.JobRunrAutoConfiguration::class,
             OrganizationAutoConfiguration::class,

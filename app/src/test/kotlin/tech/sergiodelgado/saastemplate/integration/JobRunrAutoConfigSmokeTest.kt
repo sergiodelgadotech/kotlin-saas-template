@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference
 @Testcontainers
 @SpringBootTest(
     classes = [SaasTemplateApplication::class],
-    properties = ["org.jobrunr.background-job-server.enabled=true"],
+    properties = ["jobrunr.background-job-server.enabled=true"],
 )
 @ActiveProfiles("test")
 class JobRunrAutoConfigSmokeTest {

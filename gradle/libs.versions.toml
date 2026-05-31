@@ -1,15 +1,15 @@
 [versions]
-kotlin-saas-starter = "0.6.0-SNAPSHOT"
+kotlin-saas-starter = "0.7.0-SNAPSHOT"
 kotlin            = "2.3.21"
 kover             = "0.9.8"
-spring-boot       = "3.5.14"
+spring-boot       = "4.0.6"
 spring-dep        = "1.1.7"
 flyway            = "12.7.0"
 testcontainers    = "1.21.4"
 playwright        = "1.60.0"
 smile               = "6.1.0"
 kotlin-dataframe    = "0.15.0"
-jobrunr             = "7.5.3"
+jobrunr             = "8.6.1"
 asm                 = "9.10.1"
 konform              = "0.11.1"
 konsist           = "0.17.3"
@@ -33,6 +33,8 @@ spring-boot-data-jdbc   = { module = "org.springframework.boot:spring-boot-start
 spring-boot-redis       = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
 spring-boot-validation  = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-flyway      = { module = "org.springframework.boot:spring-boot-flyway" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-session-redis    = { module = "org.springframework.session:spring-session-data-redis" }
 thymeleaf-layout        = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
@@ -44,7 +46,7 @@ auth0-jwks              = { module = "com.auth0:jwks-rsa", version.ref = "auth0-
 # Zitadel is self-hosted — no SDK needed, JWT validation via auth0 libs above
 stripe                  = { module = "com.stripe:stripe-java", version.ref = "stripe" }
 resend                  = { module = "com.resend:resend-java", version.ref = "resend" }
-sentry                  = { module = "io.sentry:sentry-spring-boot-starter-jakarta", version.ref = "sentry" }
+sentry                  = { module = "io.sentry:sentry-spring-boot-4-starter", version.ref = "sentry" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 testcontainers-junit    = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainers-postgres = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
@@ -52,7 +54,7 @@ playwright              = { module = "com.microsoft.playwright:playwright", vers
 konsist                 = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 kotlin-saas-starter     = { module = "tech.sergiodelgado:kotlin-saas-starter", version.ref = "kotlin-saas-starter" }
 konform                 = { module = "io.konform:konform", version.ref = "konform" }
-jobrunr-spring          = { module = "org.jobrunr:jobrunr-spring-boot-3-starter", version.ref = "jobrunr" }
+jobrunr-spring          = { module = "org.jobrunr:jobrunr-spring-boot-4-starter", version.ref = "jobrunr" }
 asm                     = { module = "org.ow2.asm:asm", version.ref = "asm" }
 smile-core              = { module = "com.github.haifengl:smile-core", version.ref = "smile" }
 smile-kotlin            = { module = "com.github.haifengl:smile-kotlin", version.ref = "smile" }

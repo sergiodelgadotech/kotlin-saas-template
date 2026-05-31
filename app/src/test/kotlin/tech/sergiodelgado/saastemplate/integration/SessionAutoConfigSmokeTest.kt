@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import tech.sergiodelgado.saasstarter.autoconfigure.JobRunrAutoConfiguration as StarterJobRunrAutoConfiguration
 import org.jobrunr.spring.autoconfigure.JobRunrAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.ApplicationContext
@@ -42,7 +42,7 @@ class SessionAutoConfigSmokeTest {
         exclude = [
             DataSourceAutoConfiguration::class,
             FlywayAutoConfiguration::class,
-            RedisRepositoriesAutoConfiguration::class,
+            DataRedisRepositoriesAutoConfiguration::class,
             JobRunrAutoConfiguration::class,
             StarterJobRunrAutoConfiguration::class,
             OrganizationAutoConfiguration::class,
