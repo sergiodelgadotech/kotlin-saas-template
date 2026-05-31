@@ -48,11 +48,6 @@ class ObservabilityAutoConfigSmokeTest {
     private lateinit var mockMvc: MockMvc
 
     @Test
-    fun `prometheus endpoint is reachable and returns 200`() {
-        mockMvc.get("/actuator/prometheus").andExpect { status { isOk() } }
-    }
-
-    @Test
     fun `prometheus endpoint exposes standard JVM metrics`() {
         val result = mockMvc.get("/actuator/prometheus")
             .andExpect { status { isOk() } }
