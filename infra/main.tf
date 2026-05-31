@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     railway = {
-      source  = "terraform-community-modules/railway"
-      version = "~> 0.3"
+      source  = "terraform-community-providers/railway"
+      version = "~> 0.6"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
