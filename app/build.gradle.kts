@@ -53,6 +53,12 @@ dependencies {
     implementation(libs.resend)
     implementation(libs.sentry)
 
+    // ── Observability ─────────────────────────────────────────────────────────
+    implementation(libs.micrometer.registry.prometheus)
+    implementation(libs.micrometer.tracing.bridge.otel)
+    implementation(libs.opentelemetry.exporter.otlp)
+    implementation(libs.logstash.logback.encoder)
+
     // ── Validation ───────────────────────────────────────────────────────────
     implementation(libs.konform)
 

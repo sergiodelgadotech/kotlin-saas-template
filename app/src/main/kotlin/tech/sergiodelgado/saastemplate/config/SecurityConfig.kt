@@ -21,7 +21,8 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
             auth.requestMatchers(
                 "/", "/pricing", "/docs/**",
                 "/assets/**", "/css/**", "/js/**",
-                "/actuator/health"
+                "/actuator/health", "/actuator/prometheus",
+                "/actuator/info", "/actuator/metrics", "/actuator/metrics/**"
             ).permitAll()
             auth.requestMatchers("/webhooks/**").permitAll()
             auth.anyRequest().authenticated()

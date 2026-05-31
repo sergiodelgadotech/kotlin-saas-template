@@ -22,6 +22,7 @@ stripe            = "32.1.0"
 resend            = "4.13.0"
 sentry            = "8.43.0"
 thymeleaf-layout  = "4.0.1"
+logstash-logback-encoder = "8.0"
 
 [libraries]
 spring-boot-web         = { module = "org.springframework.boot:spring-boot-starter-web" }
@@ -61,6 +62,10 @@ smile-kotlin            = { module = "com.github.haifengl:smile-kotlin", version
 kotlin-dataframe        = { module = "org.jetbrains.kotlinx:dataframe", version.ref = "kotlin-dataframe" }
 strikt-core             = { module = "io.strikt:strikt-core", version.ref = "strikt" }
 mockk                   = { module = "io.mockk:mockk", version.ref = "mockk" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
+micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel" }
+opentelemetry-exporter-otlp    = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+logstash-logback-encoder       = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback-encoder" }
 
 [plugins]
 kotlin-jvm                = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

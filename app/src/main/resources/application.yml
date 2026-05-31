@@ -87,4 +87,17 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
+  tracing:
+    sampling:
+      probability: ${OTEL_TRACING_SAMPLING:1.0}
+  observations:
+    key-values:
+      service: saastemplate
+      env: ${APP_ENV:local}
