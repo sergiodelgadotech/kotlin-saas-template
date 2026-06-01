@@ -51,7 +51,7 @@ resource "grafana_rule_group" "auth" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_auth_jwt_seconds_count{outcome=\"invalid\"}[5m]) > 0.5"
+        expr          = "rate(saasstarter_auth_jwt_seconds_count{outcome=\"invalid\"}[5m])"
       })
     }
     data {
@@ -67,7 +67,7 @@ resource "grafana_rule_group" "auth" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [0.5] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -103,7 +103,7 @@ resource "grafana_rule_group" "auth" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_auth_jwt_seconds_count{outcome=\"expired\"}[5m]) > 1"
+        expr          = "rate(saasstarter_auth_jwt_seconds_count{outcome=\"expired\"}[5m])"
       })
     }
     data {
@@ -119,7 +119,7 @@ resource "grafana_rule_group" "auth" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [1] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -163,7 +163,7 @@ resource "grafana_rule_group" "ratelimit" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_ratelimit_seconds_count{outcome=\"denied\"}[5m]) / rate(saasstarter_ratelimit_seconds_count[5m]) > 0.1"
+        expr          = "rate(saasstarter_ratelimit_seconds_count{outcome=\"denied\"}[5m]) / rate(saasstarter_ratelimit_seconds_count[5m])"
       })
     }
     data {
@@ -179,7 +179,7 @@ resource "grafana_rule_group" "ratelimit" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [0.1] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -223,7 +223,7 @@ resource "grafana_rule_group" "locks" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_lock_seconds_count{outcome=\"error\"}[5m]) > 0"
+        expr          = "rate(saasstarter_lock_seconds_count{outcome=\"error\"}[5m])"
       })
     }
     data {
@@ -275,7 +275,7 @@ resource "grafana_rule_group" "locks" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_lock_seconds_count{outcome=\"contended\"}[5m]) > 0.2"
+        expr          = "rate(saasstarter_lock_seconds_count{outcome=\"contended\"}[5m])"
       })
     }
     data {
@@ -291,7 +291,7 @@ resource "grafana_rule_group" "locks" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [0.2] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -335,7 +335,7 @@ resource "grafana_rule_group" "jobs_webhooks" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_job_seconds_count{error!=\"\"}[5m]) > 0"
+        expr          = "rate(saasstarter_job_seconds_count{error!=\"\"}[5m])"
       })
     }
     data {
@@ -387,7 +387,7 @@ resource "grafana_rule_group" "jobs_webhooks" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(saasstarter_webhook_stripe_seconds_count{outcome=\"error\"}[5m]) > 0"
+        expr          = "rate(saasstarter_webhook_stripe_seconds_count{outcome=\"error\"}[5m])"
       })
     }
     data {
@@ -447,7 +447,7 @@ resource "grafana_rule_group" "http" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m]) / rate(http_server_requests_seconds_count[5m]) > 0.01"
+        expr          = "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m]) / rate(http_server_requests_seconds_count[5m])"
       })
     }
     data {
@@ -463,7 +463,7 @@ resource "grafana_rule_group" "http" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [0.01] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -499,7 +499,7 @@ resource "grafana_rule_group" "http" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m])) > 2"
+        expr          = "histogram_quantile(0.99, rate(http_server_requests_seconds_bucket[5m]))"
       })
     }
     data {
@@ -515,7 +515,7 @@ resource "grafana_rule_group" "http" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [2] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
@@ -559,7 +559,7 @@ resource "grafana_rule_group" "jvm" {
         instant       = true
         intervalMs    = 1000
         maxDataPoints = 43200
-        expr          = "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"} > 0.85"
+        expr          = "jvm_memory_used_bytes{area=\"heap\"} / jvm_memory_max_bytes{area=\"heap\"}"
       })
     }
     data {
@@ -575,7 +575,7 @@ resource "grafana_rule_group" "jvm" {
         type       = "threshold"
         expression = "A"
         conditions = [{
-          evaluator = { type = "gt", params = [0] }
+          evaluator = { type = "gt", params = [0.85] }
           type      = "query"
         }]
         datasource = { type = "__expr__", uid = "__expr__" }
