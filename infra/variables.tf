@@ -30,3 +30,19 @@ variable "cloudflare_pages_domain" {
   description = "Cloudflare Pages domain for the landing site"
   type        = string
 }
+
+variable "grafana_url" {
+  description = "Grafana Cloud stack URL (e.g. https://yourstack.grafana.net)"
+  type        = string
+}
+
+variable "grafana_api_key" {
+  description = "Grafana API key with Editor role"
+  type        = string
+  sensitive   = true
+}
+
+variable "grafana_prometheus_datasource_uid" {
+  description = "UID of the Prometheus datasource in Grafana Cloud (Connections → Data sources → Prometheus → copy from URL)"
+  type        = string
+}

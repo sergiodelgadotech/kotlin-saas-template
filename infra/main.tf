@@ -8,6 +8,10 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "~> 5.0"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 3.0"
+    }
   }
 
   backend "remote" {
@@ -21,6 +25,11 @@ provider "railway" {
 
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
+}
+
+provider "grafana" {
+  url  = var.grafana_url
+  auth = var.grafana_api_key
 }
 
 # Railway project
