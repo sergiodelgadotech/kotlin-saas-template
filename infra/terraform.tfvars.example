@@ -1,0 +1,13 @@
+# Railway
+railway_token      = "rwy_..."
+railway_app_domain = "kotlin-saas-template-production.up.railway.app"
+
+# Cloudflare
+cloudflare_api_token    = "..."
+cloudflare_zone_id      = "..."
+cloudflare_pages_domain = "yourdomain.pages.dev"
+
+# Grafana Cloud  (see README → Observability → Dashboards as code)
+grafana_url                       = "https://yourstack.grafana.net"
+grafana_api_key                   = "glsa_..."
+grafana_prometheus_datasource_uid = "grafanacloud-prom"  # Connections → Data sources → Prometheus → copy UID from URL

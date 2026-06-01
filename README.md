@@ -168,6 +168,7 @@ Replace all occurrences of `org.granchi.saastemplate` with your own package, and
 - `settings.gradle.kts` → `rootProject.name`
 - `application.yml` → `spring.application.name`
 - `infra/variables.tf` → `project_name` default
+- `infra/terraform.tfvars.example` → copy to `infra/terraform.tfvars` and fill in all secrets
 
 ## Observability
 
@@ -196,6 +197,17 @@ The OTLP exporter is backend-agnostic. To switch to Axiom, New Relic, Honeycomb,
 ### Production note
 
 `/actuator/prometheus`, `/actuator/info`, and `/actuator/metrics` are permitted without authentication so Grafana Cloud's Prometheus scraper can reach them. In production, restrict these paths to your internal/monitoring network via Railway's private networking or a reverse proxy.
+
+### Dashboards as code
+
+The starter operational dashboard (four rows: HTTP traffic, auth/rate limiting, jobs/webhooks, infrastructure) is provisioned via the Grafana Terraform provider in `infra/`. To enable it on a fork:
+
+1. Create a Grafana Cloud service-account token with **Editor** role: your stack → Administration → Users and access → Service accounts.
+2. Find your Prometheus datasource UID: Connections → Data sources → click your Prometheus datasource → copy the UID from the URL (`/datasources/edit/<UID>`).
+3. Copy `infra/terraform.tfvars.example` → `infra/terraform.tfvars` (gitignored) and fill in `grafana_url`, `grafana_api_key`, and `grafana_prometheus_datasource_uid` — or set them as workspace variables in Terraform Cloud.
+4. `./gradlew :infra:apply` — the dashboard appears in Grafana within seconds.
+
+The dashboard has a **Tenant** variable at the top. HTTP, auth, rate-limit, job, webhook, and lock panels all filter by it. JVM heap panels are global (heap is process-level, not per-tenant).
 
 ## Environment variables
 
