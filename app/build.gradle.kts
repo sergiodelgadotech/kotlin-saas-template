@@ -49,8 +49,7 @@ dependencies {
     implementation(libs.jobrunr.spring)
 
     // ── External services ────────────────────────────────────────────────────
-    // stripe is inherited transitively from kotlin-saas-starter (api dependency)
-    implementation(libs.resend)
+    // stripe + resend are inherited transitively from kotlin-saas-starter (api dependencies)
     implementation(libs.sentry)
 
     // ── Observability ─────────────────────────────────────────────────────────

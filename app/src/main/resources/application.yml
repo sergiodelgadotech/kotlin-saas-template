@@ -58,9 +58,9 @@ saasstarter:
   security:
     jwks-url: ${AUTH_JWKS_URL:}
     issuer: ${AUTH_ISSUER:}
-
-resend:
-  api-key: ${RESEND_API_KEY}
+  email:
+    api-key: ${RESEND_API_KEY}
+    from-address: ${EMAIL_FROM:no-reply@example.com}
 
 sentry:
   dsn: ${SENTRY_DSN:}

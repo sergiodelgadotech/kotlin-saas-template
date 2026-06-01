@@ -14,6 +14,9 @@ saasstarter:
     jwks-url: http://localhost:8089/oauth/v2/keys
     # Zitadel issuer — matches the domain Zitadel runs on
     issuer: http://localhost:8089
+  email:
+    api-key: re_REPLACE_ME
+    from-address: no-reply@example.com
 
 stripe:
   api-key: sk_test_REPLACE_ME
@@ -21,9 +24,6 @@ stripe:
   price-id:
     starter: price_REPLACE_ME
     pro: price_REPLACE_ME
-
-resend:
-  api-key: re_REPLACE_ME
 
 app:
   base-url: http://localhost:8080

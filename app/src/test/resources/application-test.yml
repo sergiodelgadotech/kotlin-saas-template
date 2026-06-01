@@ -21,9 +21,9 @@ saasstarter:
     plan-prices:
       STARTER: price_test_starter
       PRO: price_test_pro
-
-resend:
-  api-key: re_test_dummy
+  email:
+    api-key: re_test_dummy
+    from-address: no-reply@test.example.com
 
 sentry:
   dsn:
