@@ -11,3 +11,4 @@ cloudflare_pages_domain = "yourdomain.pages.dev"
 grafana_url                       = "https://yourstack.grafana.net"
 grafana_api_key                   = "glsa_..."
 grafana_prometheus_datasource_uid = "grafanacloud-prom"  # Connections → Data sources → Prometheus → copy UID from URL
+alert_email                       = "ops@yourdomain.com"

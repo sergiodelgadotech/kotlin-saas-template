@@ -46,3 +46,8 @@ variable "grafana_prometheus_datasource_uid" {
   description = "UID of the Prometheus datasource in Grafana Cloud (Connections → Data sources → Prometheus → copy from URL)"
   type        = string
 }
+
+variable "alert_email" {
+  description = "Email address to receive Grafana alert notifications"
+  type        = string
+}

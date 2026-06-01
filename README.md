@@ -209,6 +209,26 @@ The starter operational dashboard (four rows: HTTP traffic, auth/rate limiting, 
 
 The dashboard has a **Tenant** variable at the top. HTTP, auth, rate-limit, job, webhook, and lock panels all filter by it. JVM heap panels are global (heap is process-level, not per-tenant).
 
+### Alerts as code
+
+Ten operational alert rules are provisioned via `infra/grafana_alerts.tf` into a **"SaaS Template Alerts"** folder in Grafana. An email contact point is wired to a default notification policy. Rules are organised into six domain groups:
+
+| Group | Rules |
+|---|---|
+| Auth | `HighJwtInvalidRate`, `JwtExpiredSpike` |
+| RateLimit | `RateLimitDenialSpike` |
+| Locks | `LockErrorRate`, `LockContentionHigh` |
+| JobsWebhooks | `JobSchedulerErrors`, `WebhookProcessingErrors` |
+| HTTP | `High5xxRate`, `HighP99Latency` |
+| JVM | `JvmHeapPressure` |
+
+To enable on a fork (requires the same Grafana vars from the Dashboards setup above):
+
+1. Add `alert_email = "ops@yourdomain.com"` to `infra/terraform.tfvars`.
+2. `./gradlew :infra:apply` — the rules and contact point appear in Grafana → Alerting within seconds.
+
+> **Threshold tuning:** The thresholds are conservative starting points. After observing one week of baseline traffic in production, revisit each rule's PromQL `expr` — the rationale is in the comment above every rule in `infra/grafana_alerts.tf`.
+
 ## Environment variables
 
 | Variable | Description |
