@@ -142,10 +142,6 @@ tasks.clean {
     delete(file("src/main/resources/static"))
 }
 
-tasks.bootRun {
-    args("--spring.profiles.active=local")
-}
-
 tasks.register<Test>("unitTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
