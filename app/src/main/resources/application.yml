@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    default: local
   session:
     timeout: 24h
   application:
