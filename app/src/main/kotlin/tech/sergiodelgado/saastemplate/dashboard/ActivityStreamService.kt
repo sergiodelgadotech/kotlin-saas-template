@@ -1,0 +1,47 @@
+package tech.sergiodelgado.saastemplate.dashboard
+
+import org.springframework.http.MediaType
+import org.springframework.stereotype.Service
+import org.springframework.transaction.event.TransactionPhase
+import org.springframework.transaction.event.TransactionalEventListener
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import tech.sergiodelgado.saasstarter.organization.MemberInvitedEvent
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
+
+@Service
+class ActivityStreamService {
+
+    private val emitters = ConcurrentHashMap<UUID, CopyOnWriteArrayList<SseEmitter>>()
+
+    fun register(emitter: SseEmitter) {
+        val orgId = TenantContext.get()
+        val list = emitters.getOrPut(orgId) { CopyOnWriteArrayList() }
+        list.add(emitter)
+        emitter.onCompletion { list.remove(emitter) }
+        emitter.onTimeout { list.remove(emitter) }
+    }
+
+    // Fires only after the transaction commits — guarantees no SSE event is sent
+    // for a member that was never actually persisted (e.g. transaction rolled back).
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun on(event: MemberInvitedEvent) {
+        val list = emitters[event.organizationId] ?: return
+        val message = SseEmitter.event()
+            .data(
+                """<p class="text-sm">${event.invitedExternalUserId} was invited to the organization</p>""",
+                MediaType.TEXT_HTML
+            )
+        val toRemove = mutableListOf<SseEmitter>()
+        list.forEach { emitter ->
+            try {
+                emitter.send(message)
+            } catch (_: Exception) {
+                toRemove.add(emitter)
+            }
+        }
+        list.removeAll(toRemove.toSet())
+    }
+}
