@@ -18,10 +18,11 @@ class ActivityStreamService {
 
     fun register(emitter: SseEmitter) {
         val orgId = TenantContext.get()
-        val list = emitters.getOrPut(orgId) { CopyOnWriteArrayList() }
+        val list = emitters.computeIfAbsent(orgId) { CopyOnWriteArrayList() }
         list.add(emitter)
         emitter.onCompletion { list.remove(emitter) }
         emitter.onTimeout { list.remove(emitter) }
+        emitter.onError { list.remove(emitter) }
     }
 
     // Fires only after the transaction commits — guarantees no SSE event is sent
@@ -42,6 +43,6 @@ class ActivityStreamService {
                 toRemove.add(emitter)
             }
         }
-        list.removeAll(toRemove.toSet())
+        list.removeAll(toRemove)
     }
 }
