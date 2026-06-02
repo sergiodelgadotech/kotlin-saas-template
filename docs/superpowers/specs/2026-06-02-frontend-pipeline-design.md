@@ -44,7 +44,7 @@ app/
 /* app/src/css/app.css */
 @import "tailwindcss";
 @plugin "daisyui";
-@source "../resources/templates/**/*.html";
+@source "../main/resources/templates/**/*.html";
 ```
 
 The `@source` directive tells Tailwind where to scan for class names. The path is relative to `app/src/css/app.css`, so it resolves to `app/src/main/resources/templates/`.
