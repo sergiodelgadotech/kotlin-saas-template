@@ -109,7 +109,9 @@ tasks.register<NpmTask>("buildCss") {
     args.set(listOf("run", "build"))
     inputs.files(
         fileTree("src/css"),
-        fileTree("src/main/resources/templates")
+        fileTree("src/main/resources/templates"),
+        file("package.json"),
+        file("package-lock.json")
     )
     outputs.dir("src/main/resources/static")
 }
