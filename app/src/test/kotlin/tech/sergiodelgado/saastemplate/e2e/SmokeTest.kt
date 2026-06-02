@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
@@ -26,6 +27,9 @@ import strikt.assertions.isTrue
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class SmokeTest {
+
+    @RegisterExtension
+    val tracing = PlaywrightFailureArtifacts()
 
     companion object {
         @Container
@@ -61,6 +65,7 @@ class SmokeTest {
     fun setup() {
         context = browser.newContext()
         page = context.newPage()
+        tracing.bind(context, page)
     }
 
     @AfterEach

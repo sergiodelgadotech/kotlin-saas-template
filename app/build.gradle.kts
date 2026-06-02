@@ -120,6 +120,14 @@ val architectureTest = tasks.register<Test>("architectureTest") {
 tasks.test { useJUnitPlatform { excludeTags("integration", "e2e", "architecture") } }
 tasks.check { dependsOn(integrationTest, e2eTest, architectureTest, tasks.named("koverVerify")) }
 
+tasks.register<JavaExec>("playwrightInstall") {
+    description = "Downloads Playwright browser binaries (Chromium) and system deps via the bundled CLI"
+    group = "verification"
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("com.microsoft.playwright.CLI")
+    args("install", "--with-deps", "chromium")
+}
+
 // ── NOTICE generation ─────────────────────────────────────────────────────────
 tasks.register("generateNotice") {
     dependsOn("generateLicenseReport")
