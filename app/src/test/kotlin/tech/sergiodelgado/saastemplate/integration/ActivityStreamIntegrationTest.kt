@@ -67,7 +67,7 @@ class ActivityStreamIntegrationTest {
         organizationService.inviteMember("invited-user-${System.nanoTime()}")
         TenantContext.clear()
 
-        verify { emitter.send(any<SseEmitter.SseEventBuilder>()) }
+        verify(exactly = 1) { emitter.send(any<SseEmitter.SseEventBuilder>()) }
     }
 
     @Test
