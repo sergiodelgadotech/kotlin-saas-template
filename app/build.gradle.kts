@@ -1,5 +1,6 @@
 import java.util.concurrent.TimeUnit
 import com.github.jk1.license.render.JsonReportRenderer
+import com.github.gradle.node.npm.task.NpmTask
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -8,6 +9,7 @@ plugins {
     alias(libs.plugins.spring.dep)
     alias(libs.plugins.dependency.license.report)
     alias(libs.plugins.kover)
+    alias(libs.plugins.node.gradle)
 }
 
 kotlin {
@@ -95,6 +97,29 @@ configurations.all {
         cacheChangingModulesFor(0, TimeUnit.SECONDS)
         force(libs.asm)
     }
+}
+
+node {
+    version = "22.16.0"
+    download = true
+}
+
+tasks.register<NpmTask>("buildCss") {
+    dependsOn(tasks.npmInstall)
+    args.set(listOf("run", "build"))
+    inputs.files(
+        fileTree("src/css"),
+        fileTree("src/main/resources/templates")
+    )
+    outputs.dir("src/main/resources/static")
+}
+
+tasks.processResources {
+    dependsOn("buildCss")
+}
+
+tasks.clean {
+    delete(file("src/main/resources/static"))
 }
 
 tasks.register<Test>("unitTest") {
