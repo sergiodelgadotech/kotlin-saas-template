@@ -19,6 +19,23 @@ kotlin {
     }
 }
 
+// Explicit repositories needed because the node-gradle plugin registers a project-level
+// ivy repo for Node.js binaries, which (under PREFER_PROJECT mode) would override the
+// settings-level repos. Declaring them here keeps Maven Central and GitHub Packages
+// available alongside the plugin's Node.js repo.
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("https://maven.pkg.github.com/sergiodelgadotech/kotlin-saas-starter")
+        credentials {
+            username = providers.gradleProperty("gpr.user").orNull
+                ?: System.getenv("GITHUB_ACTOR")
+            password = providers.gradleProperty("gpr.token").orNull
+                ?: System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+
 licenseReport {
     configurations = arrayOf("runtimeClasspath")
     renderers = arrayOf(JsonReportRenderer("licenses.json"))
