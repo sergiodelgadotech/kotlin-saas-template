@@ -23,9 +23,10 @@ infra/terraform.tfvars
 .DS_Store
 Thumbs.db
 
-# Node (for Tailwind CLI in web module)
+# Node (for Tailwind CSS pipeline)
 node_modules/
 web/assets/css/output.css
+app/src/main/resources/static/
 
 # Compiled
 *.class
