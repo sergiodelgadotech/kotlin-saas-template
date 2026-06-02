@@ -102,6 +102,7 @@ configurations.all {
 node {
     version = "22.16.0"
     download = true
+    npmInstallCommand = "ci"
 }
 
 tasks.register<NpmTask>("buildCss") {
