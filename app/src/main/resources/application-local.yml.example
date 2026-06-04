@@ -7,28 +7,37 @@ spring:
     password: saastemplate
   thymeleaf:
     cache: false
+  flyway:
+    locations:
+      - classpath:db/migration
+      - classpath:db/migration/saasstarter
+      - classpath:db/migration/local
 
 saasstarter:
   security:
-    # Zitadel JWKS: https://<your-zitadel-domain>/oauth/v2/keys
-    jwks-url: http://localhost:8089/oauth/v2/keys
-    # Zitadel issuer — matches the domain Zitadel runs on
-    issuer: http://localhost:8089
+    # Zitadel is optional locally — LocalDevAuthFilter handles auth when jwks-url is blank.
+    # Uncomment to use real Zitadel auth instead:
+    # jwks-url: http://localhost:8089/oauth/v2/keys
+    # issuer: http://localhost:8089
+    jwks-url:
+    issuer:
   email:
     api-key: re_REPLACE_ME
     from-address: no-reply@example.com
 
-stripe:
-  api-key: sk_test_REPLACE_ME
-  webhook-secret: whsec_REPLACE_ME
-  price-id:
-    starter: price_REPLACE_ME
-    pro: price_REPLACE_ME
+# These match the ${ENV_VAR} placeholders in application.yml.
+# Any non-empty string is enough to let the app start; real values only needed when
+# hitting the billing or email flows.
+STRIPE_API_KEY: sk_test_REPLACE_ME
+STRIPE_WEBHOOK_SECRET: whsec_REPLACE_ME
+STRIPE_PRICE_STARTER: price_REPLACE_ME
+STRIPE_PRICE_PRO: price_REPLACE_ME
+RESEND_API_KEY: re_REPLACE_ME
 
 app:
   base-url: http://localhost:8080
 
 logging:
   level:
-    org.granchi.saastemplate: DEBUG
+    tech.sergiodelgado.saastemplate: DEBUG
     org.springframework.security: DEBUG
