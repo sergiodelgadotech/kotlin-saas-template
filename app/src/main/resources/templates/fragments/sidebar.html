@@ -5,19 +5,19 @@
     <ul class="menu w-full">
         <li>
             <a href="/dashboard"
-               th:classappend="${#httpServletRequest.requestURI == '/dashboard'} ? 'active' : ''">
+               th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI == '/dashboard'} ? 'active' : ''">
                 Dashboard
             </a>
         </li>
         <li>
             <a href="/organization/members"
-               th:classappend="${#httpServletRequest.requestURI.startsWith('/organization')} ? 'active' : ''">
+               th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI.startsWith('/organization')} ? 'active' : ''">
                 Team
             </a>
         </li>
         <li>
             <a href="/billing"
-               th:classappend="${#httpServletRequest.requestURI == '/billing'} ? 'active' : ''">
+               th:classappend="${#httpServletRequest != null and #httpServletRequest.requestURI == '/billing'} ? 'active' : ''">
                 Billing
             </a>
         </li>
