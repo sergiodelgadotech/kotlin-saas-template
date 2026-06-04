@@ -1,6 +1,9 @@
 spring:
   profiles:
     default: local
+  docker:
+    compose:
+      file: ../docker-compose.yml
   session:
     timeout: 24h
   application:
