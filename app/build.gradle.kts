@@ -85,6 +85,9 @@ dependencies {
     implementation(libs.smile.kotlin)
     implementation(libs.kotlin.dataframe)
 
+    // ── Dev tools ────────────────────────────────────────────────────────────
+    developmentOnly(libs.spring.boot.docker.compose)
+
     // ── Tests ────────────────────────────────────────────────────────────────
     testImplementation(libs.spring.boot.test)
     testImplementation(libs.spring.boot.webmvc.test)

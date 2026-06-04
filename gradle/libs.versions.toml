@@ -36,7 +36,8 @@ spring-boot-validation  = { module = "org.springframework.boot:spring-boot-start
 spring-boot-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 spring-boot-flyway      = { module = "org.springframework.boot:spring-boot-flyway" }
-spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-testcontainers   = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-docker-compose   = { module = "org.springframework.boot:spring-boot-docker-compose" }
 spring-session-redis    = { module = "org.springframework.session:spring-session-data-redis" }
 thymeleaf-layout        = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
 flyway-core             = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
