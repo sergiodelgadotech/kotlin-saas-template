@@ -9,8 +9,13 @@
 <div layout:fragment="content">
     <h1 class="text-2xl font-bold mb-8">Billing</h1>
 
+    <!-- No subscription -->
+    <div th:if="${subscription == null}" class="alert alert-info mb-8">
+        <span>No active subscription found. Contact support to get started.</span>
+    </div>
+
     <!-- Current plan -->
-    <div class="card bg-base-100 shadow-sm mb-8">
+    <div th:if="${subscription != null}" class="card bg-base-100 shadow-sm mb-8">
         <div class="card-body">
             <h2 class="card-title">Current Plan</h2>
             <div class="flex items-center gap-4">
@@ -31,7 +36,7 @@
     </div>
 
     <!-- Upgrade options -->
-    <div th:if="${subscription.plan.name() == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div th:if="${subscription != null and subscription.plan.name() == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card bg-base-100 shadow-sm border-2 border-primary">
             <div class="card-body">
                 <h2 class="card-title">Pro</h2>

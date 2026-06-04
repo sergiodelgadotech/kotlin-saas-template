@@ -9,7 +9,7 @@
 <div layout:fragment="content">
     <div class="flex items-center justify-between mb-8">
         <h1 class="text-2xl font-bold" th:text="${organization.name} + ' — Dashboard'">Dashboard</h1>
-        <span class="badge badge-primary" th:text="${subscription.plan}">STARTER</span>
+        <span class="badge badge-primary" th:if="${subscription != null}" th:text="${subscription.plan}">STARTER</span>
     </div>
 
     <!-- Stats — se recargan cada 30s via HTMX -->
