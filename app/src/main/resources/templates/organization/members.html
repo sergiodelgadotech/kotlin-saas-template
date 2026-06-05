@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Team Members</title></head>
+<body>
+<div layout:fragment="content">
+    <h1 class="text-2xl font-bold mb-8">Team Members</h1>
+
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <div th:if="${members.empty}" class="text-base-content/50 py-4">
+                No members yet.
+            </div>
+            <div th:unless="${members.empty}" class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="member : ${members}">
+                            <td th:text="${member.externalUserId}"></td>
+                            <td>
+                                <span class="badge badge-outline" th:text="${member.role}"></span>
+                            </td>
+                            <td th:text="${T(java.time.LocalDate).ofInstant(member.createdAt, T(java.time.ZoneOffset).UTC)}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
