@@ -21,7 +21,7 @@
             <div class="flex items-center gap-4">
                 <span class="text-3xl font-bold" th:text="${subscription.plan}">STARTER</span>
                 <span class="badge"
-                      th:classappend="${subscription.status.name() == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
+                      th:classappend="${subscription.status == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
                       th:text="${subscription.status}">ACTIVE</span>
             </div>
             <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
@@ -36,7 +36,7 @@
     </div>
 
     <!-- Upgrade options -->
-    <div th:if="${subscription != null and subscription.plan.name() == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div th:if="${subscription != null and subscription.plan == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card bg-base-100 shadow-sm border-2 border-primary">
             <div class="card-body">
                 <h2 class="card-title">Pro</h2>
