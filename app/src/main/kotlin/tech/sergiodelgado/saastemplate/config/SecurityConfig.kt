@@ -35,6 +35,12 @@ class SecurityConfig(
                 auth.requestMatchers("/webhooks/**").permitAll()
                 auth.anyRequest().authenticated()
             }
+            .logout {
+                it.logoutUrl("/sign-out")
+                    .logoutSuccessUrl("/")
+                    .invalidateHttpSession(true)
+                    .deleteCookies("SESSION", "JSESSIONID")
+            }
         jwtAuthFilter?.let { http.addFilterBefore(it, UsernamePasswordAuthenticationFilter::class.java) }
         localDevAuthFilter?.let { http.addFilterBefore(it, UsernamePasswordAuthenticationFilter::class.java) }
         return http.build()
