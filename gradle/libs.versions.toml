@@ -4,7 +4,6 @@ kotlin            = "2.3.21"
 kover             = "0.9.8"
 spring-boot       = "4.0.6"
 spring-dep        = "1.1.7"
-flyway            = "12.7.0"
 testcontainers    = "1.21.4"
 playwright        = "1.60.0"
 smile               = "6.1.0"
@@ -35,13 +34,12 @@ spring-boot-redis       = { module = "org.springframework.boot:spring-boot-start
 spring-boot-validation  = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-test        = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
-spring-boot-flyway      = { module = "org.springframework.boot:spring-boot-flyway" }
+spring-boot-starter-flyway   = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 spring-boot-testcontainers   = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-boot-docker-compose   = { module = "org.springframework.boot:spring-boot-docker-compose" }
 spring-session-redis    = { module = "org.springframework.session:spring-session-data-redis" }
 thymeleaf-layout        = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
-flyway-core             = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
-flyway-postgres         = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+flyway-postgres         = { module = "org.flywaydb:flyway-database-postgresql" }
 postgresql              = { module = "org.postgresql:postgresql" }
 auth0-jwt               = { module = "com.auth0:java-jwt", version.ref = "auth0-jwt" }
 auth0-jwks              = { module = "com.auth0:jwks-rsa", version.ref = "auth0-jwks" }

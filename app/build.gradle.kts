@@ -60,7 +60,7 @@ dependencies {
     implementation(libs.thymeleaf.layout)
 
     // ── Database ─────────────────────────────────────────────────────────────
-    implementation(libs.flyway.core)
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.flyway.postgres)
     implementation(libs.postgresql)
 
@@ -91,7 +91,6 @@ dependencies {
     // ── Tests ────────────────────────────────────────────────────────────────
     testImplementation(libs.spring.boot.test)
     testImplementation(libs.spring.boot.webmvc.test)
-    testImplementation(libs.spring.boot.flyway)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.postgres)
