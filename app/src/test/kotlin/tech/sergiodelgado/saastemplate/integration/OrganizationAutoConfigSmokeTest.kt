@@ -59,6 +59,6 @@ class OrganizationAutoConfigSmokeTest {
         memberRepository.save(Member(organizationId = org.id, externalUserId = "smoke-user"))
 
         val resolvedOrgId = memberRepository.findOrganizationIdByUserId("smoke-user")
-        expectThat(resolvedOrgId).isNotNull().isEqualTo(org.id)
+        expectThat(resolvedOrgId).isNotNull().isEqualTo(org.id.toString())
     }
 }

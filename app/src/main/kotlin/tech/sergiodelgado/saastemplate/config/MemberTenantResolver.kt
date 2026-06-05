@@ -18,5 +18,5 @@ class MemberTenantResolver(
 ) : TenantResolver {
 
     override fun resolveTenantId(userId: String): UUID? =
-        memberRepository.findOrganizationIdByUserId(userId)
+        memberRepository.findOrganizationIdByUserId(userId)?.let { UUID.fromString(it) }
 }
