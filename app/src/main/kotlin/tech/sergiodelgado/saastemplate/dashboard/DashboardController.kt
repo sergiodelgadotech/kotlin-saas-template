@@ -26,6 +26,7 @@ class DashboardController(
     @GetMapping("/stats")
     fun stats(model: Model): String {
         model.addAttribute("organization", organizationService.current())
+        model.addAttribute("subscription", billingService.currentSubscription())
         return "fragments/dashboard-stats"
     }
 

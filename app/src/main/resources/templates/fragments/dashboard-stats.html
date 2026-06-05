@@ -6,7 +6,7 @@
     <div class="stat bg-base-100 rounded-box shadow-sm">
         <div class="stat-title">Organization</div>
         <div class="stat-value text-lg" th:text="${organization.name}">-</div>
-        <div class="stat-desc" th:text="${organization.plan}">starter</div>
+        <div class="stat-desc" th:text="${subscription != null} ? ${subscription.plan} : '-'">-</div>
     </div>
     <!-- Add your domain-specific stats here -->
 </th:block>
