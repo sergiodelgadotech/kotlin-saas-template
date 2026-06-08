@@ -37,11 +37,11 @@ class OrganizationE2eTest : PlaywrightE2eTestBase() {
     }
 
     @Test
-    fun `sign out redirects to root`() {
+    fun `sign out redirects to dashboard`() {
         page.navigate(url("/dashboard"))
         page.locator("[role='button'].avatar").click()
         page.locator("a[href='/sign-out']").click()
 
-        expectThat(page.url()).endsWith("/")
+        expectThat(page.url()).endsWith("/dashboard")
     }
 }
