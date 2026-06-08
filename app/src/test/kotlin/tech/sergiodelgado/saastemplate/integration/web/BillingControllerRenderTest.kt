@@ -57,7 +57,7 @@ class BillingControllerRenderTest {
     @MockkBean(relaxed = true)
     lateinit var billingService: BillingService
 
-    @MockkBean("mockTenantResolver")
+    @MockkBean
     lateinit var tenantResolver: TenantResolver
 
     @BeforeEach

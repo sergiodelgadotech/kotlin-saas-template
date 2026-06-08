@@ -53,7 +53,7 @@ class OrganizationControllerRenderTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
-    @MockkBean("mockTenantResolver")
+    @MockkBean
     lateinit var tenantResolver: TenantResolver
 
     @BeforeEach
