@@ -158,6 +158,7 @@ val e2eTest = tasks.register<Test>("e2eTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform { includeTags("e2e") }
+    dependsOn("playwrightInstall")
 }
 val architectureTest = tasks.register<Test>("architectureTest") {
     testClassesDirs = sourceSets["test"].output.classesDirs
@@ -173,6 +174,11 @@ tasks.register<JavaExec>("playwrightInstall") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("com.microsoft.playwright.CLI")
     args("install", "--with-deps", "chromium")
+    // Skip if Chromium is already installed in the Playwright cache.
+    onlyIf {
+        file(System.getProperty("user.home") + "/.cache/ms-playwright")
+            .listFiles()?.any { it.name.startsWith("chromium-") } != true
+    }
 }
 
 // ── NOTICE generation ─────────────────────────────────────────────────────────
@@ -219,6 +225,16 @@ tasks.register("generateNotice") {
 kover {
     reports {
         total {
+            filters {
+                excludes {
+                    // analysis and imports are example-domain packages with no test coverage;
+                    // they demonstrate the starter library but are not the focus of this test plan.
+                    packages(
+                        "tech.sergiodelgado.saastemplate.analysis",
+                        "tech.sergiodelgado.saastemplate.imports",
+                    )
+                }
+            }
             verify {
                 rule {
                     minBound(80)

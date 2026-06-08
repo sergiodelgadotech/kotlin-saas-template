@@ -8,7 +8,7 @@ class SmokeTest : PlaywrightE2eTestBase() {
 
     @Test
     fun `app responds without server error`() {
-        val response = page.navigate(url("/"))
+        val response = page.navigate(url("/dashboard"))
         expectThat(response!!.ok()).isTrue()
     }
 
