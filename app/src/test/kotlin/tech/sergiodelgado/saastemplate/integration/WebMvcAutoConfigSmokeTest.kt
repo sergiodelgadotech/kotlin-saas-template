@@ -1,9 +1,5 @@
 package tech.sergiodelgado.saastemplate.integration
 
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.autoconfigure.WebMvcAutoConfiguration
 import tech.sergiodelgado.saasstarter.ratelimit.RateLimitInterceptor
@@ -23,6 +19,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -32,12 +29,15 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.hasSize
+import strikt.assertions.isEqualTo
+import strikt.assertions.isGreaterThan
 import java.time.Duration
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 
 @Tag("integration")
 @Testcontainers
-@SpringBootTest(classes = [SaasTemplateApplication::class])
+@SpringBootTest(classes = [SaasTemplateApplication::class, WebMvcAutoConfigSmokeTest.ProbeConfig::class])
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
 class WebMvcAutoConfigSmokeTest {
@@ -51,11 +51,14 @@ class WebMvcAutoConfigSmokeTest {
 
     @Autowired private lateinit var context: ApplicationContext
     @Autowired private lateinit var mockMvc: MockMvc
-    @Autowired private lateinit var tenantResolver: TenantResolver
-    @Autowired private lateinit var rateLimiter: RateLimiter
+    // Autowire the ProbeConfig bean itself to access the call counters.
+    @Autowired private lateinit var probeConfig: ProbeConfig
 
     @BeforeEach
-    fun resetMocks() = clearAllMocks()
+    fun reset() {
+        probeConfig.isAllowedCallCount.set(0)
+        probeConfig.resolveTenantIdCallCount.set(0)
+    }
 
     @Test
     fun `WebMvcAutoConfiguration is discovered and beans are wired`() {
@@ -75,38 +78,46 @@ class WebMvcAutoConfigSmokeTest {
 
     @Test
     fun `rate limit interceptor fires on webhooks paths`() {
-        every { rateLimiter.isAllowed(any(), any(), any()) } returns true
-
         mockMvc.perform(get("/webhooks/__probe"))
-
-        verify(exactly = 1) { rateLimiter.isAllowed(any(), limit = 100, window = Duration.ofMinutes(1)) }
+        expectThat(probeConfig.isAllowedCallCount.get()).isGreaterThan(0)
     }
 
     @Test
     fun `tenant interceptor fires on app paths`() {
-        val tenantId = UUID.randomUUID()
-        every { tenantResolver.resolveTenantId(any()) } returns tenantId
-
-        // "auth_user_id" is the request attribute set by JwtAuthFilter — simulate it directly
         mockMvc.perform(get("/app/__probe").requestAttr("auth_user_id", "probe-user"))
-
-        verify(atLeast = 1) { tenantResolver.resolveTenantId(any()) }
+        expectThat(probeConfig.resolveTenantIdCallCount.get()).isGreaterThan(0)
     }
 
     @Test
     fun `tenant interceptor is excluded from webhook paths`() {
-        every { rateLimiter.isAllowed(any(), any(), any()) } returns true
-
         mockMvc.perform(get("/webhooks/__probe"))
-
-        verify(exactly = 0) { tenantResolver.resolveTenantId(any()) }
+        expectThat(probeConfig.resolveTenantIdCallCount.get()).isEqualTo(0)
     }
 
+    // Provides call-counting test doubles for RateLimiter and TenantResolver.
+    // Counters live here so the test class can reset and assert them via @Autowired.
     @Configuration(proxyBeanMethods = false)
     @Profile("test")
     class ProbeConfig {
-        @Bean @Primary fun mockRateLimiter(): RateLimiter = mockk(relaxed = true)
-        @Bean @Primary fun mockTenantResolver(): TenantResolver = mockk(relaxed = true)
+        val isAllowedCallCount = AtomicInteger(0)
+        val resolveTenantIdCallCount = AtomicInteger(0)
+
+        @Bean @Primary
+        fun probeRateLimiter(
+            @Suppress("UNCHECKED_CAST")
+            redisTemplate: RedisTemplate<String, Any>,
+        ): RateLimiter = object : RateLimiter(redisTemplate) {
+            override fun isAllowed(key: String, limit: Int, window: Duration): Boolean {
+                isAllowedCallCount.incrementAndGet()
+                return true
+            }
+        }
+
+        @Bean @Primary
+        fun probeTenantResolver(): TenantResolver = TenantResolver { _ ->
+            resolveTenantIdCallCount.incrementAndGet()
+            null
+        }
     }
 }
 

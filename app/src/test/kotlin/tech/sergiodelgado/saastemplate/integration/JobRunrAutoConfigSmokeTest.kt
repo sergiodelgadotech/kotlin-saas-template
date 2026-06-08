@@ -8,10 +8,9 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.context.TestComponent
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.context.ApplicationContext
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Component
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
@@ -30,7 +29,9 @@ import java.util.concurrent.atomic.AtomicReference
 @Tag("integration")
 @Testcontainers
 @SpringBootTest(
-    classes = [SaasTemplateApplication::class],
+    // SmokeJobCapture is @TestComponent so it is excluded from the general component scan;
+    // list it here so Jobrunr's JobActivator can resolve it from this context.
+    classes = [SaasTemplateApplication::class, SmokeJobCapture::class],
     properties = ["jobrunr.background-job-server.enabled=true"],
 )
 @ActiveProfiles("test")
@@ -74,10 +75,9 @@ class JobRunrAutoConfigSmokeTest {
 }
 
 // A Spring-managed job target so that JobRunr's JobActivator can resolve it
-// from the ApplicationContext. Only active in the test profile to avoid
-// polluting the production context.
-@Component
-@Profile("test")
+// from the ApplicationContext. @TestComponent keeps it out of the general component
+// scan so it only appears in contexts that explicitly list it.
+@TestComponent
 class SmokeJobCapture(private val jobSchedulerService: JobSchedulerService) {
 
     val capturedTenantId = AtomicReference<UUID?>()

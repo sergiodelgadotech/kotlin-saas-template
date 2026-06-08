@@ -2,6 +2,11 @@ spring:
   datasource:
     url: jdbc:tc:postgresql:16-alpine:///saastemplate_test
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    hikari:
+      # Limit pool size so the shared TC postgres container (default max_connections=100)
+      # isn't exhausted when many Spring contexts are alive in the same test JVM.
+      maximum-pool-size: 3
+      minimum-idle: 1
   flyway:
     enabled: true
   data:
