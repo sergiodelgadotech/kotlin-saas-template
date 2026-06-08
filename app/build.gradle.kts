@@ -171,6 +171,7 @@ tasks.check { dependsOn(integrationTest, e2eTest, architectureTest, tasks.named(
 tasks.register<JavaExec>("playwrightInstall") {
     description = "Downloads Playwright browser binaries (Chromium) and system deps via the bundled CLI"
     group = "verification"
+    notCompatibleWithConfigurationCache("onlyIf closure captures a project file reference")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("com.microsoft.playwright.CLI")
     args("install", "--with-deps", "chromium")
@@ -181,8 +182,13 @@ tasks.register<JavaExec>("playwrightInstall") {
     }
 }
 
+tasks.named("generateLicenseReport") {
+    notCompatibleWithConfigurationCache("jk1 license-report plugin serializes a Project reference")
+}
+
 // ── NOTICE generation ─────────────────────────────────────────────────────────
 tasks.register("generateNotice") {
+    notCompatibleWithConfigurationCache("depends on generateLicenseReport which is not configuration-cache compatible")
     dependsOn("generateLicenseReport")
 
     val reportFile = layout.buildDirectory.file("reports/dependency-license/licenses.json")
