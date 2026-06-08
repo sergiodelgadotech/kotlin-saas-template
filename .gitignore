@@ -26,7 +26,8 @@ Thumbs.db
 # Node (for Tailwind CSS pipeline)
 node_modules/
 web/assets/css/output.css
-app/src/main/resources/static/
+app/src/main/resources/static/css/
+app/src/main/resources/static/js/
 
 # Compiled
 *.class
