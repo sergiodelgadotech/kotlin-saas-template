@@ -50,6 +50,7 @@ The quickest way to get a fully-wired environment is to open the project in a de
   | `GITHUB_TOKEN` | Personal access token with `read:packages` scope |
   | `AUTH_JWKS_URL` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089/oauth/v2/keys` |
   | `AUTH_ISSUER` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089` |
+  | `ZITADEL_CLIENT_ID` | Zitadel console → your project → local-dev app → client ID (written to `docker/zitadel-init/.local-client-id` by the seed) |
   | `STRIPE_API_KEY` | Stripe dashboard |
   | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Webhooks |
   | `STRIPE_PRICE_STARTER` | Stripe Price ID for Starter plan |
