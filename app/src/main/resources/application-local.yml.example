@@ -28,6 +28,8 @@ saasstarter:
 # These match the ${ENV_VAR} placeholders in application.yml.
 # Any non-empty string is enough to let the app start; real values only needed when
 # hitting the billing or email flows.
+ZITADEL_CLIENT_ID: local-dev-client   # copy from docker/zitadel-init/.local-client-id after running the seed
+ZITADEL_CLIENT_SECRET:                # leave blank — PKCE is used, no secret needed
 STRIPE_API_KEY: sk_test_REPLACE_ME
 STRIPE_WEBHOOK_SECRET: whsec_REPLACE_ME
 STRIPE_PRICE_STARTER: price_REPLACE_ME

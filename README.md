@@ -229,6 +229,25 @@ To enable on a fork (requires the same Grafana vars from the Dashboards setup ab
 
 > **Threshold tuning:** The thresholds are conservative starting points. After observing one week of baseline traffic in production, revisit each rule's PromQL `expr` — the rationale is in the comment above every rule in `infra/grafana_alerts.tf`.
 
+## Zitadel app registration
+
+### Production
+
+1. Log in to your Zitadel console (`https://your-zitadel-domain/ui/console`).
+2. Create a **project** (e.g. "My SaaS").
+3. Inside the project, add a new **application** of type **Web**, then configure it:
+   - **Auth method:** None (PKCE — no client secret required)
+   - **Redirect URI:** `https://your-app-domain/login/oauth2/code/zitadel`
+   - **Post-logout redirect URI:** `https://your-app-domain/`
+4. Copy the generated **Client ID** to the `ZITADEL_CLIENT_ID` env var. Leave `ZITADEL_CLIENT_SECRET` empty.
+5. Set `AUTH_ISSUER=https://your-zitadel-domain` and `AUTH_JWKS_URL=https://your-zitadel-domain/oauth/v2/keys`.
+
+> **Forgot password?** Since `/sign-in` is an instant redirect to Zitadel's hosted login page, the "Forgot password?" link appears there automatically — no template-side wiring is needed.
+
+### Local development
+
+`zitadel-init` (Task 9, not yet implemented) will automate this step. For now, after `docker compose up -d` and once Zitadel has seeded, copy the client ID written to `docker/zitadel-init/.local-client-id` into `application-local.yml` as `ZITADEL_CLIENT_ID`. Leave `ZITADEL_CLIENT_SECRET` blank (PKCE, no secret).
+
 ## Environment variables
 
 | Variable | Description |
@@ -237,6 +256,9 @@ To enable on a fork (requires the same Grafana vars from the Dashboards setup ab
 | `REDIS_URL` | Set automatically by Railway |
 | `AUTH_JWKS_URL` | From Zitadel admin console |
 | `AUTH_ISSUER` | From Zitadel admin console |
+| `ZITADEL_CLIENT_ID` | OIDC client ID from Zitadel app registration (see above) |
+| `ZITADEL_CLIENT_SECRET` | Leave empty — PKCE is used, no secret needed |
+| `POST_LOGOUT_REDIRECT_URI` | Where to redirect after logout (defaults to `{baseUrl}/`) |
 | `STRIPE_API_KEY` | From Stripe dashboard |
 | `STRIPE_WEBHOOK_SECRET` | From Stripe dashboard → Webhooks |
 | `STRIPE_PRICE_STARTER` | Stripe Price ID for Starter plan |

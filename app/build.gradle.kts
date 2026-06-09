@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.spring.boot.actuator)
     implementation(libs.spring.boot.thymeleaf)
     implementation(libs.spring.boot.security)
+    implementation(libs.spring.boot.oauth2.client)
     implementation(libs.spring.boot.data.jdbc)
     implementation(libs.spring.boot.redis)
     implementation(libs.spring.boot.validation)

@@ -24,6 +24,7 @@ node-gradle              = "7.1.0"
 
 [libraries]
 spring-boot-web         = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 spring-boot-jetty       = { module = "org.springframework.boot:spring-boot-starter-jetty" }
 spring-boot-actuator    = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-thymeleaf   = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
