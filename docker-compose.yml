@@ -33,7 +33,7 @@ services:
   zitadel:
     profiles: [auth]
     image: ghcr.io/zitadel/zitadel:v4.15.1
-    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!" --tlsMode disabled
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: postgres
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
@@ -47,6 +47,7 @@ services:
       ZITADEL_EXTERNALDOMAIN: localhost
       ZITADEL_EXTERNALPORT: 8089
       ZITADEL_EXTERNALIP: 127.0.0.1
+      ZITADEL_MACHINE_KEY_PATH: /zitadel-keys/
     ports:
       - "8089:8080"
     depends_on:
@@ -58,6 +59,27 @@ services:
       timeout: 5s
       retries: 12
       start_period: 60s
+    volumes:
+      - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro
+      - zitadel-init-keys:/zitadel-keys
+
+  zitadel-init:
+    profiles: [auth]
+    image: python:3.13-alpine
+    command: sh -c "pip install --quiet --no-cache-dir requests 2>/dev/null; python /scripts/init.py"
+    environment:
+      ZITADEL_URL: http://zitadel:8080
+      KEY_FILE_PATH: /keys/zitadel-init-sa.json
+      OUTPUT_FILE: /output/.local-client-id
+    volumes:
+      - zitadel-init-keys:/keys:ro
+      - ./docker/zitadel-init/scripts:/scripts:ro
+      - ./docker/zitadel-init:/output
+    depends_on:
+      zitadel:
+        condition: service_healthy
+    restart: "no"
 
 volumes:
   postgres_data:
+  zitadel-init-keys:
