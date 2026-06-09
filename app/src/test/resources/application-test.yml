@@ -15,8 +15,8 @@ spring:
 
 saasstarter:
   security:
-    jwks-url: https://test.clerk.accounts.dev/.well-known/jwks.json
-    issuer: https://test.clerk.accounts.dev
+    jwks-url: http://localhost:8089/oauth/v2/keys
+    issuer: http://localhost:8089
   billing:
     api-key: sk_test_dummy_for_tests
     webhook-secret: whsec_dummy

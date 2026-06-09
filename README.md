@@ -17,7 +17,7 @@ Production-ready template for B2B SaaS products. Kotlin + Spring Boot + Thymelea
 | CSS | Tailwind CSS + DaisyUI |
 | Database | PostgreSQL (Spring Data JDBC + Flyway) |
 | Cache | Redis |
-| Auth | Clerk (JWT validation) |
+| Auth | Zitadel (JWT validation, self-hostable, EU residency) |
 | Payments | Stripe |
 | Email | Resend |
 | Monitoring | Sentry |
@@ -29,7 +29,7 @@ Production-ready template for B2B SaaS products. Kotlin + Spring Boot + Thymelea
 Multi-tenant B2B SaaS with `organization_id` column isolation. Every authenticated request resolves the tenant via `TenantInterceptor` → `TenantContext`. Services and repositories always filter by tenant — never trust the caller.
 
 ```
-ClerkJwtFilter → TenantInterceptor → TenantContext → Service → Repository
+JwtAuthFilter → TenantInterceptor → TenantContext → Service → Repository
 ```
 
 ## Getting started
@@ -100,7 +100,7 @@ cp app/src/main/resources/application-local.yml.example \
    app/src/main/resources/application-local.yml
 ```
 
-Edit `application-local.yml` with your Clerk, Stripe and Resend keys.
+Edit `application-local.yml` with your Zitadel, Stripe and Resend keys.
 
 ### 3. Start local services
 
