@@ -50,7 +50,7 @@ The quickest way to get a fully-wired environment is to open the project in a de
   | `GITHUB_TOKEN` | Personal access token with `read:packages` scope |
   | `AUTH_JWKS_URL` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089/oauth/v2/keys` |
   | `AUTH_ISSUER` | Zitadel admin console. Inside the devcontainer use `host.docker.internal` instead of `localhost`, e.g. `http://host.docker.internal:8089` |
-  | `ZITADEL_CLIENT_ID` | Zitadel console → your project → local-dev app → client ID (written to `docker/zitadel-init/.local-client-id` by the seed) |
+  | `ZITADEL_CLIENT_ID` | Auto-written to `docker/zitadel-init/.local-client.properties` by `zitadel-init` on first `docker compose up -d`; export it only if the devcontainer does not share the host Docker socket |
   | `STRIPE_API_KEY` | Stripe dashboard |
   | `STRIPE_WEBHOOK_SECRET` | Stripe dashboard → Webhooks |
   | `STRIPE_PRICE_STARTER` | Stripe Price ID for Starter plan |
@@ -247,7 +247,7 @@ To enable on a fork (requires the same Grafana vars from the Dashboards setup ab
 
 ### Local development
 
-`zitadel-init` (Task 9, not yet implemented) will automate this step. For now, after `docker compose up -d` and once Zitadel has seeded, copy the client ID written to `docker/zitadel-init/.local-client-id` into `application-local.yml` as `ZITADEL_CLIENT_ID`. Leave `ZITADEL_CLIENT_SECRET` blank (PKCE, no secret).
+Zitadel runs as part of the default `docker compose up -d` stack. On first startup, `zitadel-init` registers the OIDC app and writes `ZITADEL_CLIENT_ID` to `docker/zitadel-init/.local-client.properties`. `application-local.yml` imports that file automatically — no manual copy step required.
 
 ## Environment variables
 

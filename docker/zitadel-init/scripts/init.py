@@ -120,15 +120,19 @@ def main():
 
     if app_resp.get("already_exists"):
         print("  App already exists.")
-        client_id = OUTPUT_FILE.read_text().strip() if OUTPUT_FILE.exists() else None
+        if OUTPUT_FILE.exists():
+            props = dict(line.split("=", 1) for line in OUTPUT_FILE.read_text().splitlines() if "=" in line)
+            client_id = props.get("ZITADEL_CLIENT_ID")
+        else:
+            client_id = None
         if not client_id:
-            print("  ERROR: App exists but no .local-client-id found. Delete the Zitadel volume and re-run.",
+            print("  ERROR: App exists but no .local-client.properties found. Delete the Zitadel volume and re-run.",
                   file=sys.stderr)
             sys.exit(1)
     else:
         client_id = app_resp["clientId"]
         OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        OUTPUT_FILE.write_text(client_id)
+        OUTPUT_FILE.write_text(f"ZITADEL_CLIENT_ID={client_id}\n")
         print(f"  Created app (client ID: {client_id})")
 
     print("Creating test user (test@example.com / Test1234!)...")
@@ -142,7 +146,8 @@ def main():
     print()
     print("=" * 60)
     print(f"ZITADEL_CLIENT_ID={client_id}")
-    print("Copy the above into application-local.yml")
+    print("Written to docker/zitadel-init/.local-client.properties")
+    print("Spring Boot auto-imports it — no manual copy needed.")
     print("=" * 60)
 
 

@@ -26,12 +26,9 @@ services:
       retries: 5
 
   # Zitadel — identity provider
-  # Start with: docker compose --profile auth up -d
   # Admin UI: http://localhost:8089/ui/console
   # Default credentials: zitadel-admin@zitadel.localhost / Password1!
-  # Not started by ./gradlew bootRun — LocalDevAuthFilter handles auth in local profile.
   zitadel:
-    profiles: [auth]
     image: ghcr.io/zitadel/zitadel:v4.15.1
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
@@ -64,13 +61,12 @@ services:
       - zitadel-init-keys:/zitadel-keys
 
   zitadel-init:
-    profiles: [auth]
     image: python:3.13-alpine
     command: python /scripts/init.py
     environment:
       ZITADEL_URL: http://zitadel:8080
       KEY_FILE_PATH: /keys/zitadel-init-sa.json
-      OUTPUT_FILE: /output/.local-client-id
+      OUTPUT_FILE: /output/.local-client.properties
     volumes:
       - zitadel-init-keys:/keys:ro
       - ./docker/zitadel-init/scripts:/scripts:ro
