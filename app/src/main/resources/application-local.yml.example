@@ -15,12 +15,9 @@ spring:
 
 saasstarter:
   security:
-    # Zitadel is optional locally — LocalDevAuthFilter handles auth when jwks-url is blank.
-    # Uncomment to use real Zitadel auth instead:
-    # jwks-url: http://localhost:8089/oauth/v2/keys
-    # issuer: http://localhost:8089
+    # jwks-url is intentionally blank — LocalDevAuthFilter handles auth locally.
+    # JwtAuthFilter only activates when AUTH_JWKS_URL is non-empty.
     jwks-url:
-    issuer:
   email:
     api-key: re_REPLACE_ME
     from-address: no-reply@example.com
@@ -28,8 +25,13 @@ saasstarter:
 # These match the ${ENV_VAR} placeholders in application.yml.
 # Any non-empty string is enough to let the app start; real values only needed when
 # hitting the billing or email flows.
-ZITADEL_CLIENT_ID: local-dev-client   # copy from docker/zitadel-init/.local-client-id after running the seed
-ZITADEL_CLIENT_SECRET:                # leave blank — PKCE is used, no secret needed
+# Zitadel — points at the docker-compose instance (:8089).
+# LocalDevAuthFilter auto-authenticates locally so you never hit /sign-in unless you
+# run `docker compose --profile auth up -d` to test the real OIDC flow.
+AUTH_ISSUER: http://localhost:8089
+AUTH_JWKS_URL: http://localhost:8089/oauth/v2/keys
+ZITADEL_CLIENT_ID: local-dev-client   # written to docker/zitadel-init/.local-client-id by zitadel-init
+ZITADEL_CLIENT_SECRET:                # leave blank — PKCE, no secret needed
 STRIPE_API_KEY: sk_test_REPLACE_ME
 STRIPE_WEBHOOK_SECRET: whsec_REPLACE_ME
 STRIPE_PRICE_STARTER: price_REPLACE_ME
