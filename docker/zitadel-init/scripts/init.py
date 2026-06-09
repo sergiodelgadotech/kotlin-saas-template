@@ -39,16 +39,17 @@ def generate_jwt(key_data: dict) -> str:
     signing_input = f"{header}.{payload}"
     key_path = Path("/tmp/init-sa.pem")
     key_path.write_text(private_key)
-
-    result = subprocess.run(
-        ["openssl", "dgst", "-sha256", "-sign", str(key_path)],
-        input=signing_input.encode(), capture_output=True,
-    )
-    if result.returncode != 0:
-        print(f"ERROR: openssl signing failed: {result.stderr.decode()}", file=sys.stderr)
-        sys.exit(1)
-
-    return f"{signing_input}.{base64.urlsafe_b64encode(result.stdout).rstrip(b'=').decode()}"
+    try:
+        result = subprocess.run(
+            ["openssl", "dgst", "-sha256", "-sign", str(key_path)],
+            input=signing_input.encode(), capture_output=True,
+        )
+        if result.returncode != 0:
+            print(f"ERROR: openssl signing failed: {result.stderr.decode()}", file=sys.stderr)
+            sys.exit(1)
+        return f"{signing_input}.{base64.urlsafe_b64encode(result.stdout).rstrip(b'=').decode()}"
+    finally:
+        key_path.unlink(missing_ok=True)
 
 
 def get_access_token(jwt: str) -> str:
