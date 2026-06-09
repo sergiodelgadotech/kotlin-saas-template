@@ -19,7 +19,7 @@ import tech.sergiodelgado.saastemplate.auth.ZitadelAuthenticationSuccessHandler
 @EnableWebSecurity
 class SecurityConfig(
     @Autowired(required = false) private val jwtAuthFilter: JwtAuthFilter?,
-    @Autowired(required = false) private val localDevAuthFilter: LocalDevAuthFilter?,
+    @Autowired(required = false) private val testAutoAuthFilter: TestAutoAuthFilter?,
     private val zitadelSessionBridgeFilter: ZitadelSessionBridgeFilter,
     private val oidcLogoutSuccessHandler: OidcClientInitiatedLogoutSuccessHandler,
     private val zitadelSuccessHandler: ZitadelAuthenticationSuccessHandler,
@@ -55,17 +55,17 @@ class SecurityConfig(
             }
 
         jwtAuthFilter?.let { http.addFilterBefore(it, UsernamePasswordAuthenticationFilter::class.java) }
-        localDevAuthFilter?.let { http.addFilterBefore(it, UsernamePasswordAuthenticationFilter::class.java) }
+        testAutoAuthFilter?.let { http.addFilterBefore(it, UsernamePasswordAuthenticationFilter::class.java) }
         http.addFilterAfter(zitadelSessionBridgeFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
 
-    // Prevent Spring Boot from auto-registering LocalDevAuthFilter as a plain servlet filter.
+    // Prevent Spring Boot from auto-registering TestAutoAuthFilter as a plain servlet filter.
     // Without this, it runs before Spring Security replaces the SecurityContextHolder, so the
     // authentication it sets gets wiped before the security chain evaluates it.
     @Bean
-    @Profile("local")
-    fun localDevAuthFilterRegistration(filter: LocalDevAuthFilter): FilterRegistrationBean<LocalDevAuthFilter> =
+    @Profile("test")
+    fun testAutoAuthFilterRegistration(filter: TestAutoAuthFilter): FilterRegistrationBean<TestAutoAuthFilter> =
         FilterRegistrationBean(filter).also { it.isEnabled = false }
 }

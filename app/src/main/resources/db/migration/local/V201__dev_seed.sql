@@ -1,6 +1,5 @@
--- Local-only seed: one org + member mapped to the LocalDevAuthFilter identity.
--- This file is only applied when db/migration/local is in spring.flyway.locations
--- (set in application-local.yml), so it never runs in test or prod.
+-- Local/test seed: one org + member for the shared test identity (TestAutoAuthFilter.TEST_USER_ID).
+-- Applied when db/migration/local is in spring.flyway.locations; never runs in prod.
 
 INSERT INTO organizations (id, name, slug)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Dev Org', 'dev-org');

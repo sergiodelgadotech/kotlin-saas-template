@@ -24,7 +24,7 @@ import tech.sergiodelgado.saastemplate.SaasTemplateApplication
     classes = [SaasTemplateApplication::class, StripeStubConfig::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
-@ActiveProfiles("test", "local")
+@ActiveProfiles("test")
 @TestPropertySource(
     properties = [
         "spring.datasource.url=jdbc:tc:postgresql:16-alpine:///saastemplate_test",

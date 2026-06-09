@@ -10,9 +10,9 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
-@Profile("local")
+@Profile("test")
 @Component
-class LocalDevAuthFilter : OncePerRequestFilter() {
+class TestAutoAuthFilter : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -22,7 +22,7 @@ class LocalDevAuthFilter : OncePerRequestFilter() {
         if (SecurityContextHolder.getContext().authentication == null) {
             SecurityContextHolder.getContext().authentication =
                 UsernamePasswordAuthenticationToken(
-                    LOCAL_DEV_USER_ID,
+                    TEST_USER_ID,
                     null,
                     listOf(SimpleGrantedAuthority("ROLE_USER"))
                 )
@@ -31,6 +31,6 @@ class LocalDevAuthFilter : OncePerRequestFilter() {
     }
 
     companion object {
-        const val LOCAL_DEV_USER_ID = "local-dev-user"
+        const val TEST_USER_ID = "local-dev-user"
     }
 }

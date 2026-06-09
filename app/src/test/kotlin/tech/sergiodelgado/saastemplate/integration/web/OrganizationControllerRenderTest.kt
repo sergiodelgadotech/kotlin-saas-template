@@ -32,7 +32,7 @@ import java.util.UUID
 @Testcontainers
 @SpringBootTest(classes = [SaasTemplateApplication::class])
 @AutoConfigureMockMvc
-@ActiveProfiles("test", "local")
+@ActiveProfiles("test")
 @TestPropertySource(
     properties = [
         "spring.datasource.url=jdbc:tc:postgresql:16-alpine:///saastemplate_test",

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
 import org.springframework.test.context.ActiveProfiles
@@ -59,7 +60,9 @@ class AuthFlowIT {
 
     @Test
     fun `unauthenticated request to dashboard redirects to sign-in`() {
-        mockMvc.perform(get("/dashboard"))
+        // anonymous() sets a non-null AnonymousAuthenticationToken so TestAutoAuthFilter skips,
+        // but Spring Security still treats the request as unauthenticated.
+        mockMvc.perform(get("/dashboard").with(anonymous()))
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/sign-in"))
     }
