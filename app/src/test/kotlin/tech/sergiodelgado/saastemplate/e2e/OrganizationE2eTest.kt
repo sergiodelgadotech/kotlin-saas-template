@@ -40,7 +40,7 @@ class OrganizationE2eTest : PlaywrightE2eTestBase() {
     fun `sign out redirects to dashboard`() {
         page.navigate(url("/dashboard"))
         page.locator("[role='button'].avatar").click()
-        page.locator("a[href='/sign-out']").click()
+        page.locator("form[action='/sign-out'] button[type='submit']").click()
 
         expectThat(page.url()).endsWith("/dashboard")
     }
