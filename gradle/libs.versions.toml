@@ -59,6 +59,7 @@ smile-kotlin            = { module = "com.github.haifengl:smile-kotlin", version
 kotlin-dataframe        = { module = "org.jetbrains.kotlinx:dataframe", version.ref = "kotlin-dataframe" }
 strikt-core             = { module = "io.strikt:strikt-core", version.ref = "strikt" }
 mockk                   = { module = "io.mockk:mockk", version.ref = "mockk" }
+spring-security-test    = { module = "org.springframework.security:spring-security-test" }
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
 micrometer-tracing-bridge-otel = { module = "io.micrometer:micrometer-tracing-bridge-otel" }
 opentelemetry-exporter-otlp    = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
