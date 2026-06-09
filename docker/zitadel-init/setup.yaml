@@ -1,11 +1,2 @@
 FirstInstance:
   InstanceName: "Kotlin SaaS Local"
-  Org:
-    Name: "ZITADEL"
-    Machine:
-      Machine:
-        Username: "zitadel-init-sa"
-        Name: "Init Service Account"
-      MachineKey:
-        Type: 1
-        ExpirationDate: "2099-01-01T00:00:00Z"

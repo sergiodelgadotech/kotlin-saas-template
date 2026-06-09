@@ -3,7 +3,7 @@
 Idempotent Zitadel seed: registers the local-dev OIDC app and creates a test user.
 Authenticates via the machine service account key file generated during Zitadel setup.
 """
-import json, sys, time, base64, os, subprocess
+import json, sys, time, base64, os
 from pathlib import Path
 
 ZITADEL_URL = os.getenv("ZITADEL_URL", "http://zitadel:8080")
@@ -11,6 +11,25 @@ KEY_FILE_PATH = Path(os.getenv("KEY_FILE_PATH", "/keys/zitadel-init-sa.json"))
 OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
+
+
+def wait_for_zitadel(max_attempts: int = 60, delay: int = 5) -> None:
+    import urllib.request
+    # Poll the OIDC discovery endpoint — it only becomes available after Zitadel
+    # has completed setup and registered all routes (later than /debug/ready).
+    endpoint = f"{ZITADEL_URL}/.well-known/openid-configuration"
+    print(f"Waiting for Zitadel OIDC discovery at {endpoint} ...")
+    for attempt in range(1, max_attempts + 1):
+        try:
+            with urllib.request.urlopen(endpoint, timeout=3) as r:
+                if r.status == 200:
+                    print("  Zitadel is ready.")
+                    return
+        except Exception as e:
+            print(f"  [{attempt}/{max_attempts}] not ready ({e}), retrying in {delay}s...")
+        time.sleep(delay)
+    print("ERROR: Zitadel did not become ready in time.", file=sys.stderr)
+    sys.exit(1)
 
 
 def read_key_file():
@@ -21,11 +40,12 @@ def read_key_file():
 
 
 def generate_jwt(key_data: dict) -> str:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding
+
     key_id = key_data["keyId"]
     user_id = key_data["userId"]
-    private_key = key_data["key"]
     now = int(time.time())
-    exp = now + 60
 
     header = base64.urlsafe_b64encode(
         json.dumps({"alg": "RS256", "typ": "JWT", "kid": key_id}).encode()
@@ -33,23 +53,13 @@ def generate_jwt(key_data: dict) -> str:
 
     payload = base64.urlsafe_b64encode(
         json.dumps({"iss": user_id, "sub": user_id, "aud": ZITADEL_URL,
-                    "iat": now, "exp": exp}).encode()
+                    "iat": now, "exp": now + 60}).encode()
     ).rstrip(b"=").decode()
 
     signing_input = f"{header}.{payload}"
-    key_path = Path("/tmp/init-sa.pem")
-    key_path.write_text(private_key)
-    try:
-        result = subprocess.run(
-            ["openssl", "dgst", "-sha256", "-sign", str(key_path)],
-            input=signing_input.encode(), capture_output=True,
-        )
-        if result.returncode != 0:
-            print(f"ERROR: openssl signing failed: {result.stderr.decode()}", file=sys.stderr)
-            sys.exit(1)
-        return f"{signing_input}.{base64.urlsafe_b64encode(result.stdout).rstrip(b'=').decode()}"
-    finally:
-        key_path.unlink(missing_ok=True)
+    private_key = serialization.load_pem_private_key(key_data["key"].encode(), password=None)
+    signature = private_key.sign(signing_input.encode(), padding.PKCS1v15(), hashes.SHA256())
+    return f"{signing_input}.{base64.urlsafe_b64encode(signature).rstrip(b'=').decode()}"
 
 
 def get_access_token(jwt: str) -> str:
@@ -87,6 +97,8 @@ def api(method: str, path: str, token: str, body: dict | None = None):
 
 
 def main():
+    wait_for_zitadel()
+
     print("Reading service account key file...")
     key_data = read_key_file()
 
@@ -140,7 +152,7 @@ def main():
         "userName": "test",
         "profile": {"firstName": "Test", "lastName": "User"},
         "email": {"email": "test@example.com", "isEmailVerified": True},
-        "password": {"password": "Test1234!", "passwordChangeRequired": False},
+        "password": "Test1234!",
     })
 
     print()

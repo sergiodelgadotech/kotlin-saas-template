@@ -30,7 +30,8 @@ services:
   # Default credentials: zitadel-admin@zitadel.localhost / Password1!
   zitadel:
     image: ghcr.io/zitadel/zitadel:v4.15.1
-    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
+    user: "root"
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: postgres
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
@@ -44,36 +45,36 @@ services:
       ZITADEL_EXTERNALDOMAIN: localhost
       ZITADEL_EXTERNALPORT: 8089
       ZITADEL_EXTERNALIP: 127.0.0.1
-      ZITADEL_MACHINE_KEY_PATH: /zitadel-keys/
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: ZITADEL
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: zitadel-init-sa
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Init Service Account
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE: 1
+      ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH: /zitadel-keys/zitadel-init-sa.json
     ports:
       - "8089:8080"
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/debug/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 60s
     volumes:
-      - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro
+      - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro,z
       - zitadel-init-keys:/zitadel-keys
 
   zitadel-init:
     image: python:3.13-alpine
-    command: python /scripts/init.py
+    # Host networking so the container reaches localhost:8089 — the port Zitadel
+    # is mapped to — and sends the correct Host header that Zitadel requires.
+    network_mode: host
+    command: sh -c "pip install cryptography -q && python /scripts/init.py"
     environment:
-      ZITADEL_URL: http://zitadel:8080
+      ZITADEL_URL: http://localhost:8089
       KEY_FILE_PATH: /keys/zitadel-init-sa.json
       OUTPUT_FILE: /output/.local-client.properties
     volumes:
       - zitadel-init-keys:/keys:ro
-      - ./docker/zitadel-init/scripts:/scripts:ro
-      - ./docker/zitadel-init:/output
+      - ./docker/zitadel-init/scripts:/scripts:ro,z
+      - ./docker/zitadel-init:/output:z
     depends_on:
-      zitadel:
-        condition: service_healthy
+      - zitadel
     restart: "no"
 
 volumes:
