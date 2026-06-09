@@ -33,7 +33,7 @@ spring:
             scope: openid, profile, email
         provider:
           zitadel:
-            issuer-uri: ${AUTH_ISSUER}
+            issuer-uri: ${AUTH_ISSUER:}
 
 saasstarter:
   cache:
