@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
