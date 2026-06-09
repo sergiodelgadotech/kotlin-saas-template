@@ -7,6 +7,10 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration
 import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration as RedisAutoConfiguration
 import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
 import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
@@ -40,6 +44,10 @@ class ObservabilityAutoConfigSmokeTest {
             tech.sergiodelgado.saasstarter.autoconfigure.JobRunrAutoConfiguration::class,
             OrganizationAutoConfiguration::class,
             BillingAutoConfiguration::class,
+            SecurityAutoConfiguration::class,
+            OAuth2ClientAutoConfiguration::class,
+            ReactiveOAuth2ClientAutoConfiguration::class,
+            UserDetailsServiceAutoConfiguration::class,
         ],
     )
     class SmokeTestApp

@@ -9,6 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import tech.sergiodelgado.saasstarter.autoconfigure.JobRunrAutoConfiguration as StarterJobRunrAutoConfiguration
 import org.jobrunr.spring.autoconfigure.JobRunrAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration
 import org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
 import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
@@ -47,6 +51,10 @@ class SessionAutoConfigSmokeTest {
             StarterJobRunrAutoConfiguration::class,
             OrganizationAutoConfiguration::class,
             BillingAutoConfiguration::class,
+            SecurityAutoConfiguration::class,
+            OAuth2ClientAutoConfiguration::class,
+            ReactiveOAuth2ClientAutoConfiguration::class,
+            UserDetailsServiceAutoConfiguration::class,
         ],
     )
     class SmokeTestApp
