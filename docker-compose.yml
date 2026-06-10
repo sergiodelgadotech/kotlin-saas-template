@@ -99,6 +99,7 @@ services:
       KEY_FILE_PATH: /keys/zitadel-init-sa.json
       OUTPUT_FILE: /output/.local-client.properties
       MGMT_PAT_FILE: /output/management-api.pat
+      MGMT_PROPS_FILE: /output/.local-management.properties
     volumes:
       - zitadel-init-keys:/keys:ro
       - ./docker/zitadel-init/scripts:/scripts:ro,z

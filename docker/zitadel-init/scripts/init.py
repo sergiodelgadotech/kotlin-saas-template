@@ -11,6 +11,7 @@ ZITADEL_URL = os.getenv("ZITADEL_URL", "http://zitadel:8080")
 KEY_FILE_PATH = Path(os.getenv("KEY_FILE_PATH", "/keys/zitadel-init-sa.json"))
 OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
 MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
+MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.properties"))
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
 
@@ -103,8 +104,8 @@ def provision_management_service_account(token: str) -> None:
     Idempotently creates a management-api-sa service account, grants it ORG_OWNER,
     and writes a PAT to MGMT_PAT_FILE.  Skips all steps if the PAT file already exists.
     """
-    if MGMT_PAT_FILE.exists():
-        print(f"Management service account PAT already exists at {MGMT_PAT_FILE}, skipping.")
+    if MGMT_PROPS_FILE.exists():
+        print(f"Management properties already exist at {MGMT_PROPS_FILE}, skipping.")
         return
 
     print("Provisioning management-api service account...")
@@ -144,10 +145,22 @@ def provision_management_service_account(token: str) -> None:
     })
     pat_token = pat_resp["token"]
 
-    # 4. Persist the PAT
+    # 4. Fetch the default org ID so the app knows which org to scope users to
+    org_resp = api("GET", "/management/v1/orgs/me", token, None)
+    org_id = org_resp["org"]["id"]
+
+    # 5. Persist the PAT (standalone file, kept for backwards compat / easy inspection)
     MGMT_PAT_FILE.parent.mkdir(parents=True, exist_ok=True)
     MGMT_PAT_FILE.write_text(pat_token)
     print(f"  PAT written to {MGMT_PAT_FILE}")
+
+    # 6. Write Spring-importable properties file — auto-loaded by application-local.yml
+    MGMT_PROPS_FILE.write_text(
+        f"saastemplate.zitadel.management.base-url=http://localhost:8089\n"
+        f"saastemplate.zitadel.management.organization-id={org_id}\n"
+        f"saastemplate.zitadel.management.pat={pat_token}\n"
+    )
+    print(f"  Management properties written to {MGMT_PROPS_FILE}")
 
 
 def main():
@@ -217,9 +230,8 @@ def main():
     print("Written to docker/zitadel-init/.local-client.properties")
     print("Spring Boot auto-imports it — no manual copy needed.")
     print()
-    print(f"ZITADEL_MGMT_PAT written to docker/zitadel-init/management-api.pat")
-    print("Run the app with:")
-    print("  ZITADEL_MGMT_PAT=$(cat docker/zitadel-init/management-api.pat) ./gradlew :app:bootRun --args='--spring.profiles.active=local'")
+    print(f"Management properties written to docker/zitadel-init/.local-management.properties")
+    print("Spring Boot auto-imports them — no manual copy needed.")
     print("=" * 60)
 
 
