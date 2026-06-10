@@ -10,6 +10,13 @@
         <a th:href="@{/organization/members/invite}" class="btn btn-primary btn-sm">Invite member</a>
     </div>
 
+    <div th:if="${success}" class="alert alert-success mb-4">
+        <span th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-error mb-4">
+        <span th:text="${error}"></span>
+    </div>
+
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <div th:if="${members.empty}" class="text-base-content/50 py-4">

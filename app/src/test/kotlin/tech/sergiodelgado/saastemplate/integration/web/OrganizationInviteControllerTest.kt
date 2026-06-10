@@ -2,6 +2,7 @@ package tech.sergiodelgado.saastemplate.integration.web
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
@@ -96,6 +97,11 @@ class OrganizationInviteControllerTest {
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/organization/members"))
             .andExpect(flash().attribute("success", "Invitation sent to alice@example.com"))
+
+        val member = memberRepository.findByExternalUserId("stub-sub-alice@example.com")
+        assertThat(member).isNotNull()
+        assertThat(member!!.organizationId).isEqualTo(devOrgId)
+        assertThat(member.role).isEqualTo("MEMBER")
     }
 
     @Test
