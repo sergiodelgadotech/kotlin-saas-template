@@ -26,6 +26,9 @@ dependencyResolutionManagement {
                 password = providers.gradleProperty("gpr.token").orNull
                     ?: System.getenv("GITHUB_TOKEN")
             }
+            // Limit this repo to only the starter package — everything else resolves
+            // from Maven Central without needing credentials.
+            content { includeGroup("tech.sergiodelgado") }
         }
     }
 }

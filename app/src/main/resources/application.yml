@@ -82,6 +82,13 @@ saasstarter:
     api-key: ${RESEND_API_KEY}
     from-address: ${EMAIL_FROM:no-reply@example.com}
 
+saastemplate:
+  zitadel:
+    management:
+      base-url: ${ZITADEL_BASE_URL:}
+      pat: ${ZITADEL_MGMT_PAT:}
+      organization-id: ${ZITADEL_ORG_ID:}
+
 sentry:
   dsn: ${SENTRY_DSN:}
   environment: ${RAILWAY_ENVIRONMENT:local}

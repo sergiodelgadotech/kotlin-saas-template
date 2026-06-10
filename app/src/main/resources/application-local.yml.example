@@ -41,6 +41,13 @@ STRIPE_PRICE_STARTER: price_REPLACE_ME
 STRIPE_PRICE_PRO: price_REPLACE_ME
 RESEND_API_KEY: re_REPLACE_ME
 
+saastemplate:
+  zitadel:
+    management:
+      base-url: http://localhost:8089
+      pat: "<your-management-PAT>"
+      organization-id: "<your-zitadel-org-id>"
+
 app:
   base-url: http://localhost:8080
 

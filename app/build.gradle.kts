@@ -33,6 +33,9 @@ repositories {
             password = providers.gradleProperty("gpr.token").orNull
                 ?: System.getenv("GITHUB_TOKEN")
         }
+        // Limit this repo to only the starter package — everything else (including
+        // io.github.zitadel:client) resolves from Maven Central without needing credentials.
+        content { includeGroup("tech.sergiodelgado") }
     }
 }
 
@@ -70,6 +73,7 @@ dependencies {
 
     // ── External services ────────────────────────────────────────────────────
     // stripe + resend are inherited transitively from kotlin-saas-starter (api dependencies)
+    implementation(libs.zitadel.client)
     implementation(libs.sentry)
 
     // ── Observability ─────────────────────────────────────────────────────────

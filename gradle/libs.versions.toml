@@ -16,6 +16,7 @@ strikt            = "0.35.1"
 mockk             = "1.14.11"
 auth0-jwt                 = "4.5.2"
 auth0-jwks                = "0.24.1"
+zitadel-client            = "4.1.0"
 dependency-license-report = "3.1.2"
 sentry            = "8.43.1"
 thymeleaf-layout  = "4.0.1"
@@ -43,6 +44,8 @@ flyway-postgres         = { module = "org.flywaydb:flyway-database-postgresql" }
 postgresql              = { module = "org.postgresql:postgresql" }
 auth0-jwt               = { module = "com.auth0:java-jwt", version.ref = "auth0-jwt" }
 auth0-jwks              = { module = "com.auth0:jwks-rsa", version.ref = "auth0-jwks" }
+# Zitadel management SDK — used by ZitadelUserDirectory to create/find IdP users
+zitadel-client            = { module = "io.github.zitadel:client", version.ref = "zitadel-client" }
 # Zitadel is self-hosted — no SDK needed, JWT validation via auth0 libs above
 sentry                  = { module = "io.sentry:sentry-spring-boot-4-starter", version.ref = "sentry" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
