@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Idempotent Zitadel seed: registers the local-dev OIDC app and creates a test user.
+Idempotent Zitadel seed: registers the local-dev OIDC app, creates a test user,
+and provisions a management-api service account with a PAT for the Spring app.
 Authenticates via the machine service account key file generated during Zitadel setup.
 """
 import json, sys, time, base64, os
@@ -9,6 +10,7 @@ from pathlib import Path
 ZITADEL_URL = os.getenv("ZITADEL_URL", "http://zitadel:8080")
 KEY_FILE_PATH = Path(os.getenv("KEY_FILE_PATH", "/keys/zitadel-init-sa.json"))
 OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
+MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
 
@@ -96,6 +98,58 @@ def api(method: str, path: str, token: str, body: dict | None = None):
         sys.exit(1)
 
 
+def provision_management_service_account(token: str) -> None:
+    """
+    Idempotently creates a management-api-sa service account, grants it ORG_OWNER,
+    and writes a PAT to MGMT_PAT_FILE.  Skips all steps if the PAT file already exists.
+    """
+    if MGMT_PAT_FILE.exists():
+        print(f"Management service account PAT already exists at {MGMT_PAT_FILE}, skipping.")
+        return
+
+    print("Provisioning management-api service account...")
+
+    # 1. Find or create the machine user
+    search_resp = api("POST", "/management/v1/users/_search", token, {
+        "queries": [{"userNameQuery": {"userName": "management-api-sa",
+                                       "method": "TEXT_QUERY_METHOD_EQUALS"}}]
+    })
+    existing = search_resp.get("result") or []
+    if existing:
+        user_id = existing[0]["id"]
+        print(f"  management-api-sa already exists (ID: {user_id}), reusing.")
+    else:
+        create_resp = api("POST", "/management/v1/users/machine", token, {
+            "userName": "management-api-sa",
+            "name": "Management API Service Account",
+            "description": "Service account used by the Spring app to manage Zitadel users",
+            "accessTokenType": "ACCESS_TOKEN_TYPE_BEARER",
+        })
+        user_id = create_resp["userId"]
+        print(f"  Created machine user management-api-sa (ID: {user_id})")
+
+    # 2. Grant ORG_OWNER so the account can manage users within the default org
+    member_resp = api("POST", "/management/v1/orgs/me/members", token, {
+        "userId": user_id,
+        "roles": ["ORG_OWNER"],
+    })
+    if member_resp.get("already_exists"):
+        print("  ORG_OWNER membership already exists, skipping.")
+    else:
+        print("  Granted ORG_OWNER to management-api-sa.")
+
+    # 3. Generate a PAT (no expiry for local dev convenience)
+    pat_resp = api("POST", f"/management/v1/users/{user_id}/pats", token, {
+        "expirationDate": "2099-01-01T00:00:00Z",
+    })
+    pat_token = pat_resp["token"]
+
+    # 4. Persist the PAT
+    MGMT_PAT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    MGMT_PAT_FILE.write_text(pat_token)
+    print(f"  PAT written to {MGMT_PAT_FILE}")
+
+
 def main():
     wait_for_zitadel()
 
@@ -155,11 +209,17 @@ def main():
         "password": "Test1234!",
     })
 
+    provision_management_service_account(token)
+
     print()
     print("=" * 60)
     print(f"ZITADEL_CLIENT_ID={client_id}")
     print("Written to docker/zitadel-init/.local-client.properties")
     print("Spring Boot auto-imports it — no manual copy needed.")
+    print()
+    print(f"ZITADEL_MGMT_PAT written to docker/zitadel-init/management-api.pat")
+    print("Run the app with:")
+    print("  ZITADEL_MGMT_PAT=$(cat docker/zitadel-init/management-api.pat) ./gradlew :app:bootRun --args='--spring.profiles.active=local'")
     print("=" * 60)
 
 
