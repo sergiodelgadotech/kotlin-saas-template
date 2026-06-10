@@ -98,6 +98,7 @@ services:
       ZITADEL_URL: http://localhost:8089
       KEY_FILE_PATH: /keys/zitadel-init-sa.json
       OUTPUT_FILE: /output/.local-client.properties
+      MGMT_PAT_FILE: /output/management-api.pat
     volumes:
       - zitadel-init-keys:/keys:ro
       - ./docker/zitadel-init/scripts:/scripts:ro,z
