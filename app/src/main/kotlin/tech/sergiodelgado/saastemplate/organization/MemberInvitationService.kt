@@ -10,8 +10,11 @@ import tech.sergiodelgado.saasstarter.organization.OrganizationService
 import tech.sergiodelgado.saasstarter.organization.InviteMemberCommand
 import tech.sergiodelgado.saasstarter.organization.OrganizationValidations
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import tech.sergiodelgado.saasstarter.validation.DomainValidationException
 import tech.sergiodelgado.saasstarter.validation.validateOrThrow
 import tech.sergiodelgado.saasstarter.web.ForbiddenException
+import io.konform.validation.ValidationError
+import io.konform.validation.path.ValidationPath
 import java.util.Optional
 
 @Service
@@ -53,6 +56,13 @@ class MemberInvitationService(
         val sub = directory.findOrInvite(email)
 
         // 4. Insert member
-        organizationService.inviteMember(sub, role)
+        try {
+            organizationService.inviteMember(sub, role)
+        } catch (e: IllegalStateException) {
+            throw DomainValidationException(
+                e.message ?: "Already a member",
+                listOf(ValidationError(ValidationPath.of("email"), e.message ?: "Already a member")),
+            )
+        }
     }
 }

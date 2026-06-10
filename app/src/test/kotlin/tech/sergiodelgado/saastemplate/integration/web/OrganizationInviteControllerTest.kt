@@ -4,6 +4,7 @@ import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.containsString
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
+import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.tenant.TenantResolver
 import tech.sergiodelgado.saastemplate.SaasTemplateApplication
@@ -75,6 +77,13 @@ class OrganizationInviteControllerTest {
     @BeforeEach
     fun setup() {
         every { tenantResolver.resolveTenantId(any()) } returns devOrgId
+    }
+
+    @AfterEach
+    fun cleanup() {
+        listOf("stub-sub-alice@example.com", "stub-sub-existing@example.com").forEach { sub ->
+            memberRepository.findByExternalUserId(sub)?.let { memberRepository.delete(it) }
+        }
     }
 
     @Test
@@ -130,5 +139,24 @@ class OrganizationInviteControllerTest {
             .andExpect(status().is3xxRedirection)
             .andExpect(redirectedUrl("/organization/members"))
             .andExpect(flash().attribute("error", "Not authorized to invite members"))
+    }
+
+    @Test
+    fun `POST invite for already-a-member re-renders form with error`() {
+        // Seed an existing member whose sub the stub IdP would resolve to
+        memberRepository.save(
+            Member(organizationId = devOrgId, externalUserId = "stub-sub-existing@example.com")
+        )
+
+        mvc.perform(
+            post("/organization/members/invite")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("email", "existing@example.com")
+                .param("role", "MEMBER"),
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("existing@example.com")))
+            .andExpect(content().string(containsString("already a member")))
     }
 }
