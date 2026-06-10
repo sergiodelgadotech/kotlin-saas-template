@@ -50,6 +50,17 @@ services:
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Init Service Account
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE: 1
       ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH: /zitadel-keys/zitadel-init-sa.json
+      # Login client for the v2 login UI — PAT written here, read by zitadel-login container
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login Client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel-bootstrap/login-client.pat
+      # Redirect browser to the zitadel-login service on port 3000
+      # /ui/v2/login is baked in as NEXT_PUBLIC_BASE_PATH in the login image
+      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: http://localhost:3000/ui/v2/login/
+      ZITADEL_OIDC_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?authRequest=
+      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: http://localhost:3000/ui/v2/login/logout?post_logout_redirect=
+      ZITADEL_SAML_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?samlRequest=
     ports:
       - "8089:8080"
     depends_on:
@@ -58,6 +69,24 @@ services:
     volumes:
       - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro,z
       - zitadel-init-keys:/zitadel-keys
+      - zitadel-bootstrap:/zitadel-bootstrap
+
+  # v2 login UI — starts after zitadel-init writes the login-client PAT
+  # Login page: http://localhost:3000
+  zitadel-login:
+    image: ghcr.io/zitadel/zitadel-login:latest
+    network_mode: host
+    environment:
+      ZITADEL_API_URL: http://localhost:8089
+      ZITADEL_SERVICE_USER_TOKEN_FILE: /bootstrap/login-client.pat
+      ZITADEL_TLS_ENABLED: "false"
+      PORT: 3000
+    volumes:
+      - zitadel-bootstrap:/bootstrap:ro
+    depends_on:
+      zitadel-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
   zitadel-init:
     image: python:3.13-alpine
@@ -80,3 +109,4 @@ services:
 volumes:
   postgres_data:
   zitadel-init-keys:
+  zitadel-bootstrap:
