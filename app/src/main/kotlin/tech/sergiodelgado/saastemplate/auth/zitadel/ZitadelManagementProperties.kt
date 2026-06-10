@@ -5,6 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties("saastemplate.zitadel.management")
 data class ZitadelManagementProperties(
     val baseUrl: String = "",
-    val pat: String = "",
+    val pat: String? = null,
     val organizationId: String = ""
 )

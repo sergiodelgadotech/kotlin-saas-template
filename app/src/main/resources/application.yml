@@ -86,7 +86,7 @@ saastemplate:
   zitadel:
     management:
       base-url: ${ZITADEL_BASE_URL:}
-      pat: ${ZITADEL_MGMT_PAT:}
+      pat: ${ZITADEL_MGMT_PAT:#{null}}
       organization-id: ${ZITADEL_ORG_ID:}
 
 sentry:

@@ -1,10 +1,12 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
 import com.zitadel.ApiException
-import com.zitadel.Zitadel
+import com.zitadel.api.BetaUserServiceApi
 import com.zitadel.model.BetaUserServiceAddHumanUserRequest
 import com.zitadel.model.BetaUserServiceEmailQuery
 import com.zitadel.model.BetaUserServiceListUsersRequest
+import com.zitadel.model.BetaUserServiceOrganization
+import com.zitadel.model.BetaUserServiceOrganizationIdQuery
 import com.zitadel.model.BetaUserServiceSearchQuery
 import com.zitadel.model.BetaUserServiceSendEmailVerificationCode
 import com.zitadel.model.BetaUserServiceSetHumanEmail
@@ -23,22 +25,22 @@ import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
  * a stub implementation without needing a live Zitadel instance.
  */
 @Component
-@ConditionalOnProperty(name = ["saastemplate.zitadel.management.pat"], matchIfMissing = false)
+@ConditionalOnProperty(name = ["saastemplate.zitadel.management.pat"])
 class ZitadelUserDirectory(
-    private val properties: ZitadelManagementProperties
+    private val properties: ZitadelManagementProperties,
+    private val betaUsers: BetaUserServiceApi
 ) : IdpUserDirectory {
-
-    private val zitadel: Zitadel by lazy {
-        Zitadel.withAccessToken(properties.baseUrl, properties.pat)
-    }
 
     @Throws(ApiException::class)
     override fun findOrInvite(email: String): String {
         val emailFilter = BetaUserServiceSearchQuery().emailQuery(
             BetaUserServiceEmailQuery().emailAddress(email)
         )
-        val listRequest = BetaUserServiceListUsersRequest().queries(listOf(emailFilter))
-        val response = zitadel.getBetaUsers().listUsers(listRequest)
+        val orgFilter = BetaUserServiceSearchQuery().organizationIdQuery(
+            BetaUserServiceOrganizationIdQuery().organizationId(properties.organizationId)
+        )
+        val listRequest = BetaUserServiceListUsersRequest().queries(listOf(emailFilter, orgFilter))
+        val response = betaUsers.listUsers(listRequest)
 
         val existing = response.result?.firstOrNull()
         if (existing != null) {
@@ -47,8 +49,11 @@ class ZitadelUserDirectory(
             }
         }
 
-        val createResponse = zitadel.getBetaUsers().addHumanUser(
+        val createResponse = betaUsers.addHumanUser(
             BetaUserServiceAddHumanUserRequest()
+                .organization(
+                    BetaUserServiceOrganization().orgId(properties.organizationId)
+                )
                 .email(
                     BetaUserServiceSetHumanEmail()
                         .email(email)
