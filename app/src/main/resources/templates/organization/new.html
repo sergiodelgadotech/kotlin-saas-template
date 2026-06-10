@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Create your organization</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-lg mx-auto mt-12">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-2xl mb-2">Create your organization</h1>
+                <p class="text-base-content/60 mb-6">You're almost in. Give your workspace a name to get started.</p>
+
+                <form th:action="@{/organization/new}" method="post">
+                    <fieldset class="fieldset mb-6">
+                        <legend class="fieldset-legend">Organization name</legend>
+                        <input class="input input-bordered w-full"
+                               type="text"
+                               name="name"
+                               placeholder="Acme Inc."
+                               autofocus
+                               required>
+                    </fieldset>
+                    <div class="card-actions">
+                        <button class="btn btn-primary w-full" type="submit">Create organization</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

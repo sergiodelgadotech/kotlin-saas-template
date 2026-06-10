@@ -10,25 +10,23 @@
     <div class="card bg-base-100 shadow-sm max-w-lg">
         <div class="card-body">
             <form th:action="@{/organization/settings}" method="post">
-                <div class="form-control mb-4">
-                    <label class="label"><span class="label-text">Organization name</span></label>
-                    <input class="input input-bordered"
+                <fieldset class="fieldset mb-4">
+                    <legend class="fieldset-legend">Organization name</legend>
+                    <input class="input input-bordered w-full"
                            type="text"
                            name="name"
                            th:value="${organization.name}"
                            required>
-                </div>
-                <div class="form-control mb-2">
-                    <label class="label"><span class="label-text">Slug</span></label>
-                    <input class="input input-bordered input-disabled"
+                </fieldset>
+                <fieldset class="fieldset mb-6">
+                    <legend class="fieldset-legend">Slug</legend>
+                    <input class="input input-bordered w-full"
                            type="text"
                            th:value="${organization.slug}"
                            disabled>
-                    <label class="label">
-                        <span class="label-text-alt text-base-content/50">Cannot be changed after creation</span>
-                    </label>
-                </div>
-                <div class="card-actions mt-4">
+                    <p class="fieldset-label text-base-content/50">Cannot be changed after creation</p>
+                </fieldset>
+                <div class="card-actions">
                     <button class="btn btn-primary" type="submit">Save changes</button>
                 </div>
             </form>

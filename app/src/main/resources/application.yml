@@ -59,6 +59,7 @@ saasstarter:
       - /
       - /pricing
       - /docs/**
+      - /organization/new
   rate-limit:
     path-patterns:
       - /webhooks/**
