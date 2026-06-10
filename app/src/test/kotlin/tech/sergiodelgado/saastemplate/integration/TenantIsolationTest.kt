@@ -3,6 +3,8 @@ package tech.sergiodelgado.saastemplate.integration
 import tech.sergiodelgado.saastemplate.SaasTemplateApplication
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationRepository
+import tech.sergiodelgado.saasstarter.organization.OrganizationService
+import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -10,12 +12,16 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.none
 
 @Tag("integration")
 @Testcontainers
@@ -33,6 +39,12 @@ class TenantIsolationTest {
 
     @Autowired
     lateinit var organizationRepository: OrganizationRepository
+
+    @Autowired
+    lateinit var memberRepository: MemberRepository
+
+    @Autowired
+    lateinit var organizationService: OrganizationService
 
     @Test
     fun `organizations are isolated by tenant`() {
@@ -54,5 +66,41 @@ class TenantIsolationTest {
         }.also {
             expectThat(it.message).isEqualTo("No tenant in context")
         }
+    }
+
+    @Test
+    fun `member invited to org A does not appear in org B's member list`() {
+        val orgA = organizationRepository.save(Organization(name = "Iso Org A", slug = "iso-org-a"))
+        val orgB = organizationRepository.save(Organization(name = "Iso Org B", slug = "iso-org-b"))
+
+        // Seed an OWNER for orgA so the invite auth check passes
+        memberRepository.save(
+            tech.sergiodelgado.saasstarter.organization.Member(
+                organizationId = orgA.id,
+                externalUserId = "isolation-test-owner",
+                role = "OWNER",
+            )
+        )
+
+        // Authenticate as that owner
+        SecurityContextHolder.getContext().authentication =
+            UsernamePasswordAuthenticationToken(
+                "isolation-test-owner",
+                null,
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
+            )
+
+        try {
+            TenantContext.set(orgA.id)
+            organizationService.inviteMember("invited-user-sub", "MEMBER")
+            TenantContext.clear()
+        } finally {
+            SecurityContextHolder.clearContext()
+            TenantContext.clear()
+        }
+
+        // Org B must not see the member invited into org A
+        val orgBMembers = memberRepository.findByOrganizationId(orgB.id)
+        expectThat(orgBMembers).none { get { externalUserId }.isEqualTo("invited-user-sub") }
     }
 }
