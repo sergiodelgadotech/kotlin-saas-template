@@ -1,6 +1,8 @@
 package tech.sergiodelgado.saastemplate.organization
 
 import tech.sergiodelgado.saasstarter.organization.OrganizationService
+import tech.sergiodelgado.saasstarter.validation.DomainValidationException
+import tech.sergiodelgado.saasstarter.web.ForbiddenException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,6 +17,7 @@ import java.security.Principal
 class OrganizationController(
     private val organizationService: OrganizationService,
     private val onboardingService: OnboardingService,
+    private val memberInvitationService: MemberInvitationService,
 ) {
 
     @GetMapping("/new")
@@ -47,5 +50,35 @@ class OrganizationController(
         model.addAttribute("organization", organizationService.current())
         model.addAttribute("members", organizationService.members())
         return "organization/members"
+    }
+
+    @GetMapping("/members/invite")
+    fun inviteForm(): String = "organization/invite"
+
+    @PostMapping("/members/invite")
+    fun invite(
+        @RequestParam email: String,
+        @RequestParam role: String,
+        model: Model,
+        redirectAttributes: RedirectAttributes,
+    ): String {
+        return try {
+            memberInvitationService.invite(email, role)
+            redirectAttributes.addFlashAttribute("success", "Invitation sent to $email")
+            "redirect:/organization/members"
+        } catch (ex: ForbiddenException) {
+            redirectAttributes.addFlashAttribute("error", "Not authorized to invite members")
+            "redirect:/organization/members"
+        } catch (ex: DomainValidationException) {
+            model.addAttribute("email", email)
+            model.addAttribute("role", role)
+            model.addAttribute("errors", ex.errors.map { "${it.dataPath}: ${it.message}" })
+            "organization/invite"
+        } catch (ex: IllegalStateException) {
+            model.addAttribute("email", email)
+            model.addAttribute("role", role)
+            model.addAttribute("configError", ex.message)
+            "organization/invite"
+        }
     }
 }

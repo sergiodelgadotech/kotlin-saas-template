@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Invite Member</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-lg mx-auto mt-4">
+        <div class="mb-4">
+            <a th:href="@{/organization/members}" class="btn btn-ghost btn-sm">← Back to members</a>
+        </div>
+
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title text-2xl mb-2">Invite a member</h1>
+                <p class="text-base-content/60 mb-6">Send an invitation to add someone to your organization.</p>
+
+                <div th:if="${configError}" class="alert alert-error mb-4">
+                    <span th:text="${configError}"></span>
+                </div>
+
+                <div th:if="${errors}" class="alert alert-error mb-4">
+                    <ul class="list-disc list-inside">
+                        <li th:each="err : ${errors}" th:text="${err}"></li>
+                    </ul>
+                </div>
+
+                <form th:action="@{/organization/members/invite}" method="post">
+                    <fieldset class="fieldset mb-4">
+                        <legend class="fieldset-legend">Email address</legend>
+                        <input class="input input-bordered w-full"
+                               type="email"
+                               name="email"
+                               th:value="${email}"
+                               placeholder="alice@example.com"
+                               autofocus
+                               required>
+                    </fieldset>
+                    <fieldset class="fieldset mb-6">
+                        <legend class="fieldset-legend">Role</legend>
+                        <select class="select select-bordered w-full" name="role">
+                            <option value="ADMIN" th:selected="${role == 'ADMIN'}">Admin</option>
+                            <option value="MEMBER" th:selected="${role == 'MEMBER'}" selected>Member</option>
+                        </select>
+                    </fieldset>
+                    <div class="card-actions">
+                        <button class="btn btn-primary w-full" type="submit">Send invitation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
