@@ -96,10 +96,9 @@ class ArchitectureTest {
 
     @Test
     fun `auth zitadel classes are not imported directly from organization or controller packages`() {
-        // ZitadelUserDirectory and ZitadelManagementConfig must be wired only via the
-        // IdpUserDirectory interface. Neither the organization package nor any controller
-        // should have a direct import of classes from the auth.zitadel package.
-        val zitadelTypes = setOf("ZitadelUserDirectory", "ZitadelManagementConfig", "ZitadelManagementProperties")
+        // Auth Zitadel types must be wired only via the IdpUserDirectory interface.
+        // Neither the organization package nor any controller should have a direct import
+        // from the auth.zitadel package.
         scope.classes()
             .filter { cls ->
                 cls.resideInPackage("..organization..") ||
@@ -107,7 +106,7 @@ class ArchitectureTest {
             }
             .assertFalse { cls ->
                 cls.containingFile.imports.any { imp ->
-                    zitadelTypes.any { zitadelType -> imp.name.endsWith(zitadelType) }
+                    imp.name.contains(".auth.zitadel.")
                 }
             }
     }

@@ -93,7 +93,6 @@ class TenantIsolationTest {
         try {
             TenantContext.set(orgA.id)
             organizationService.inviteMember("invited-user-sub", "MEMBER")
-            TenantContext.clear()
         } finally {
             SecurityContextHolder.clearContext()
             TenantContext.clear()
