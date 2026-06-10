@@ -31,7 +31,6 @@ class ZitadelUserDirectory(
     private val betaUsers: BetaUserServiceApi
 ) : IdpUserDirectory {
 
-    @Throws(ApiException::class)
     override fun findOrInvite(email: String): String {
         val emailFilter = BetaUserServiceSearchQuery().emailQuery(
             BetaUserServiceEmailQuery().emailAddress(email)
@@ -40,30 +39,36 @@ class ZitadelUserDirectory(
             BetaUserServiceOrganizationIdQuery().organizationId(properties.organizationId)
         )
         val listRequest = BetaUserServiceListUsersRequest().queries(listOf(emailFilter, orgFilter))
-        val response = betaUsers.listUsers(listRequest)
+        try {
+            val response = betaUsers.listUsers(listRequest)
 
-        val existing = response.result?.firstOrNull()
-        if (existing != null) {
-            return requireNotNull(existing.userId) {
-                "Zitadel returned a user with null userId for email: $email"
+            val existing = response.result?.firstOrNull()
+            if (existing != null) {
+                return requireNotNull(existing.userId) {
+                    "Zitadel returned a user with null userId for email: $email"
+                }
             }
-        }
 
-        val createResponse = betaUsers.addHumanUser(
-            BetaUserServiceAddHumanUserRequest()
-                .organization(
-                    BetaUserServiceOrganization().orgId(properties.organizationId)
-                )
-                .email(
-                    BetaUserServiceSetHumanEmail()
-                        .email(email)
-                        .sendCode(BetaUserServiceSendEmailVerificationCode())
-                        .isVerified(false)
-                )
-        )
+            val createResponse = betaUsers.addHumanUser(
+                BetaUserServiceAddHumanUserRequest()
+                    .organization(
+                        BetaUserServiceOrganization().orgId(properties.organizationId)
+                    )
+                    .email(
+                        BetaUserServiceSetHumanEmail()
+                            .email(email)
+                            .sendCode(BetaUserServiceSendEmailVerificationCode())
+                            .isVerified(false)
+                    )
+            )
 
-        return requireNotNull(createResponse.userId) {
-            "Zitadel returned null userId after creating user for email: $email"
+            return requireNotNull(createResponse.userId) {
+                "Zitadel returned null userId after creating user for email: $email"
+            }
+        } catch (e: ApiException) {
+            throw IllegalStateException("Zitadel API error (HTTP ${e.code}): ${e.responseBody}", e)
+        } catch (e: RuntimeException) {
+            throw IllegalStateException("Zitadel connection error: ${e.message}", e)
         }
     }
 }

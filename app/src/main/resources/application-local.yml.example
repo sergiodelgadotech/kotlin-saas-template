@@ -41,7 +41,10 @@ STRIPE_PRICE_STARTER: price_REPLACE_ME
 STRIPE_PRICE_PRO: price_REPLACE_ME
 RESEND_API_KEY: re_REPLACE_ME
 
-# saastemplate.zitadel.management.* is auto-imported from .local-management.properties above.
+saastemplate:
+  zitadel:
+    management:
+      base-url: http://localhost:8089  # static; PAT + org-id auto-imported from .local-management.properties
 
 app:
   base-url: http://localhost:8080

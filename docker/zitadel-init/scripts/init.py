@@ -156,7 +156,6 @@ def provision_management_service_account(token: str) -> None:
 
     # 6. Write Spring-importable properties file — auto-loaded by application-local.yml
     MGMT_PROPS_FILE.write_text(
-        f"saastemplate.zitadel.management.base-url=http://localhost:8089\n"
         f"saastemplate.zitadel.management.organization-id={org_id}\n"
         f"saastemplate.zitadel.management.pat={pat_token}\n"
     )
