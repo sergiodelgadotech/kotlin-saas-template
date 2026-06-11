@@ -10,6 +10,7 @@ import com.zitadel.model.BetaUserServiceOrganizationIdQuery
 import com.zitadel.model.BetaUserServiceSearchQuery
 import com.zitadel.model.BetaUserServiceSendEmailVerificationCode
 import com.zitadel.model.BetaUserServiceSetHumanEmail
+import com.zitadel.model.BetaUserServiceSetHumanProfile
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
@@ -49,16 +50,22 @@ class ZitadelUserDirectory(
                 }
             }
 
+            val localPart = email.substringBefore("@")
+            val nameParts = localPart.split(".", "-", "_", limit = 2)
             val createResponse = betaUsers.addHumanUser(
                 BetaUserServiceAddHumanUserRequest()
                     .organization(
                         BetaUserServiceOrganization().orgId(properties.organizationId)
                     )
+                    .profile(
+                        BetaUserServiceSetHumanProfile()
+                            .givenName(nameParts[0].replaceFirstChar { it.uppercase() })
+                            .familyName(if (nameParts.size > 1) nameParts[1].replaceFirstChar { it.uppercase() } else localPart)
+                    )
                     .email(
                         BetaUserServiceSetHumanEmail()
                             .email(email)
                             .sendCode(BetaUserServiceSendEmailVerificationCode())
-                            .isVerified(false)
                     )
             )
 
