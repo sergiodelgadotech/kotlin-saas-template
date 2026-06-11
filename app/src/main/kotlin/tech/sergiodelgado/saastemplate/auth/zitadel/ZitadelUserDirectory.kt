@@ -60,7 +60,7 @@ class ZitadelUserDirectory(
                     .profile(
                         BetaUserServiceSetHumanProfile()
                             .givenName(givenName)
-                            .familyName(familyName ?: email.substringBefore("@"))
+                            .familyName(familyName ?: givenName)
                     )
                     .email(
                         BetaUserServiceSetHumanEmail()
