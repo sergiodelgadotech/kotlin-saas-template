@@ -14,6 +14,7 @@ import com.zitadel.model.BetaUserServiceSetHumanProfile
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
+import tech.sergiodelgado.saastemplate.util.extractNameFromEmail
 
 /**
  * Zitadel-backed implementation of [IdpUserDirectory].
@@ -50,8 +51,7 @@ class ZitadelUserDirectory(
                 }
             }
 
-            val localPart = email.substringBefore("@")
-            val nameParts = localPart.split(".", "-", "_", limit = 2)
+            val (givenName, familyName) = extractNameFromEmail(email)
             val createResponse = betaUsers.addHumanUser(
                 BetaUserServiceAddHumanUserRequest()
                     .organization(
@@ -59,8 +59,8 @@ class ZitadelUserDirectory(
                     )
                     .profile(
                         BetaUserServiceSetHumanProfile()
-                            .givenName(nameParts[0].replaceFirstChar { it.uppercase() })
-                            .familyName(if (nameParts.size > 1) nameParts[1].replaceFirstChar { it.uppercase() } else localPart)
+                            .givenName(givenName)
+                            .familyName(familyName ?: email.substringBefore("@"))
                     )
                     .email(
                         BetaUserServiceSetHumanEmail()

@@ -15,6 +15,7 @@ import tech.sergiodelgado.saasstarter.validation.validateOrThrow
 import tech.sergiodelgado.saasstarter.web.ForbiddenException
 import io.konform.validation.ValidationError
 import io.konform.validation.path.ValidationPath
+import tech.sergiodelgado.saastemplate.util.extractNameFromEmail
 import java.util.Optional
 
 @Service
@@ -57,10 +58,7 @@ class MemberInvitationService(
 
         // 4. Insert member — derive a placeholder name from the email local part;
         //    it will be overwritten with real OIDC claims when the invitee first logs in.
-        val localPart = email.substringBefore("@")
-        val nameParts = localPart.split(".", "-", "_", limit = 2)
-        val derivedFirst = nameParts[0].replaceFirstChar { it.uppercase() }
-        val derivedLast = if (nameParts.size > 1) nameParts[1].replaceFirstChar { it.uppercase() } else null
+        val (derivedFirst, derivedLast) = extractNameFromEmail(email)
         try {
             organizationService.inviteMember(sub, role, email = email, firstName = derivedFirst, lastName = derivedLast)
         } catch (e: IllegalStateException) {
