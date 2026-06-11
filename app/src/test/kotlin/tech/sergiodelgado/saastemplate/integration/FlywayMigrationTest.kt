@@ -33,15 +33,11 @@ class FlywayMigrationTest {
     // ── Starter migrations ────────────────────────────────────────────────────
 
     @Test
-    fun `V100 starter baseline creates organizations and members tables`() {
+    fun `V100 starter baseline creates organizations members and subscriptions tables`() {
         val tables = publicTables()
         expectThat(tables).contains("organizations")
         expectThat(tables).contains("members")
-    }
-
-    @Test
-    fun `V101 starter subscriptions creates subscriptions table`() {
-        expectThat(publicTables()).contains("subscriptions")
+        expectThat(tables).contains("subscriptions")
     }
 
     // ── App migrations ────────────────────────────────────────────────────────
@@ -62,7 +58,6 @@ class FlywayMigrationTest {
             String::class.java
         )
         expectThat(applied).contains("100")
-        expectThat(applied).contains("101")
         expectThat(applied).contains("200")
     }
 

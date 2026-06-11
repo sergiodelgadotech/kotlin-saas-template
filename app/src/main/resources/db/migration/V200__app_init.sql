@@ -1,7 +1,6 @@
 -- V200__app_init.sql
--- App-specific tables. Multi-tenant baseline (organizations, members) lives
+-- App-specific tables. Multi-tenant baseline (organizations, members, subscriptions) lives
 -- in kotlin-saas-starter's V100__starter_baseline.sql.
--- Subscriptions table moved to kotlin-saas-starter's V101__starter_subscriptions.sql.
 
 CREATE TABLE imports (
     id              UUID         PRIMARY KEY DEFAULT gen_random_uuid(),

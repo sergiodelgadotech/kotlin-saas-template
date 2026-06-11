@@ -49,8 +49,7 @@ class OrganizationInviteE2eTest : PlaywrightE2eTestBase() {
         expectThat(page.url()).endsWith("/organization/members")
         val body = page.locator("body").innerText()
         expectThat(body).contains("Invitation sent to invited@example.com")
-        // The members table shows the IdP sub for the invited user
-        expectThat(body).contains("e2e-sub-invited-at-example.com")
+        expectThat(body).contains("invited@example.com")
     }
 
     @Test

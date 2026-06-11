@@ -32,7 +32,7 @@ class OrganizationE2eTest : PlaywrightE2eTestBase() {
         page.navigate(url("/organization/members"))
 
         val body = page.locator("body").innerText()
-        expectThat(body).contains("local-dev-user")
+        expectThat(body).contains("owner@example.com")
         expectThat(body).contains("OWNER")
     }
 

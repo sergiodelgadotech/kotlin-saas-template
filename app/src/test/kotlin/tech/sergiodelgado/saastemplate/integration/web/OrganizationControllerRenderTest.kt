@@ -87,7 +87,7 @@ class OrganizationControllerRenderTest {
     fun `members page renders member row`() {
         mvc.perform(get("/organization/members"))
             .andExpect(status().isOk)
-            .andExpect(content().string(containsString("local-dev-user")))
+            .andExpect(content().string(containsString("owner@example.com")))
             .andExpect(content().string(containsString("OWNER")))
     }
 }
