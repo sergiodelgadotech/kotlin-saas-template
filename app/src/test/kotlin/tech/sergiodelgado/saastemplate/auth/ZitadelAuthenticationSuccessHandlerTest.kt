@@ -37,7 +37,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     private fun stubUpdateProfile(subject: String) {
-        every { memberRepository.updateProfile(subject, any(), any(), any()) } just Runs
+        every { memberRepository.updateProfile(subject, any<String>(), any(), any()) } just Runs
     }
 
     @Test

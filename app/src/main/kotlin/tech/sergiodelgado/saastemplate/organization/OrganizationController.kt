@@ -31,7 +31,7 @@ class OrganizationController(
     ): String {
         onboardingService.createOrganization(
             oidcUser.subject, name,
-            email = oidcUser.email,
+            email = oidcUser.email.orEmpty(),
             firstName = oidcUser.givenName,
             lastName = oidcUser.familyName,
         )

@@ -22,7 +22,7 @@ class OnboardingService(
     fun createOrganization(
         ownerUserId: String,
         name: String,
-        email: String? = null,
+        email: String = "",
         firstName: String? = null,
         lastName: String? = null,
     ): Organization {
