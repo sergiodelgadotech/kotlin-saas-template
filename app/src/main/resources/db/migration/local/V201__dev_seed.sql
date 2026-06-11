@@ -4,8 +4,8 @@
 INSERT INTO organizations (id, name, slug)
 VALUES ('00000000-0000-0000-0000-000000000001', 'Dev Org', 'dev-org');
 
-INSERT INTO members (organization_id, external_user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000001', 'local-dev-user', 'OWNER');
+INSERT INTO members (organization_id, external_user_id, role, email)
+VALUES ('00000000-0000-0000-0000-000000000001', 'local-dev-user', 'OWNER', 'owner@example.com');
 
-INSERT INTO members (organization_id, external_user_id, role)
-VALUES ('00000000-0000-0000-0000-000000000001', 'member-user', 'MEMBER');
+INSERT INTO members (organization_id, external_user_id, role, email)
+VALUES ('00000000-0000-0000-0000-000000000001', 'member-user', 'MEMBER', 'member@example.com');
