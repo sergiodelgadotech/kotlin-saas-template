@@ -19,9 +19,15 @@
         <!-- Flash messages -->
         <div th:if="${success}" class="alert alert-success mb-4">
             <span th:text="${success}"></span>
+            <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+                <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+            </button>
         </div>
         <div th:if="${error}" class="alert alert-error mb-4">
             <span th:text="${error}"></span>
+            <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+                <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+            </button>
         </div>
 
         <div layout:fragment="content"></div>

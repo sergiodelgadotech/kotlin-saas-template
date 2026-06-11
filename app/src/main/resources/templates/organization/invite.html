@@ -17,12 +17,18 @@
 
                 <div th:if="${configError}" class="alert alert-error mb-4">
                     <span th:text="${configError}"></span>
+                    <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+                        <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+                    </button>
                 </div>
 
                 <div th:if="${errors}" class="alert alert-error mb-4">
                     <ul class="list-disc list-inside">
                         <li th:each="err : ${errors}" th:text="${err}"></li>
                     </ul>
+                    <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+                        <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+                    </button>
                 </div>
 
                 <form th:action="@{/organization/members/invite}" method="post">
