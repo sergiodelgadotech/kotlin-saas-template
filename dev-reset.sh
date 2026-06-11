@@ -8,6 +8,8 @@ rm -f docker/zitadel-init/.local-client.properties \
 
 # Spring Boot reads spring.config.import files before starting Docker Compose,
 # so the generated properties must exist before bootRun is called.
-# Start services now and wait for zitadel-init to finish writing the files.
-docker compose up -d
+# Start only zitadel-init and its dependencies (postgres + zitadel), wait for
+# the files to be written, then bring them back down so bootRun starts clean.
+docker compose up -d zitadel-init
 docker compose wait zitadel-init
+docker compose down
