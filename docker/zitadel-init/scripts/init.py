@@ -126,8 +126,8 @@ def configure_smtp(token: str) -> None:
     resp = api("POST", "/admin/v1/email/smtp", token, {
         "senderAddress": smtp_from,
         "senderName": smtp_from_name,
-        "tls": False,
-        "host": "smtp.resend.com:587",
+        "tls": True,
+        "host": "smtp.resend.com:465",
         "user": "resend",
         "password": smtp_password,
     })
