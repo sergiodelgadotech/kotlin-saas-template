@@ -15,6 +15,7 @@ Production-ready template for B2B SaaS products. Kotlin + Spring Boot + Thymelea
 | Backend | Kotlin + Spring Boot 3 |
 | Templates | Thymeleaf + HTMX |
 | CSS | Tailwind CSS + DaisyUI |
+| Icons | Heroicons (inlined SVG) |
 | Database | PostgreSQL (Spring Data JDBC + Flyway) |
 | Cache | Redis |
 | Auth | Zitadel (JWT validation, self-hostable, EU residency) |
@@ -31,6 +32,29 @@ Multi-tenant B2B SaaS with `organization_id` column isolation. Every authenticat
 ```
 JwtAuthFilter → TenantInterceptor → TenantContext → Service → Repository
 ```
+
+## Frontend
+
+The UI layer is **server-side HTML all the way down** — no client-side routing, no JSON API, no JavaScript build step for app logic.
+
+- **Thymeleaf** renders full pages and fragments on the server.
+- **HTMX** adds dynamic behavior via HTML attributes. A button that loads data without a full-page reload looks like:
+
+  ```html
+  <button hx-get="/dashboard/stats" hx-target="#stats-panel" hx-swap="innerHTML">
+    Refresh
+  </button>
+  ```
+
+  The controller returns a Thymeleaf fragment; HTMX swaps it in. No JavaScript required.
+
+- **SSE (Server-Sent Events)** powers real-time updates (e.g. the dashboard live feed). The server pushes `text/event-stream` responses; the template listens with `hx-ext="sse"`.
+
+- **Tailwind CSS + DaisyUI** handle styling. The CSS is compiled at build time by the Tailwind CLI — no PostCSS or webpack involved.
+
+- **Heroicons** are used as inline SVG Thymeleaf fragments in `templates/fragments/icons.html`. To use an icon: `<svg th:replace="~{fragments/icons :: icon-name(cls='h-5 w-5')}"/>`. Add new icons to that file by copying the SVG path from [heroicons.com](https://heroicons.com).
+
+When adding a new interactive feature, the pattern is: controller method returns a fragment → `hx-*` attributes on the element that triggers it → Thymeleaf template fragment for the response.
 
 ## Getting started
 
