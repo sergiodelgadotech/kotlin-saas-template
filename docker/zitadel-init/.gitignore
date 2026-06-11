@@ -1,4 +1,5 @@
 .local-client.properties
 .local-management.properties
 management-api.pat
+.smtp-configured
 scripts/__pycache__/

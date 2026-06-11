@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Idempotent Zitadel seed: registers the local-dev OIDC app, creates a test user,
-and provisions a management-api service account with a PAT for the Spring app.
+provisions a management-api service account with a PAT for the Spring app,
+and configures SMTP for invitation emails via the Zitadel Admin API.
 Authenticates via the machine service account key file generated during Zitadel setup.
 """
 import json, sys, time, base64, os
@@ -12,6 +13,7 @@ KEY_FILE_PATH = Path(os.getenv("KEY_FILE_PATH", "/keys/zitadel-init-sa.json"))
 OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
 MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
 MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.properties"))
+SMTP_CONFIGURED_FILE = Path("/output/.smtp-configured")
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
 
@@ -95,8 +97,53 @@ def api(method: str, path: str, token: str, body: dict | None = None):
         body_text = e.read().decode()
         if e.code == 409:
             return {"already_exists": True, "detail": body_text}
+        if e.code == 403:
+            return {"forbidden": True, "detail": body_text}
         print(f"ERROR {e.code} {method} {path}: {body_text}", file=sys.stderr)
         sys.exit(1)
+
+
+def configure_smtp(token: str) -> None:
+    smtp_password = os.getenv("RESEND_API_KEY", "")
+    if not smtp_password:
+        print("RESEND_API_KEY not set, skipping SMTP configuration.")
+        return
+
+    if SMTP_CONFIGURED_FILE.exists():
+        print("SMTP already configured (flag file exists), skipping.")
+        return
+
+    smtp_from = os.getenv("RESEND_FROM_ADDRESS", "")
+    smtp_from_name = os.getenv("RESEND_FROM_NAME", "")
+
+    print("Configuring SMTP provider (Resend)...")
+    resp = api("POST", "/admin/v1/email/smtp", token, {
+        "senderAddress": smtp_from,
+        "senderName": smtp_from_name,
+        "tls": False,
+        "host": "smtp.resend.com:587",
+        "user": "resend",
+        "password": smtp_password,
+    })
+
+    if resp.get("forbidden"):
+        print("  WARNING: zitadel-init-sa lacks IAM_OWNER — cannot configure SMTP via API.")
+        print("  Configure it manually: http://localhost:8089/ui/console")
+        print("  Instance Settings → Messaging → Email → Add provider → SMTP")
+        return
+
+    if resp.get("already_exists"):
+        print("  SMTP provider already exists, skipping.")
+        SMTP_CONFIGURED_FILE.touch()
+        return
+
+    provider_id = resp["id"]
+    print(f"  Created SMTP provider (id={provider_id})")
+
+    api("POST", f"/admin/v1/email/{provider_id}/_activate", token, {})
+    print("  Activated SMTP provider.")
+
+    SMTP_CONFIGURED_FILE.touch()
 
 
 def provision_management_service_account(token: str) -> None:
@@ -222,6 +269,7 @@ def main():
     })
 
     provision_management_service_account(token)
+    configure_smtp(token)
 
     print()
     print("=" * 60)
