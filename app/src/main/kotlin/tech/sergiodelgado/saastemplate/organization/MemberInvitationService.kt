@@ -55,9 +55,14 @@ class MemberInvitationService(
         // external services.
         val sub = directory.findOrInvite(email)
 
-        // 4. Insert member
+        // 4. Insert member — derive a placeholder name from the email local part;
+        //    it will be overwritten with real OIDC claims when the invitee first logs in.
+        val localPart = email.substringBefore("@")
+        val nameParts = localPart.split(".", "-", "_", limit = 2)
+        val derivedFirst = nameParts[0].replaceFirstChar { it.uppercase() }
+        val derivedLast = if (nameParts.size > 1) nameParts[1].replaceFirstChar { it.uppercase() } else null
         try {
-            organizationService.inviteMember(sub, role)
+            organizationService.inviteMember(sub, role, email = email, firstName = derivedFirst, lastName = derivedLast)
         } catch (e: IllegalStateException) {
             throw DomainValidationException(
                 e.message ?: "Already a member",

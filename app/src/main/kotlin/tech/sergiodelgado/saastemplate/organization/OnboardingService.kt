@@ -19,10 +19,23 @@ class OnboardingService(
     // Evict the cached null that ZitadelAuthenticationSuccessHandler wrote during login
     // (MemberRepository.findOrganizationIdByUserId is @Cacheable and caches null).
     @CacheEvict(cacheNames = ["tenant-by-user"], key = "#ownerUserId")
-    fun createOrganization(ownerUserId: String, name: String): Organization {
+    fun createOrganization(
+        ownerUserId: String,
+        name: String,
+        email: String? = null,
+        firstName: String? = null,
+        lastName: String? = null,
+    ): Organization {
         val org = organizationRepository.save(Organization(name = name, slug = slugFor(name)))
         memberRepository.save(
-            Member(organizationId = org.id, externalUserId = ownerUserId, role = DefaultMemberRole.OWNER.name)
+            Member(
+                organizationId = org.id,
+                externalUserId = ownerUserId,
+                role = DefaultMemberRole.OWNER.name,
+                email = email,
+                firstName = firstName,
+                lastName = lastName,
+            )
         )
         return org
     }

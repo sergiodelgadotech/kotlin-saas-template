@@ -106,7 +106,7 @@ class MemberInvitationServiceTest {
 
         service.invite("alice@example.com", "MEMBER")
 
-        verify { organizationService.inviteMember("new-user-sub", "MEMBER") }
+        verify { organizationService.inviteMember("new-user-sub", "MEMBER", any(), any(), any()) }
     }
 
     @Test
@@ -116,7 +116,7 @@ class MemberInvitationServiceTest {
 
         service.invite("alice@example.com", "MEMBER")
 
-        verify { organizationService.inviteMember("new-user-sub", "MEMBER") }
+        verify { organizationService.inviteMember("new-user-sub", "MEMBER", any(), any(), any()) }
     }
 
     // ── Validation ───────────────────────────────────────────────────────────
@@ -163,6 +163,6 @@ class MemberInvitationServiceTest {
         service.invite("alice@example.com", "ADMIN")
 
         verify(exactly = 1) { idpUserDirectory.findOrInvite("alice@example.com") }
-        verify(exactly = 1) { organizationService.inviteMember(returnedSub, "ADMIN") }
+        verify(exactly = 1) { organizationService.inviteMember(returnedSub, "ADMIN", "alice@example.com", "Alice", null) }
     }
 }

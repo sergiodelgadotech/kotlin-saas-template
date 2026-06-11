@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
-import java.security.Principal
 
 @Controller
 @RequestMapping("/organization")
@@ -24,8 +25,16 @@ class OrganizationController(
     fun newOrganization(): String = "organization/new"
 
     @PostMapping("/new")
-    fun createOrganization(@RequestParam name: String, principal: Principal): String {
-        onboardingService.createOrganization(principal.name, name)
+    fun createOrganization(
+        @RequestParam name: String,
+        @AuthenticationPrincipal oidcUser: OidcUser,
+    ): String {
+        onboardingService.createOrganization(
+            oidcUser.subject, name,
+            email = oidcUser.email,
+            firstName = oidcUser.givenName,
+            lastName = oidcUser.familyName,
+        )
         return "redirect:/dashboard"
     }
 

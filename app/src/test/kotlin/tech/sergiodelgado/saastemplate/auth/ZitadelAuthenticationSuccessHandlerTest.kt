@@ -1,7 +1,10 @@
 package tech.sergiodelgado.saastemplate.auth
 
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -18,13 +21,28 @@ class ZitadelAuthenticationSuccessHandlerTest {
     private val request = MockHttpServletRequest()
     private val response = MockHttpServletResponse()
 
-    private fun authToken(subject: String): OAuth2AuthenticationToken {
-        val oidcUser = mockk<OidcUser> { every { this@mockk.subject } returns subject }
+    private fun authToken(
+        subject: String,
+        email: String? = "user@example.com",
+        givenName: String? = "Test",
+        familyName: String? = "User",
+    ): OAuth2AuthenticationToken {
+        val oidcUser = mockk<OidcUser> {
+            every { this@mockk.subject } returns subject
+            every { this@mockk.email } returns email
+            every { this@mockk.givenName } returns givenName
+            every { this@mockk.familyName } returns familyName
+        }
         return OAuth2AuthenticationToken(oidcUser, emptyList(), "zitadel")
+    }
+
+    private fun stubUpdateProfile(subject: String) {
+        every { memberRepository.updateProfile(subject, any(), any(), any()) } just Runs
     }
 
     @Test
     fun `redirects to dashboard when member exists`() {
+        stubUpdateProfile("user-abc")
         every { memberRepository.findOrganizationIdByUserId("user-abc") } returns "org-uuid-string"
 
         handler.onAuthenticationSuccess(request, response, authToken("user-abc"))
@@ -34,10 +52,21 @@ class ZitadelAuthenticationSuccessHandlerTest {
 
     @Test
     fun `redirects to organization new when member does not exist`() {
+        stubUpdateProfile("new-user")
         every { memberRepository.findOrganizationIdByUserId("new-user") } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("new-user"))
 
         expectThat(response.redirectedUrl).isEqualTo("/organization/new")
+    }
+
+    @Test
+    fun `updates member profile from OIDC claims on login`() {
+        stubUpdateProfile("user-xyz")
+        every { memberRepository.findOrganizationIdByUserId("user-xyz") } returns "org-id"
+
+        handler.onAuthenticationSuccess(request, response, authToken("user-xyz", "jane@example.com", "Jane", "Doe"))
+
+        verify { memberRepository.updateProfile("user-xyz", "jane@example.com", "Jane", "Doe") }
     }
 }

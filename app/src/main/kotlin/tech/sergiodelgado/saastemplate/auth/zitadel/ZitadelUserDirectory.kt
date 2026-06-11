@@ -74,6 +74,8 @@ class ZitadelUserDirectory(
             }
         } catch (e: ApiException) {
             throw IllegalStateException("Zitadel API error (HTTP ${e.code}): ${e.responseBody}", e)
+        } catch (e: IllegalArgumentException) {
+            throw e  // requireNotNull failures — programmer error, not a transport error
         } catch (e: RuntimeException) {
             throw IllegalStateException("Zitadel connection error: ${e.message}", e)
         }

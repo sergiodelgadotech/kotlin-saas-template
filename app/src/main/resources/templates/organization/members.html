@@ -26,7 +26,12 @@
                     </thead>
                     <tbody>
                         <tr th:each="member : ${members}">
-                            <td th:text="${member.externalUserId}"></td>
+                            <td th:with="displayName=${member.firstName != null ? member.firstName + (member.lastName != null ? ' ' + member.lastName : '') : (member.email != null ? member.email : member.externalUserId)}">
+                                <div th:text="${displayName}"></div>
+                                <div th:if="${member.firstName != null and member.email != null}"
+                                     class="text-xs text-base-content/50"
+                                     th:text="${member.email}"></div>
+                            </td>
                             <td>
                                 <span class="badge badge-outline" th:text="${member.role}"></span>
                             </td>

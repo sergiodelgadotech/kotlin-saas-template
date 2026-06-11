@@ -19,9 +19,11 @@ class ZitadelAuthenticationSuccessHandler(
         response: HttpServletResponse,
         authentication: Authentication,
     ) {
-        val subject = (authentication as OAuth2AuthenticationToken).let {
-            (it.principal as OidcUser).subject
-        }
+        val oidcUser = (authentication as OAuth2AuthenticationToken).principal as OidcUser
+        val subject = oidcUser.subject
+        // Keep profile columns fresh from the IdP's own source of truth.
+        // No-op if the member row doesn't exist yet (first-time user, no org created).
+        memberRepository.updateProfile(subject, oidcUser.email, oidcUser.givenName, oidcUser.familyName)
         val hasOrg = memberRepository.findOrganizationIdByUserId(subject) != null
         defaultTargetUrl = if (hasOrg) "/dashboard" else "/organization/new"
         super.onAuthenticationSuccess(request, response, authentication)
