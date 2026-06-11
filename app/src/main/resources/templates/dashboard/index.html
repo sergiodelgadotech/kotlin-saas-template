@@ -12,7 +12,7 @@
         <span class="badge badge-primary" th:if="${subscription != null}" th:text="${subscription.plan}">STARTER</span>
     </div>
 
-    <!-- Stats — se recargan cada 30s via HTMX -->
+    <!-- Stats — reloaded every 30s via HTMX -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
          hx-get="/dashboard/stats"
          hx-trigger="load, every 30s"
@@ -23,7 +23,7 @@
         <div class="skeleton h-24 rounded-box"></div>
     </div>
 
-    <!-- Actividad reciente via SSE -->
+    <!-- Recent activity via SSE -->
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <h2 class="card-title">Recent Activity</h2>
