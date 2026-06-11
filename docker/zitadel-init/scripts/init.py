@@ -82,7 +82,8 @@ def get_access_token(jwt: str) -> str:
         return json.loads(resp.read())["access_token"]
 
 
-def api(method: str, path: str, token: str, body: dict | None = None):
+def api(method: str, path: str, token: str, body: dict | None = None,
+        _retries: int = 6, _retry_delay: int = 5):
     import urllib.request, urllib.error
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(
@@ -90,17 +91,22 @@ def api(method: str, path: str, token: str, body: dict | None = None):
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         method=method,
     )
-    try:
-        with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        body_text = e.read().decode()
-        if e.code == 409:
-            return {"already_exists": True, "detail": body_text}
-        if e.code == 403:
-            return {"forbidden": True, "detail": body_text}
-        print(f"ERROR {e.code} {method} {path}: {body_text}", file=sys.stderr)
-        sys.exit(1)
+    for attempt in range(1, _retries + 1):
+        try:
+            with urllib.request.urlopen(req) as resp:
+                return json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            body_text = e.read().decode()
+            if e.code == 409:
+                return {"already_exists": True, "detail": body_text}
+            if e.code == 403:
+                return {"forbidden": True, "detail": body_text}
+            if e.code == 503 and attempt < _retries:
+                print(f"  503 on {method} {path}, retrying in {_retry_delay}s... ({attempt}/{_retries})")
+                time.sleep(_retry_delay)
+                continue
+            print(f"ERROR {e.code} {method} {path}: {body_text}", file=sys.stderr)
+            sys.exit(1)
 
 
 def configure_smtp(token: str) -> None:
