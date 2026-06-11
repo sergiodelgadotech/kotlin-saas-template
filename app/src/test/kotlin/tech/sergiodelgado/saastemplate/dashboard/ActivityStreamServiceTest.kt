@@ -1,6 +1,10 @@
 package tech.sergiodelgado.saastemplate.dashboard
 
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -58,5 +62,63 @@ class ActivityStreamServiceTest {
             )
         )
         // No exception = pass
+    }
+
+    @Test
+    fun `onTimeout removes emitter and calls complete`() {
+        val orgId = UUID.randomUUID()
+        val emitter = mockk<SseEmitter>(relaxed = true)
+        val timeoutCallback = slot<Runnable>()
+        every { emitter.onTimeout(capture(timeoutCallback)) } just runs
+
+        TenantContext.set(orgId)
+        service.register(emitter)
+        TenantContext.clear()
+
+        timeoutCallback.captured.run()
+
+        verify { emitter.complete() }
+        // Verify removed: a subsequent event doesn't reach this emitter
+        service.on(MemberInvitedEvent(
+            organizationId = orgId,
+            memberId = UUID.randomUUID(),
+            invitedExternalUserId = "u",
+            actorExternalUserId = "a",
+        ))
+        verify(exactly = 0) { emitter.send(any<SseEmitter.SseEventBuilder>()) }
+    }
+
+    @Test
+    fun `sendHeartbeat sends comment to all registered emitters`() {
+        val orgId = UUID.randomUUID()
+        val emitter1 = mockk<SseEmitter>(relaxed = true)
+        val emitter2 = mockk<SseEmitter>(relaxed = true)
+
+        TenantContext.set(orgId)
+        service.register(emitter1)
+        service.register(emitter2)
+        TenantContext.clear()
+
+        service.sendHeartbeat()
+
+        verify(exactly = 1) { emitter1.send(any<SseEmitter.SseEventBuilder>()) }
+        verify(exactly = 1) { emitter2.send(any<SseEmitter.SseEventBuilder>()) }
+    }
+
+    @Test
+    fun `sendHeartbeat removes emitter that throws on send`() {
+        val orgId = UUID.randomUUID()
+        val emitter = mockk<SseEmitter>(relaxed = true)
+        every { emitter.send(any<SseEmitter.SseEventBuilder>()) } throws Exception("connection reset")
+
+        TenantContext.set(orgId)
+        service.register(emitter)
+        TenantContext.clear()
+
+        service.sendHeartbeat()
+
+        // Second heartbeat should not attempt to send again — emitter was evicted
+        service.sendHeartbeat()
+        verify(exactly = 1) { emitter.send(any<SseEmitter.SseEventBuilder>()) }
     }
 }

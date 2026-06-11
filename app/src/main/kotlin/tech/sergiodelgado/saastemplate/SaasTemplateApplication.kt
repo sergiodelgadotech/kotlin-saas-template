@@ -6,6 +6,7 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.FilterType
 import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
 
 // @EnableJdbcRepositories is explicit here because the starter's
 // OrganizationAutoConfiguration already registers a JdbcRepositoryConfigExtension
@@ -15,6 +16,7 @@ import org.springframework.data.jdbc.repository.config.EnableJdbcRepositories
 // TypeExcludeFilter mirrors the exclusion already on @SpringBootApplication's built-in
 // @ComponentScan, ensuring @TestConfiguration classes are excluded from this second scan too.
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan(
     basePackages = ["tech.sergiodelgado.saastemplate"],
     excludeFilters = [ComponentScan.Filter(type = FilterType.CUSTOM, classes = [TypeExcludeFilter::class])],

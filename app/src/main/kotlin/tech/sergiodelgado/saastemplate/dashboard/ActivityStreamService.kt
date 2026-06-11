@@ -1,6 +1,7 @@
 package tech.sergiodelgado.saastemplate.dashboard
 
 import org.springframework.http.MediaType
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
@@ -22,8 +23,24 @@ class ActivityStreamService {
         val list = emitters.computeIfAbsent(orgId) { CopyOnWriteArrayList() }
         list.add(emitter)
         emitter.onCompletion { list.remove(emitter) }
-        emitter.onTimeout { list.remove(emitter) }
-        emitter.onError { list.remove(emitter) }
+        emitter.onTimeout { list.remove(emitter); emitter.complete() }
+        emitter.onError { list.remove(emitter); emitter.complete() }
+    }
+
+    @Scheduled(fixedRate = 25_000)
+    fun sendHeartbeat() {
+        val heartbeat = SseEmitter.event().comment("ka")
+        emitters.values.forEach { list ->
+            val toRemove = mutableListOf<SseEmitter>()
+            list.forEach { emitter ->
+                try {
+                    emitter.send(heartbeat)
+                } catch (_: Exception) {
+                    toRemove.add(emitter)
+                }
+            }
+            list.removeAll(toRemove)
+        }
     }
 
     // Fires only after the transaction commits — guarantees no SSE event is sent
