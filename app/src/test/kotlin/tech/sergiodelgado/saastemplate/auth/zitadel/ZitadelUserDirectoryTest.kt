@@ -95,6 +95,8 @@ class ZitadelUserDirectoryTest {
         // "bob" is a single token → given = family = "Bob"; invitee corrects during onboarding
         expectThat(profile?.givenName).isEqualTo("Bob")
         expectThat(profile?.familyName).isEqualTo("Bob")
+        // pre-verified so Zitadel doesn't send a redundant verification email alongside the invite
+        expectThat(requestSlot.captured.email?.isVerified).isEqualTo(true)
         expectThat(requestSlot.captured.email?.sendCode).isNull()
     }
 

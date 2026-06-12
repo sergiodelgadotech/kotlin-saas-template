@@ -69,6 +69,7 @@ class ZitadelUserDirectory(
                     .email(
                         UserServiceSetHumanEmail()
                             .email(email)
+                            .isVerified(true)
                     )
             )
 
