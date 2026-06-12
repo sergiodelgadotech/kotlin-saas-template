@@ -266,6 +266,22 @@ To enable on a fork (requires the same Grafana vars from the Dashboards setup ab
    - **Post-logout redirect URI:** `https://your-app-domain/`
 4. Copy the generated **Client ID** to the `ZITADEL_CLIENT_ID` env var. Leave `ZITADEL_CLIENT_SECRET` empty.
 5. Set `AUTH_ISSUER=https://your-zitadel-domain` and `AUTH_JWKS_URL=https://your-zitadel-domain/oauth/v2/keys`.
+6. Set the **Default Redirect URI** so Zitadel-initiated emails (e.g. password-change notifications) land on the app rather than the Management Console.
+   In the console: *Default Settings → Login Behavior and Security → Default Redirect URI* → `https://your-app-domain/`.
+   Alternatively, via the Admin API (requires an IAM-OWNER token). Fetch the current policy first to avoid zeroing other fields, then PUT the merged body:
+   ```bash
+   # Fetch current policy
+   curl -s -H "Authorization: Bearer $IAM_TOKEN" \
+     "$AUTH_ISSUER/admin/v1/policies/login" | jq .policy > policy.json
+
+   # Merge in defaultRedirectUri and PUT
+   cat policy.json | jq '. + {"defaultRedirectUri": "https://your-app-domain/"}' \
+     | curl -X PUT \
+         -H "Authorization: Bearer $IAM_TOKEN" \
+         -H "Content-Type: application/json" \
+         "$AUTH_ISSUER/admin/v1/policies/login" \
+         -d @-
+   ```
 
 > **Forgot password?** Since `/sign-in` is an instant redirect to Zitadel's hosted login page, the "Forgot password?" link appears there automatically — no template-side wiring is needed.
 

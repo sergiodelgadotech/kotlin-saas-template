@@ -14,8 +14,10 @@ OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
 MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
 MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.properties"))
 SMTP_CONFIGURED_FILE = Path("/output/.smtp-configured")
+DEFAULT_REDIRECT_CONFIGURED_FILE = Path("/output/.default-redirect-uri-configured")
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
+DEFAULT_REDIRECT_URI = "http://localhost:8080/"
 
 
 def wait_for_zitadel(max_attempts: int = 60, delay: int = 5) -> None:
@@ -152,6 +154,39 @@ def configure_smtp(token: str) -> None:
     SMTP_CONFIGURED_FILE.touch()
 
 
+def configure_default_redirect_uri(token: str) -> None:
+    if DEFAULT_REDIRECT_CONFIGURED_FILE.exists():
+        print("Default Redirect URI already configured (flag file exists), skipping.")
+        return
+
+    print("Configuring instance Default Redirect URI...")
+
+    get_resp = api("GET", "/admin/v1/policies/login", token)
+    policy = get_resp.get("policy", {})
+
+    if policy.get("defaultRedirectUri") == DEFAULT_REDIRECT_URI:
+        print("  Default Redirect URI already set correctly, skipping.")
+        DEFAULT_REDIRECT_CONFIGURED_FILE.touch()
+        return
+
+    # UpdateLoginPolicy is a full-replacement PUT (no FieldMask) — copy all
+    # existing fields to avoid zeroing MFA timeouts, allowUsernamePassword, etc.
+    excluded = {"details", "isDefault"}
+    put_body = {k: v for k, v in policy.items() if k not in excluded}
+    put_body["defaultRedirectUri"] = DEFAULT_REDIRECT_URI
+
+    resp = api("PUT", "/admin/v1/policies/login", token, put_body)
+
+    if resp.get("forbidden"):
+        print("  WARNING: zitadel-init-sa lacks IAM_OWNER — cannot configure Default Redirect URI via API.")
+        print("  Configure it manually: http://localhost:8089/ui/console")
+        print("  Default Settings → Login Behavior and Security → Default Redirect URI")
+        return
+
+    print(f"  Default Redirect URI set to {DEFAULT_REDIRECT_URI}")
+    DEFAULT_REDIRECT_CONFIGURED_FILE.touch()
+
+
 def provision_management_service_account(token: str) -> None:
     """
     Idempotently creates a management-api-sa service account, grants it ORG_OWNER,
@@ -276,6 +311,7 @@ def main():
 
     provision_management_service_account(token)
     configure_smtp(token)
+    configure_default_redirect_uri(token)
 
     print()
     print("=" * 60)
