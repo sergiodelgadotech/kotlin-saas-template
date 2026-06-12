@@ -21,7 +21,8 @@ class OrganizationE2eTest : PlaywrightE2eTestBase() {
     fun `settings form submission shows flash message`() {
         page.navigate(url("/organization/settings"))
         page.locator("input[name='name']").fill("Dev Org")
-        page.waitForNavigation { page.locator("form[action*='organization/settings'] button[type='submit']").click() }
+        page.locator("form[action*='organization/settings'] button[type='submit']").click()
+        page.waitForURL("**/organization/settings")
 
         val body = page.locator("body").innerText()
         expectThat(body).contains("Settings updated successfully")

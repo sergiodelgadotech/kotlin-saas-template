@@ -8,3 +8,4 @@
 - [Commit type for runtime infra swaps](feedback_commit_type_production_infra.md) — Use perf: for performance-motivated runtime swaps (e.g. Tomcat → Jetty); not feat: or chore:
 - [Verify audit concerns before reporting](feedback_verify_audit_concerns.md) — when subagents flag library "sharp edges/bugs/risks", verify each against current code + open-issue state + user's stack before passing them up
 - [Zitadel SMTP must use port 465](feedback_zitadel_smtp.md) — port 587 STARTTLS drops credentials; use smtp.resend.com:465 with tls=true
+- [Project board Plan field is low priority](feedback_plan_field_low_priority.md) — don't ask which Plan N to assign; labels + Blocked-by lists are what matter
