@@ -25,7 +25,7 @@ class ZitadelAuthenticationSuccessHandler(
         // No-op if the member row doesn't exist yet (first-time user, no org created).
         memberRepository.updateProfile(subject, oidcUser.email.orEmpty(), oidcUser.givenName, oidcUser.familyName)
         val hasOrg = memberRepository.findOrganizationIdByUserId(subject) != null
-        defaultTargetUrl = if (hasOrg) "/dashboard" else "/organization/new"
+        defaultTargetUrl = if (hasOrg) "/dashboard" else "/onboarding/organization"
         super.onAuthenticationSuccess(request, response, authentication)
     }
 }

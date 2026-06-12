@@ -3,6 +3,7 @@ package tech.sergiodelgado.saastemplate.e2e
 import io.mockk.every
 import io.mockk.mockk
 import tech.sergiodelgado.saasstarter.billing.BillingService
+import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.billing.Subscription
 import tech.sergiodelgado.saasstarter.billing.SubscriptionStatus
 import org.springframework.boot.test.context.TestConfiguration
@@ -21,10 +22,22 @@ class StripeStubConfig {
 
         val DEV_ORG_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
 
+        private fun trialing(orgId: UUID) = Subscription(
+            id = UUID.randomUUID(),
+            organizationId = orgId,
+            externalCustomerId = "cus_stub",
+            plan = DefaultBillingPlan.STARTER.name,
+            status = SubscriptionStatus.TRIALING,
+        )
+
         val noSubscription: BillingService = mockk {
             every { currentSubscription() } returns null
             every { createCheckoutSession(any()) } returns CHECKOUT_PATH
             every { createPortalSession() } returns PORTAL_PATH
+            every { createCustomer(any(), any(), any(), any()) } returns "cus_stub"
+            every { ensureSubscription(any(), any()) } answers {
+                trialing(firstArg())
+            }
         }
 
         val starterSubscription: BillingService = mockk {
@@ -37,6 +50,10 @@ class StripeStubConfig {
             )
             every { createCheckoutSession(any()) } returns CHECKOUT_PATH
             every { createPortalSession() } returns PORTAL_PATH
+            every { createCustomer(any(), any(), any(), any()) } returns "cus_stub"
+            every { ensureSubscription(any(), any()) } answers {
+                trialing(firstArg())
+            }
         }
     }
 

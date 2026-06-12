@@ -54,12 +54,13 @@ saasstarter:
       - /dashboard/**
       - /billing/**
       - /organization/**
+      - /onboarding/**
     exclude-path-patterns:
       - /webhooks/**
       - /
       - /pricing
       - /docs/**
-      - /organization/new
+      - /onboarding/organization
   rate-limit:
     path-patterns:
       - /webhooks/**

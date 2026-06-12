@@ -51,13 +51,13 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    fun `redirects to organization new when member does not exist`() {
+    fun `redirects to onboarding organization when member does not exist`() {
         stubUpdateProfile("new-user")
         every { memberRepository.findOrganizationIdByUserId("new-user") } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("new-user"))
 
-        expectThat(response.redirectedUrl).isEqualTo("/organization/new")
+        expectThat(response.redirectedUrl).isEqualTo("/onboarding/organization")
     }
 
     @Test

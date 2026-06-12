@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Choose your plan</title></head>
+<body>
+<div layout:fragment="content">
+    <div class="max-w-2xl mx-auto mt-12">
+        <h1 class="text-2xl font-bold mb-2">Choose your plan</h1>
+        <p class="text-base-content/60 mb-8">Pick a plan to get started. You can upgrade or change at any time.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <!-- Free trial card (always STARTER) -->
+            <div class="card bg-base-100 shadow-sm border border-base-200">
+                <div class="card-body">
+                    <h2 class="card-title">Free Trial</h2>
+                    <p class="text-base-content/60 text-sm mt-1">Try all features with no commitment.</p>
+                    <div class="card-actions mt-4">
+                        <form th:action="@{/onboarding/plan}" method="post" class="w-full">
+                            <input type="hidden" name="plan" th:value="${starterPlan}">
+                            <button class="btn btn-outline w-full" type="submit">Continue on free trial</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paid plan cards (every plan that is not STARTER) -->
+            <div th:each="plan : ${plans}" th:if="${plan != starterPlan}"
+                 class="card bg-base-100 shadow-sm border-2 border-primary">
+                <div class="card-body">
+                    <h2 class="card-title" th:text="${plan}">PRO</h2>
+                    <div class="card-actions mt-4">
+                        <form th:action="@{/onboarding/plan}" method="post" class="w-full">
+                            <input type="hidden" name="plan" th:value="${plan}">
+                            <button class="btn btn-primary w-full" type="submit"
+                                    th:text="'Start with ' + ${plan}">Start with PRO</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

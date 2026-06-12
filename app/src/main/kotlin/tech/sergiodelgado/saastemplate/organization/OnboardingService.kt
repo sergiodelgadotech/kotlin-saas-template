@@ -3,6 +3,7 @@ package tech.sergiodelgado.saastemplate.organization
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.organization.DefaultMemberRole
 import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
@@ -15,6 +16,7 @@ import kotlin.random.Random
 class OnboardingService(
     private val organizationRepository: OrganizationRepository,
     private val memberRepository: MemberRepository,
+    private val billingService: BillingService,
 ) {
     // Evict the cached null that ZitadelAuthenticationSuccessHandler wrote during login
     // (MemberRepository.findOrganizationIdByUserId is @Cacheable and caches null).
@@ -37,6 +39,8 @@ class OnboardingService(
                 lastName = lastName,
             )
         )
+        val customerId = billingService.createCustomer(org.id, email = email, name = name)
+        billingService.ensureSubscription(org.id, customerId)
         return org
     }
 
