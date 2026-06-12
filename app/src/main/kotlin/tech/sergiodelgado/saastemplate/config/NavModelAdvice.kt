@@ -7,9 +7,21 @@ import org.springframework.web.bind.annotation.ModelAttribute
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 
 /**
- * Injects nav display attributes into every authenticated controller's model so
- * the nav fragment doesn't need the Thymeleaf Security extras dialect.
- * Reads from the local members table (source of truth after profile self-edits).
+ * Injects nav display attributes (initials, display name, email) into every
+ * authenticated controller's model.
+ *
+ * **Why read from the members table instead of OIDC claims?**
+ * The OIDC id_token is issued at login time and stays in the session until the
+ * user signs out. If the user edits their name on /account, the id_token still
+ * carries the old placeholder (e.g. "Bob Bob"). Reading from the members table —
+ * which UserAccountService updates immediately on save — means the nav reflects
+ * the new name on the very next page load, without requiring a sign-out/sign-in.
+ *
+ * **Why not use the Thymeleaf Security extras dialect (#authentication / sec:)?**
+ * The dialect isn't on the classpath yet. When it is added (to enable sec:authorize
+ * for role-based nav sections), this advice can be retired for the display-name
+ * concern but should remain for the members-table read so initials stay live.
+ * See the GitHub issue tracking the Thymeleaf Security extras addition.
  */
 @ControllerAdvice
 class NavModelAdvice(private val memberRepository: MemberRepository) {
