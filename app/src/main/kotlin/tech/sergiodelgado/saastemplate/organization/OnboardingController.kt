@@ -28,8 +28,9 @@ class OnboardingController(
         @RequestParam name: String,
         @AuthenticationPrincipal oidcUser: OidcUser,
     ): String {
+        val subject = requireNotNull(oidcUser.subject) { "OIDC subject must not be null" }
         onboardingService.createOrganization(
-            ownerUserId = oidcUser.subject,
+            ownerUserId = subject,
             name = name,
             email = oidcUser.email.orEmpty(),
             firstName = oidcUser.givenName,
