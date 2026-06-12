@@ -90,6 +90,7 @@ saastemplate:
       base-url: ${ZITADEL_BASE_URL:}
       pat: ${ZITADEL_MGMT_PAT:#{null}}
       organization-id: ${ZITADEL_ORG_ID:}
+      application-name: ${ZITADEL_APPLICATION_NAME:Kotlin SaaS Template}
 
 sentry:
   dsn: ${SENTRY_DSN:}

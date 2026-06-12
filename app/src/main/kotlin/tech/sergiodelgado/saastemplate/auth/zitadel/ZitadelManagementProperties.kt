@@ -6,5 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class ZitadelManagementProperties(
     val baseUrl: String = "",
     val pat: String? = null,
-    val organizationId: String = ""
+    val organizationId: String = "",
+    val applicationName: String = "Kotlin SaaS Template"
 )

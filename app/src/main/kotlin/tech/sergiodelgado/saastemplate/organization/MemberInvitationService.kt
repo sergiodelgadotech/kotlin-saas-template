@@ -15,7 +15,6 @@ import tech.sergiodelgado.saasstarter.validation.validateOrThrow
 import tech.sergiodelgado.saasstarter.web.ForbiddenException
 import io.konform.validation.ValidationError
 import io.konform.validation.path.ValidationPath
-import tech.sergiodelgado.saastemplate.util.extractNameFromEmail
 import java.util.Optional
 
 @Service
@@ -56,11 +55,11 @@ class MemberInvitationService(
         // external services.
         val sub = directory.findOrInvite(email)
 
-        // 4. Insert member — derive a placeholder name from the email local part;
-        //    it will be overwritten with real OIDC claims when the invitee first logs in.
-        val (derivedFirst, derivedLast) = extractNameFromEmail(email)
+        // 4. Insert member with no placeholder name — real first/last name will be written
+        //    from OIDC claims (givenName, familyName) when the invitee first logs in via
+        //    ZitadelAuthenticationSuccessHandler → memberRepository.updateProfile.
         try {
-            organizationService.inviteMember(sub, role, email = email, firstName = derivedFirst, lastName = derivedLast)
+            organizationService.inviteMember(sub, role, email = email)
         } catch (e: IllegalStateException) {
             throw DomainValidationException(
                 e.message ?: "Already a member",

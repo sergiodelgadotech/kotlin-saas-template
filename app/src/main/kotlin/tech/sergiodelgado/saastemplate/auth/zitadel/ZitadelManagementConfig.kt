@@ -1,7 +1,7 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
 import com.zitadel.Zitadel
-import com.zitadel.api.BetaUserServiceApi
+import com.zitadel.api.UserServiceApi
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -13,6 +13,6 @@ class ZitadelManagementConfig {
 
     @Bean
     @ConditionalOnProperty(name = ["saastemplate.zitadel.management.pat"])
-    fun betaUserServiceApi(properties: ZitadelManagementProperties): BetaUserServiceApi =
-        Zitadel.withAccessToken(properties.baseUrl, properties.pat!!).getBetaUsers()
+    fun userServiceApi(properties: ZitadelManagementProperties): UserServiceApi =
+        Zitadel.withAccessToken(properties.baseUrl, properties.pat!!).getUsers()
 }

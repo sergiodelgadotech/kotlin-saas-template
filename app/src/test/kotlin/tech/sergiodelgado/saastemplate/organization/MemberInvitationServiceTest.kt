@@ -163,6 +163,6 @@ class MemberInvitationServiceTest {
         service.invite("alice@example.com", "ADMIN")
 
         verify(exactly = 1) { idpUserDirectory.findOrInvite("alice@example.com") }
-        verify(exactly = 1) { organizationService.inviteMember(returnedSub, "ADMIN", "alice@example.com", "Alice", null) }
+        verify(exactly = 1) { organizationService.inviteMember(returnedSub, "ADMIN", "alice@example.com", null, null) }
     }
 }

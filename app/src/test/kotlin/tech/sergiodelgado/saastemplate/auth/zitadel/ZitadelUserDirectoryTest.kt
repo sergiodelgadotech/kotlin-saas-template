@@ -1,11 +1,13 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
-import com.zitadel.api.BetaUserServiceApi
-import com.zitadel.model.BetaUserServiceAddHumanUserRequest
-import com.zitadel.model.BetaUserServiceAddHumanUserResponse
-import com.zitadel.model.BetaUserServiceListUsersRequest
-import com.zitadel.model.BetaUserServiceListUsersResponse
-import com.zitadel.model.BetaUserServiceUser
+import com.zitadel.api.UserServiceApi
+import com.zitadel.model.UserServiceAddHumanUserRequest
+import com.zitadel.model.UserServiceAddHumanUserResponse
+import com.zitadel.model.UserServiceCreateInviteCodeRequest
+import com.zitadel.model.UserServiceCreateInviteCodeResponse
+import com.zitadel.model.UserServiceListUsersRequest
+import com.zitadel.model.UserServiceListUsersResponse
+import com.zitadel.model.UserServiceUser
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import strikt.assertions.one
 
 class ZitadelUserDirectoryTest {
@@ -21,33 +24,34 @@ class ZitadelUserDirectoryTest {
     private val properties = ZitadelManagementProperties(
         baseUrl = "https://zitadel.example.com",
         pat = "test-pat",
-        organizationId = "org-123"
+        organizationId = "org-123",
+        applicationName = "Test App"
     )
 
-    private val betaUsers = mockk<BetaUserServiceApi>()
+    private val userService = mockk<UserServiceApi>()
 
-    private val directory = ZitadelUserDirectory(properties, betaUsers)
+    private val directory = ZitadelUserDirectory(properties, userService, "https://app.example.com")
 
     @Test
     fun `returns userId when user found by email in correct org`() {
-        val existingUser = BetaUserServiceUser().userId("user-abc")
-        val listResponse = BetaUserServiceListUsersResponse().result(listOf(existingUser))
+        val existingUser = UserServiceUser().userId("user-abc")
+        val listResponse = UserServiceListUsersResponse().result(listOf(existingUser))
 
-        every { betaUsers.listUsers(any()) } returns listResponse
+        every { userService.listUsers(any()) } returns listResponse
 
         val result = directory.findOrInvite("alice@example.com")
 
         expectThat(result).isEqualTo("user-abc")
-        verify(exactly = 0) { betaUsers.addHumanUser(any<BetaUserServiceAddHumanUserRequest>()) }
+        verify(exactly = 0) { userService.addHumanUser(any<UserServiceAddHumanUserRequest>()) }
     }
 
     @Test
     fun `list request includes both email and org filters`() {
-        val existingUser = BetaUserServiceUser().userId("user-abc")
-        val listResponse = BetaUserServiceListUsersResponse().result(listOf(existingUser))
-        val requestSlot = slot<BetaUserServiceListUsersRequest>()
+        val existingUser = UserServiceUser().userId("user-abc")
+        val listResponse = UserServiceListUsersResponse().result(listOf(existingUser))
+        val requestSlot = slot<UserServiceListUsersRequest>()
 
-        every { betaUsers.listUsers(capture(requestSlot)) } returns listResponse
+        every { userService.listUsers(capture(requestSlot)) } returns listResponse
 
         directory.findOrInvite("alice@example.com")
 
@@ -60,26 +64,49 @@ class ZitadelUserDirectoryTest {
 
     @Test
     fun `creates user and returns new userId when no user found`() {
-        val emptyListResponse = BetaUserServiceListUsersResponse().result(emptyList())
-        val createResponse = BetaUserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
 
-        every { betaUsers.listUsers(any()) } returns emptyListResponse
-        every { betaUsers.addHumanUser(any<BetaUserServiceAddHumanUserRequest>()) } returns createResponse
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(any<UserServiceAddHumanUserRequest>()) } returns createResponse
+        every { userService.createInviteCode(any<UserServiceCreateInviteCodeRequest>()) } returns inviteResponse
 
         val result = directory.findOrInvite("bob@example.com")
 
         expectThat(result).isEqualTo("new-user-xyz")
-        verify(exactly = 1) { betaUsers.addHumanUser(any<BetaUserServiceAddHumanUserRequest>()) }
+        verify(exactly = 1) { userService.addHumanUser(any<UserServiceAddHumanUserRequest>()) }
+    }
+
+    @Test
+    fun `create request has empty profile and no verification email`() {
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
+        val requestSlot = slot<UserServiceAddHumanUserRequest>()
+
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(capture(requestSlot)) } returns createResponse
+        every { userService.createInviteCode(any<UserServiceCreateInviteCodeRequest>()) } returns inviteResponse
+
+        directory.findOrInvite("bob@example.com")
+
+        val profile = requestSlot.captured.profile
+        expectThat(profile?.givenName).isEqualTo("")
+        expectThat(profile?.familyName).isEqualTo("")
+        expectThat(requestSlot.captured.email?.sendCode).isNull()
     }
 
     @Test
     fun `create request is scoped to correct org`() {
-        val emptyListResponse = BetaUserServiceListUsersResponse().result(emptyList())
-        val createResponse = BetaUserServiceAddHumanUserResponse().userId("new-user-xyz")
-        val requestSlot = slot<BetaUserServiceAddHumanUserRequest>()
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
+        val requestSlot = slot<UserServiceAddHumanUserRequest>()
 
-        every { betaUsers.listUsers(any()) } returns emptyListResponse
-        every { betaUsers.addHumanUser(capture(requestSlot)) } returns createResponse
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(capture(requestSlot)) } returns createResponse
+        every { userService.createInviteCode(any<UserServiceCreateInviteCodeRequest>()) } returns inviteResponse
 
         directory.findOrInvite("bob@example.com")
 
@@ -88,11 +115,29 @@ class ZitadelUserDirectoryTest {
     }
 
     @Test
-    fun `throws IllegalArgumentException when found user has null userId`() {
-        val userWithNullId = BetaUserServiceUser().userId(null)
-        val listResponse = BetaUserServiceListUsersResponse().result(listOf(userWithNullId))
+    fun `invite code is sent with url template and application name`() {
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
+        val inviteSlot = slot<UserServiceCreateInviteCodeRequest>()
 
-        every { betaUsers.listUsers(any()) } returns listResponse
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(any<UserServiceAddHumanUserRequest>()) } returns createResponse
+        every { userService.createInviteCode(capture(inviteSlot)) } returns inviteResponse
+
+        directory.findOrInvite("bob@example.com")
+
+        expectThat(inviteSlot.captured.userId).isEqualTo("new-user-xyz")
+        expectThat(inviteSlot.captured.sendCode?.urlTemplate).isEqualTo("https://app.example.com/sign-in")
+        expectThat(inviteSlot.captured.sendCode?.applicationName).isEqualTo("Test App")
+    }
+
+    @Test
+    fun `throws IllegalArgumentException when found user has null userId`() {
+        val userWithNullId = UserServiceUser().userId(null)
+        val listResponse = UserServiceListUsersResponse().result(listOf(userWithNullId))
+
+        every { userService.listUsers(any()) } returns listResponse
 
         assertThrows<IllegalArgumentException> {
             directory.findOrInvite("alice@example.com")
@@ -101,11 +146,13 @@ class ZitadelUserDirectoryTest {
 
     @Test
     fun `throws IllegalArgumentException when created user response has null userId`() {
-        val emptyListResponse = BetaUserServiceListUsersResponse().result(emptyList())
-        val createResponseWithNullId = BetaUserServiceAddHumanUserResponse().userId(null)
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponseWithNullId = UserServiceAddHumanUserResponse().userId(null)
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
 
-        every { betaUsers.listUsers(any()) } returns emptyListResponse
-        every { betaUsers.addHumanUser(any<BetaUserServiceAddHumanUserRequest>()) } returns createResponseWithNullId
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(any<UserServiceAddHumanUserRequest>()) } returns createResponseWithNullId
+        every { userService.createInviteCode(any<UserServiceCreateInviteCodeRequest>()) } returns inviteResponse
 
         assertThrows<IllegalArgumentException> {
             directory.findOrInvite("bob@example.com")
