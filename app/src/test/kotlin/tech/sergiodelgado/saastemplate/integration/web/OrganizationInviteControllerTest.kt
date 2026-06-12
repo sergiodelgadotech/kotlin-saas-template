@@ -53,7 +53,10 @@ class OrganizationInviteControllerTest {
     @TestConfiguration
     class StubConfig {
         @Bean
-        fun idpUserDirectory(): IdpUserDirectory = IdpUserDirectory { email -> "stub-sub-$email" }
+        fun idpUserDirectory(): IdpUserDirectory = object : IdpUserDirectory {
+            override fun findOrInvite(email: String) = "stub-sub-$email"
+            override fun updateProfile(userId: String, givenName: String, familyName: String) = Unit
+        }
     }
 
     companion object {

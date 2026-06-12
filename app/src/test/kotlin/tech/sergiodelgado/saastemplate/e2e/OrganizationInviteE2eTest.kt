@@ -17,8 +17,10 @@ class OrganizationInviteE2eTest : PlaywrightE2eTestBase() {
     class IdpStubConfig {
         @Bean
         @Primary
-        fun idpUserDirectory(): IdpUserDirectory =
-            IdpUserDirectory { email -> "e2e-sub-${email.replace("@", "-at-")}".take(50) }
+        fun idpUserDirectory(): IdpUserDirectory = object : IdpUserDirectory {
+            override fun findOrInvite(email: String) = "e2e-sub-${email.replace("@", "-at-")}".take(50)
+            override fun updateProfile(userId: String, givenName: String, familyName: String) = Unit
+        }
     }
 
     @Test

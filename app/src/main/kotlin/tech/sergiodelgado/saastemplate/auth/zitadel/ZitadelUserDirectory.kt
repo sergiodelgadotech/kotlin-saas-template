@@ -12,6 +12,7 @@ import com.zitadel.model.UserServiceSearchQuery
 import com.zitadel.model.UserServiceSendInviteCode
 import com.zitadel.model.UserServiceSetHumanEmail
 import com.zitadel.model.UserServiceSetHumanProfile
+import com.zitadel.model.UserServiceUpdateHumanUserRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
@@ -92,6 +93,24 @@ class ZitadelUserDirectory(
             throw IllegalStateException("Zitadel API error (HTTP ${e.code}): ${e.responseBody}", e)
         } catch (e: IllegalArgumentException) {
             throw e  // requireNotNull failures — programmer error, not a transport error
+        } catch (e: RuntimeException) {
+            throw IllegalStateException("Zitadel connection error: ${e.message}", e)
+        }
+    }
+
+    override fun updateProfile(userId: String, givenName: String, familyName: String) {
+        try {
+            userService.updateHumanUser(
+                UserServiceUpdateHumanUserRequest()
+                    .userId(userId)
+                    .profile(
+                        UserServiceSetHumanProfile()
+                            .givenName(givenName)
+                            .familyName(familyName)
+                    )
+            )
+        } catch (e: ApiException) {
+            throw IllegalStateException("Zitadel API error (HTTP ${e.code}): ${e.responseBody}", e)
         } catch (e: RuntimeException) {
             throw IllegalStateException("Zitadel connection error: ${e.message}", e)
         }

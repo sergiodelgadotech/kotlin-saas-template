@@ -1,5 +1,6 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
+import com.zitadel.ApiException
 import com.zitadel.api.UserServiceApi
 import com.zitadel.model.UserServiceAddHumanUserRequest
 import com.zitadel.model.UserServiceAddHumanUserResponse
@@ -7,6 +8,8 @@ import com.zitadel.model.UserServiceCreateInviteCodeRequest
 import com.zitadel.model.UserServiceCreateInviteCodeResponse
 import com.zitadel.model.UserServiceListUsersRequest
 import com.zitadel.model.UserServiceListUsersResponse
+import com.zitadel.model.UserServiceUpdateHumanUserRequest
+import com.zitadel.model.UserServiceUpdateHumanUserResponse
 import com.zitadel.model.UserServiceUser
 import io.mockk.every
 import io.mockk.mockk
@@ -177,6 +180,30 @@ class ZitadelUserDirectoryTest {
 
         assertThrows<IllegalArgumentException> {
             directory.findOrInvite("bob@example.com")
+        }
+    }
+
+    // ── updateProfile ────────────────────────────────────────────────────────
+
+    @Test
+    fun `updateProfile sends correct userId and names to Zitadel`() {
+        val requestSlot = slot<UserServiceUpdateHumanUserRequest>()
+        every { userService.updateHumanUser(capture(requestSlot)) } returns UserServiceUpdateHumanUserResponse()
+
+        directory.updateProfile("user-123", "Alice", "Smith")
+
+        expectThat(requestSlot.captured.userId).isEqualTo("user-123")
+        expectThat(requestSlot.captured.profile?.givenName).isEqualTo("Alice")
+        expectThat(requestSlot.captured.profile?.familyName).isEqualTo("Smith")
+    }
+
+    @Test
+    fun `updateProfile wraps ApiException as IllegalStateException`() {
+        every { userService.updateHumanUser(any<UserServiceUpdateHumanUserRequest>()) } throws
+            ApiException(403, emptyMap(), "forbidden")
+
+        assertThrows<IllegalStateException> {
+            directory.updateProfile("user-123", "Alice", "Smith")
         }
     }
 }
