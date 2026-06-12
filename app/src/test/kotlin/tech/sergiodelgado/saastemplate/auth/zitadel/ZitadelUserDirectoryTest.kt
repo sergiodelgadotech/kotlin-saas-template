@@ -79,7 +79,7 @@ class ZitadelUserDirectoryTest {
     }
 
     @Test
-    fun `create request has empty profile and no verification email`() {
+    fun `create request derives placeholder name from email and sets no verification email`() {
         val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
         val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
         val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
@@ -92,9 +92,28 @@ class ZitadelUserDirectoryTest {
         directory.findOrInvite("bob@example.com")
 
         val profile = requestSlot.captured.profile
-        expectThat(profile?.givenName).isEqualTo("")
-        expectThat(profile?.familyName).isEqualTo("")
+        // "bob" is a single token → given = family = "Bob"; invitee corrects during onboarding
+        expectThat(profile?.givenName).isEqualTo("Bob")
+        expectThat(profile?.familyName).isEqualTo("Bob")
         expectThat(requestSlot.captured.email?.sendCode).isNull()
+    }
+
+    @Test
+    fun `create request splits dotted email into given and family name`() {
+        val emptyListResponse = UserServiceListUsersResponse().result(emptyList())
+        val createResponse = UserServiceAddHumanUserResponse().userId("new-user-xyz")
+        val inviteResponse = mockk<UserServiceCreateInviteCodeResponse>(relaxed = true)
+        val requestSlot = slot<UserServiceAddHumanUserRequest>()
+
+        every { userService.listUsers(any()) } returns emptyListResponse
+        every { userService.addHumanUser(capture(requestSlot)) } returns createResponse
+        every { userService.createInviteCode(any<UserServiceCreateInviteCodeRequest>()) } returns inviteResponse
+
+        directory.findOrInvite("alice.smith@example.com")
+
+        val profile = requestSlot.captured.profile
+        expectThat(profile?.givenName).isEqualTo("Alice")
+        expectThat(profile?.familyName).isEqualTo("Smith")
     }
 
     @Test

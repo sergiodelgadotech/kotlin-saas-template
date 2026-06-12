@@ -55,6 +55,7 @@ class ZitadelUserDirectory(
                 }
             }
 
+            val (givenName, familyName) = namesFromEmail(email)
             val createResponse = userService.addHumanUser(
                 UserServiceAddHumanUserRequest()
                     .organization(
@@ -62,8 +63,8 @@ class ZitadelUserDirectory(
                     )
                     .profile(
                         UserServiceSetHumanProfile()
-                            .givenName("")
-                            .familyName("")
+                            .givenName(givenName)
+                            .familyName(familyName)
                     )
                     .email(
                         UserServiceSetHumanEmail()
@@ -92,6 +93,20 @@ class ZitadelUserDirectory(
             throw e  // requireNotNull failures — programmer error, not a transport error
         } catch (e: RuntimeException) {
             throw IllegalStateException("Zitadel connection error: ${e.message}", e)
+        }
+    }
+
+    // Derives a placeholder given/family name from the email local-part so Zitadel's
+    // 1-200 rune validation passes. The invitee corrects their name during onboarding.
+    private fun namesFromEmail(email: String): Pair<String, String> {
+        val local = email.substringBefore("@")
+        val parts = local.split(Regex("[._+\\-]")).filter { it.isNotEmpty() }
+            .map { it.replaceFirstChar(Char::uppercase) }
+        return if (parts.size >= 2) {
+            parts.first() to parts.drop(1).joinToString(" ")
+        } else {
+            val name = parts.firstOrNull() ?: local.replaceFirstChar(Char::uppercase)
+            name to name
         }
     }
 }
