@@ -20,7 +20,7 @@ class ZitadelAuthenticationSuccessHandler(
         authentication: Authentication,
     ) {
         val oidcUser = (authentication as OAuth2AuthenticationToken).principal as OidcUser
-        val subject = oidcUser.subject
+        val subject = requireNotNull(oidcUser.subject) { "OIDC subject must not be null" }
         // Keep profile columns fresh from the IdP's own source of truth.
         // No-op if the member row doesn't exist yet (first-time user, no org created).
         memberRepository.updateProfile(subject, oidcUser.email.orEmpty(), oidcUser.givenName, oidcUser.familyName)
