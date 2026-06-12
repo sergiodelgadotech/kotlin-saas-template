@@ -89,7 +89,7 @@ services:
     restart: unless-stopped
 
   zitadel-init:
-    image: python:3.13-alpine
+    image: python:3.14-alpine
     # Host networking so the container reaches localhost:8089 — the port Zitadel
     # is mapped to — and sends the correct Host header that Zitadel requires.
     network_mode: host
