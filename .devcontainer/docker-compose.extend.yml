@@ -1,8 +1,15 @@
 services:
   dev:
-    image: mcr.microsoft.com/devcontainers/java:25
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - ..:/workspace:cached
+      - ..:/workspace/kotlin-saas-template:cached
+      # kotlin-saas-starter sibling for composite Gradle build (local dev only).
+      # In BranchBox worktrees this path won't exist — Gradle falls back to the
+      # published GitHub Packages artifact automatically (settings.gradle.kts
+      # wraps the includeBuild in `if (starterPath.exists())`).
+      - ../../kotlin-saas-starter:/workspace/kotlin-saas-starter:cached
     command: sleep infinity
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/saastemplate?user=saastemplate&password=saastemplate

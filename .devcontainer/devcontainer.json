@@ -2,13 +2,18 @@
   "name": "kotlin-saas-template",
   "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
   "service": "dev",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspace/kotlin-saas-template",
   "remoteUser": "vscode",
   "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
+  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand",
   "mounts": [
-    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
   ],
   "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
   "remoteEnv": {
