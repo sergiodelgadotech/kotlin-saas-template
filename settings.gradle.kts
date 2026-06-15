@@ -8,7 +8,9 @@ pluginManagement {
 rootProject.name = "kotlin-saas-template"
 include("app", "web", "infra")
 
-val starterPath = file("../kotlin-saas-starter")
+val starterPath = System.getenv("STARTER_PATH")
+    ?.let { file(it) }
+    ?: file("../kotlin-saas-starter")
 if (starterPath.exists()) {
     includeBuild(starterPath)
 }
