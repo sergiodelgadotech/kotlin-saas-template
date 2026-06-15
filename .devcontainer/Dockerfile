@@ -6,4 +6,7 @@ FROM mcr.microsoft.com/devcontainers/java:25
 RUN apt-get update && apt-get install -y --no-install-recommends \
     iptables \
     ipset \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && echo "vscode ALL=(root) NOPASSWD: /workspaces/kotlin-saas-template/.devcontainer/init-firewall-extra.sh" \
+     > /etc/sudoers.d/firewall-extra \
+  && chmod 0440 /etc/sudoers.d/firewall-extra

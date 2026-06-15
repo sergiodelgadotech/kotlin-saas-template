@@ -23,7 +23,7 @@
   ],
   "name": "kotlin-saas-template",
   "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh || true",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh || true && sudo /workspaces/kotlin-saas-template/.devcontainer/init-firewall-extra.sh || true",
   "remoteEnv": {
     "AUTH_ISSUER": "${localEnv:AUTH_ISSUER}",
     "AUTH_JWKS_URL": "${localEnv:AUTH_JWKS_URL}",
