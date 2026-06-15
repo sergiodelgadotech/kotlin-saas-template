@@ -98,11 +98,58 @@ cp app/src/main/resources/application-local.yml.example \
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 
+### Agent sandboxes (`sbx`)
+
+For parallel auto-mode agent runs (Claude Code with `--dangerously-skip-permissions`, multiple branches in flight), use [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) instead of the local `docker compose` setup. Each sandbox is a microVM with its own kernel, virtio-fs share of the worktree, nested Docker (so `testcontainers` and `docker compose up` work), pre-baked Java 25 / Node / Claude Code, and a network proxy that injects host-stored secrets without exposing them inside the VM. YOLO/`--dangerously-skip-permissions` is on by default; the KVM boundary is what makes that safe.
+
+**One-time host setup:**
+
+```bash
+gh auth token | sbx secret set -g github       # stored globally, proxy MITMs api.github.com
+# anthropic secret usually already set via `sbx secret set -g anthropic --oauth`
+```
+
+**Spawn a sandbox for a feature:**
+
+```bash
+sbx create claude . ../kotlin-saas-starter \
+  --branch auto \
+  --name kt-saas-<short-name> \
+  -m 16g --cpus 8
+```
+
+This creates a git worktree at `.sbx/kt-saas-<short-name>-worktrees/sandbox-kt-saas-<short-name>/` and mounts the sibling `kotlin-saas-starter` as a second workspace.
+
+**Run an agent / open a shell:**
+
+```bash
+sbx run kt-saas-<short-name>                                              # launches Claude Code
+sbx exec kt-saas-<short-name> bash                                        # interactive shell
+
+# Build/test commands need STARTER_PATH for composite build (see below):
+sbx exec -e STARTER_PATH=/var/home/serandel/Projects/kotlin-saas-starter \
+  kt-saas-<short-name> ./gradlew :app:test
+sbx exec -e STARTER_PATH=/var/home/serandel/Projects/kotlin-saas-starter \
+  kt-saas-<short-name> ./gradlew :app:integrationTest
+```
+
+`STARTER_PATH` points the composite build at the sibling repo's host-absolute path. The worktree under `.sbx/.../<branch>` is too deep for the relative `../kotlin-saas-starter` to resolve, so `settings.gradle.kts` looks at `STARTER_PATH` first.
+
+**Tear down:**
+
+```bash
+sbx rm kt-saas-<short-name>     # removes sandbox + worktree + branch
+```
+
+**Known limitation:** `sbx`'s `github` secret injects auth for `api.github.com` but not for `maven.pkg.github.com`. Inside a sandbox, the `STARTER_PATH` composite build sidesteps this — Gradle never touches GitHub Packages. If you ever need `maven.pkg.github.com` from inside a sandbox, prime your host `~/.gradle/caches` first and mount it in (or file an issue with Docker Sandboxes to add Maven Basic auth handling).
+
 ### Composite build
 
 When `../kotlin-saas-starter` is checked out alongside this repo, `settings.gradle.kts` automatically substitutes it for the published Maven artifact. Edits in the sibling repo are picked up by the next template build — no `publishToMavenLocal` step required.
 
-Without the sibling directory (forks, CI), the `includeBuild` block is dormant and the starter resolves from GitHub Packages as a normal Maven dependency.
+The `STARTER_PATH` environment variable takes precedence over the relative path — set it when you need to point the composite build at a non-sibling location (e.g. from a deep worktree inside an agent sandbox).
+
+Without either a `STARTER_PATH` or a sibling directory (forks, CI), the `includeBuild` block is dormant and the starter resolves from GitHub Packages as a normal Maven dependency.
 
 ### Tests
 
