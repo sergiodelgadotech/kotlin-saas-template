@@ -6,7 +6,10 @@
         "vscjava.vscode-java-pack",
         "vscjava.vscode-spring-boot-dashboard",
         "ms-azuretools.vscode-docker"
-      ]
+      ],
+      "settings": {
+        "java.home": "/usr/lib/jvm/msopenjdk-current"
+      }
     }
   },
   "dockerComposeFile": [
