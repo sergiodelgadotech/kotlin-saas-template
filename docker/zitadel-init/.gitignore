@@ -2,4 +2,5 @@
 .local-management.properties
 management-api.pat
 .smtp-configured
+.default-redirect-uri-configured
 scripts/__pycache__/
