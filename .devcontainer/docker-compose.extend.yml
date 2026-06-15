@@ -4,6 +4,9 @@ services:
       context: .devcontainer
       dockerfile: Dockerfile
     volumes:
+      # workspaceMount in devcontainer.json is ignored with dockerComposeFile — mount explicitly here.
+      # "." resolves to the project root (where docker compose is invoked from).
+      - .:/workspaces/kotlin-saas-template:cached
       # kotlin-saas-starter sibling for composite Gradle build (local dev only).
       # Mounted at /workspaces/kotlin-saas-starter so settings.gradle.kts resolves
       # ../kotlin-saas-starter correctly from the workspace root /workspaces/kotlin-saas-template.

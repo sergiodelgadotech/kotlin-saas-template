@@ -10,8 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # Install the firewall script and grant vscode passwordless sudo for it only
-COPY init-firewall.sh /usr/local/bin/init-firewall.sh
-RUN chmod +x /usr/local/bin/init-firewall.sh \
-  && echo "vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh" \
+# Install at a different path so the claude-code feature doesn't overwrite it
+# (the feature installs its own /usr/local/bin/init-firewall.sh)
+COPY init-firewall.sh /usr/local/bin/init-firewall-project.sh
+RUN chmod +x /usr/local/bin/init-firewall-project.sh \
+  && echo "vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall-project.sh" \
      > /etc/sudoers.d/firewall \
   && chmod 0440 /etc/sudoers.d/firewall
