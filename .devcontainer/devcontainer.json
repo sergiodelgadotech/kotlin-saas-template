@@ -37,10 +37,6 @@
     "STRIPE_WEBHOOK_SECRET": "${localEnv:STRIPE_WEBHOOK_SECRET}"
   },
   "remoteUser": "vscode",
-  "runArgs": [
-    "--cap-add=NET_ADMIN",
-    "--cap-add=NET_RAW"
-  ],
   "service": "dev",
   "waitFor": "postStartCommand",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",

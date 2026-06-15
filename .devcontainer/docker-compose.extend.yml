@@ -1,7 +1,7 @@
 services:
   dev:
     build:
-      context: .
+      context: .devcontainer
       dockerfile: Dockerfile
     volumes:
       # kotlin-saas-starter sibling for composite Gradle build (local dev only).
@@ -11,6 +11,9 @@ services:
       # published GitHub Packages artifact automatically (settings.gradle.kts
       # wraps the includeBuild in `if (starterPath.exists())`).
       - ../../kotlin-saas-starter:/workspaces/kotlin-saas-starter:cached
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     command: sleep infinity
     environment:
       DATABASE_URL: jdbc:postgresql://postgres:5432/saastemplate?user=saastemplate&password=saastemplate
