@@ -6,14 +6,14 @@ services:
     volumes:
       # workspaceMount in devcontainer.json is ignored with dockerComposeFile — mount explicitly here.
       # "." resolves to the project root (where docker compose is invoked from).
-      - .:/workspaces/kotlin-saas-template:cached
+      - .:/workspaces/kotlin-saas-template:cached,z
       # kotlin-saas-starter sibling for composite Gradle build (local dev only).
       # Mounted at /workspaces/kotlin-saas-starter so settings.gradle.kts resolves
       # ../kotlin-saas-starter correctly from the workspace root /workspaces/kotlin-saas-template.
       # In BranchBox worktrees this path won't exist — Gradle falls back to the
       # published GitHub Packages artifact automatically (settings.gradle.kts
       # wraps the includeBuild in `if (starterPath.exists())`).
-      - ../../kotlin-saas-starter:/workspaces/kotlin-saas-starter:cached
+      - ../../kotlin-saas-starter:/workspaces/kotlin-saas-starter:cached,z
     cap_add:
       - NET_ADMIN
       - NET_RAW
