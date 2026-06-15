@@ -1,8 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/java:25
 
-# iptables + ipset are required by the claude-code feature's init-firewall.sh
-# but are not present in the base image. Everything else (the script itself,
-# NET_ADMIN/NET_RAW caps, sudo rule) is handled by the feature.
+# iptables + ipset are required by init-firewall.sh (installed via onCreateCommand)
+# but are not present in the base image.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     iptables \
     ipset \
