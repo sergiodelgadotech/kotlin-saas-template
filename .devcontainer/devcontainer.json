@@ -22,8 +22,9 @@
     "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
   ],
   "name": "kotlin-saas-template",
+  "onCreateCommand": "cp /workspaces/kotlin-saas-template/.devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh",
   "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
-  "postStartCommand": "bash -c 'echo 127.0.0.1 statsig.anthropic.com >> /etc/hosts' && /usr/local/bin/init-firewall.sh || true && bash /workspaces/kotlin-saas-template/.devcontainer/init-firewall-extra.sh || true",
+  "postStartCommand": "/usr/local/bin/init-firewall.sh || true",
   "remoteEnv": {
     "AUTH_ISSUER": "${localEnv:AUTH_ISSUER}",
     "AUTH_JWKS_URL": "${localEnv:AUTH_JWKS_URL}",
