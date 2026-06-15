@@ -1,33 +1,4 @@
 {
-  "name": "kotlin-saas-template",
-  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
-  "service": "dev",
-  "workspaceFolder": "/workspace/kotlin-saas-template",
-  "remoteUser": "vscode",
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
-  },
-  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
-  "waitFor": "postStartCommand",
-  "mounts": [
-    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
-    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
-  ],
-  "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
-  "remoteEnv": {
-    "GITHUB_ACTOR": "${localEnv:GITHUB_ACTOR}",
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
-    "AUTH_JWKS_URL": "${localEnv:AUTH_JWKS_URL}",
-    "AUTH_ISSUER": "${localEnv:AUTH_ISSUER}",
-    "STRIPE_API_KEY": "${localEnv:STRIPE_API_KEY}",
-    "STRIPE_WEBHOOK_SECRET": "${localEnv:STRIPE_WEBHOOK_SECRET}",
-    "STRIPE_PRICE_STARTER": "${localEnv:STRIPE_PRICE_STARTER}",
-    "STRIPE_PRICE_PRO": "${localEnv:STRIPE_PRICE_PRO}",
-    "RESEND_API_KEY": "${localEnv:RESEND_API_KEY}",
-    "SENTRY_DSN": "${localEnv:SENTRY_DSN}"
-  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -37,5 +8,41 @@
         "ms-azuretools.vscode-docker"
       ]
     }
-  }
+  },
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.extend.yml"
+  ],
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=claude-code-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
+  ],
+  "name": "kotlin-saas-template",
+  "postCreateCommand": "./gradlew dependencies && cp app/src/main/resources/application-local.yml.example app/src/main/resources/application-local.yml",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "remoteEnv": {
+    "AUTH_ISSUER": "${localEnv:AUTH_ISSUER}",
+    "AUTH_JWKS_URL": "${localEnv:AUTH_JWKS_URL}",
+    "GITHUB_ACTOR": "${localEnv:GITHUB_ACTOR}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "RESEND_API_KEY": "${localEnv:RESEND_API_KEY}",
+    "SENTRY_DSN": "${localEnv:SENTRY_DSN}",
+    "STRIPE_API_KEY": "${localEnv:STRIPE_API_KEY}",
+    "STRIPE_PRICE_PRO": "${localEnv:STRIPE_PRICE_PRO}",
+    "STRIPE_PRICE_STARTER": "${localEnv:STRIPE_PRICE_STARTER}",
+    "STRIPE_WEBHOOK_SECRET": "${localEnv:STRIPE_WEBHOOK_SECRET}"
+  },
+  "remoteUser": "vscode",
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "service": "dev",
+  "waitFor": "postStartCommand",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind,consistency=cached"
 }

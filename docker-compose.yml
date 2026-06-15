@@ -6,31 +6,31 @@ services:
       POSTGRES_USER: saastemplate
       POSTGRES_PASSWORD: saastemplate
     ports:
-      - "5432:5432"
+    - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql
+    - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U saastemplate"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U saastemplate
       interval: 5s
       timeout: 5s
       retries: 5
-
   redis:
     image: redis:8-alpine
     ports:
-      - "6379:6379"
+    - 6379:6379
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - ping
       interval: 5s
       timeout: 5s
       retries: 5
-
-  # Zitadel — identity provider
-  # Admin UI: http://localhost:8089/ui/console
-  # Default credentials: zitadel-admin@zitadel.localhost / Password1!
   zitadel:
     image: ghcr.io/zitadel/zitadel:v4.15.1
-    user: "root"
+    user: root
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: postgres
@@ -50,48 +50,39 @@ services:
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Init Service Account
       ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE: 1
       ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH: /zitadel-keys/zitadel-init-sa.json
-      # Login client for the v2 login UI — PAT written here, read by zitadel-login container
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
       ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Login Client
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: "2099-01-01T00:00:00Z"
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: 2099-01-01T00:00:00Z
       ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel-bootstrap/login-client.pat
-      # Redirect browser to the zitadel-login service on port 3000
-      # /ui/v2/login is baked in as NEXT_PUBLIC_BASE_PATH in the login image
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: http://localhost:3000/ui/v2/login/
       ZITADEL_OIDC_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?authRequest=
       ZITADEL_OIDC_DEFAULTLOGOUTURLV2: http://localhost:3000/ui/v2/login/logout?post_logout_redirect=
       ZITADEL_SAML_DEFAULTLOGINURLV2: http://localhost:3000/ui/v2/login/login?samlRequest=
     ports:
-      - "8089:8080"
+    - 8089:8080
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
-      - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro,z
-      - zitadel-init-keys:/zitadel-keys
-      - zitadel-bootstrap:/zitadel-bootstrap
-
-  # v2 login UI — starts after zitadel-init writes the login-client PAT
-  # Login page: http://localhost:3000
+    - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro,z
+    - zitadel-init-keys:/zitadel-keys
+    - zitadel-bootstrap:/zitadel-bootstrap
   zitadel-login:
     image: ghcr.io/zitadel/zitadel-login:latest
     network_mode: host
     environment:
       ZITADEL_API_URL: http://localhost:8089
       ZITADEL_SERVICE_USER_TOKEN_FILE: /bootstrap/login-client.pat
-      ZITADEL_TLS_ENABLED: "false"
+      ZITADEL_TLS_ENABLED: 'false'
       PORT: 3000
     volumes:
-      - zitadel-bootstrap:/bootstrap:ro
+    - zitadel-bootstrap:/bootstrap:ro
     depends_on:
       zitadel-init:
         condition: service_completed_successfully
     restart: unless-stopped
-
   zitadel-init:
     image: python:3.14-alpine
-    # Host networking so the container reaches localhost:8089 — the port Zitadel
-    # is mapped to — and sends the correct Host header that Zitadel requires.
     network_mode: host
     command: sh -c "pip install cryptography -q && python /scripts/init.py"
     environment:
@@ -104,14 +95,23 @@ services:
       RESEND_FROM_ADDRESS: ${RESEND_FROM_ADDRESS:-}
       RESEND_FROM_NAME: ${RESEND_FROM_NAME:-}
     volumes:
-      - zitadel-init-keys:/keys:ro
-      - ./docker/zitadel-init/scripts:/scripts:ro,z
-      - ./docker/zitadel-init:/output:z
+    - zitadel-init-keys:/keys:ro
+    - ./docker/zitadel-init/scripts:/scripts:ro,z
+    - ./docker/zitadel-init:/output:z
     depends_on:
-      - zitadel
-    restart: "no"
-
+    - zitadel
+    restart: no
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    env_file:
+    - path: .cloudflared.env
+      required: false
+    command:
+    - tunnel
+    - --no-autoupdate
+    - run
 volumes:
-  postgres_data:
-  zitadel-init-keys:
-  zitadel-bootstrap:
+  postgres_data: null
+  zitadel-init-keys: null
+  zitadel-bootstrap: null
