@@ -34,10 +34,8 @@ saasstarter:
 AUTH_ISSUER: http://localhost:8089
 AUTH_JWKS_URL: http://localhost:8089/oauth/v2/keys
 ZITADEL_CLIENT_SECRET:                # leave blank — PKCE, no secret needed
-STRIPE_API_KEY: sk_test_REPLACE_ME
-STRIPE_WEBHOOK_SECRET: whsec_REPLACE_ME
-STRIPE_PRICE_STARTER: price_REPLACE_ME
-STRIPE_PRICE_PRO: price_REPLACE_ME
+# STRIPE_API_KEY / STRIPE_WEBHOOK_SECRET / STRIPE_PRICE_PRO — set in .env (loaded by direnv), not here.
+# See CLAUDE.md "Testing plans locally" for instructions.
 # RESEND_API_KEY — set in .env (shared with docker-compose), loaded by direnv
 
 saastemplate:

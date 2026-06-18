@@ -98,6 +98,33 @@ cp app/src/main/resources/application-local.yml.example \
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 
+### Testing plans / billing locally
+
+The **Starter** plan is free and never calls Stripe — choosing it during onboarding redirects straight to `/dashboard`. Only paid plans (currently Pro) need a real Stripe test price.
+
+**One-time setup (test mode):**
+
+```bash
+# 1. Create a Pro product + recurring price (€79/mo)
+stripe products create --name="Pro"
+stripe prices create --product=prod_XXX --unit-amount=7900 \
+  --currency=eur --recurring.interval=month
+# → note the returned price_... id
+
+# 2. Add Stripe values to .env (gitignored, loaded by direnv → available to bootRun)
+#    STRIPE_API_KEY=sk_test_...
+#    STRIPE_PRICE_PRO=price_...    ← from above
+#    STRIPE_WEBHOOK_SECRET=...     ← from step 3
+
+# 3. In a second terminal, forward webhook events to the local app
+stripe listen --forward-to localhost:8080/webhooks/stripe
+# copy the printed whsec_... into STRIPE_WEBHOOK_SECRET in .env
+```
+
+Then `./gradlew :app:bootRun --args='--spring.profiles.active=local'` as usual.
+Choosing **Pro** in onboarding will redirect to a real Stripe Checkout test page;
+use card `4242 4242 4242 4242`.
+
 ### Agent sandboxes (`sbx`)
 
 For parallel auto-mode agent runs (Claude Code with `--dangerously-skip-permissions`, multiple branches in flight), use [Docker Sandboxes](https://docs.docker.com/ai/sandboxes/) instead of the local `docker compose` setup. Each sandbox is a microVM with its own kernel, virtio-fs share of the worktree, nested Docker (so `testcontainers` and `docker compose up` work), pre-baked Java 25 / Node / Claude Code, and a network proxy that injects host-stored secrets without exposing them inside the VM. YOLO/`--dangerously-skip-permissions` is on by default; the KVM boundary is what makes that safe.
