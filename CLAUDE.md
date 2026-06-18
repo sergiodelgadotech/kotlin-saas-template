@@ -95,7 +95,7 @@ cp app/src/main/resources/application-local.yml.example \
 ./gradlew :app:bootRun --args='--spring.profiles.active=local'
 ```
 
-Spring Boot auto-starts Postgres, Redis, and Zitadel via Docker Compose (`spring-boot-docker-compose`). The `cloudflared` tunnel service is gated behind the `tunnel` profile so it doesn't interfere — start it manually only if you need a public URL: `docker compose --profile tunnel up -d cloudflared`.
+Spring Boot auto-starts Postgres, Redis, and Zitadel via Docker Compose (`spring-boot-docker-compose`).
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 

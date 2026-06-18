@@ -101,17 +101,6 @@ services:
     depends_on:
     - zitadel
     restart: no
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    profiles: [tunnel]
-    restart: unless-stopped
-    env_file:
-    - path: .cloudflared.env
-      required: false
-    command:
-    - tunnel
-    - --no-autoupdate
-    - run
 volumes:
   postgres_data: null
   zitadel-init-keys: null

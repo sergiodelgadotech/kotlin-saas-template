@@ -37,18 +37,6 @@ app/src/main/resources/static/js/
 # Claude Code
 .claude/
 
-# BranchBox
-.branchbox/registry.json
-.branchbox/secure/
-.branchbox/secure/tunnels/
-.devcontainer/.branchbox.env
-.devcontainer/.cloudflared.env
-.devcontainer/.github-token.env
-.devcontainer/.git-signing-key
-.devcontainer/.gitconfig.env
-.branchbox.env
-.env.local
-
 # Sandbox runtime (sbx / Lima / claude-vm)
 .sbx/
 .lima/

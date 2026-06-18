@@ -37,7 +37,6 @@
     "SENTRY_DSN": "${localEnv:SENTRY_DSN}",
     "STRIPE_API_KEY": "${localEnv:STRIPE_API_KEY}",
     "STRIPE_PRICE_PRO": "${localEnv:STRIPE_PRICE_PRO}",
-    "STRIPE_PRICE_STARTER": "${localEnv:STRIPE_PRICE_STARTER}",
     "STRIPE_WEBHOOK_SECRET": "${localEnv:STRIPE_WEBHOOK_SECRET}"
   },
   "remoteUser": "root",
