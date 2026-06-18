@@ -1,5 +1,7 @@
 package tech.sergiodelgado.saastemplate.organization
 
+import com.stripe.exception.StripeException
+import org.slf4j.LoggerFactory
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Controller
@@ -19,6 +21,7 @@ class OnboardingController(
     private val billingService: BillingService,
     private val properties: SaasStarterProperties,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @GetMapping("/organization")
     fun organizationForm(): String = "onboarding/organization"
@@ -47,12 +50,19 @@ class OnboardingController(
     }
 
     @PostMapping("/plan")
-    fun choosePlan(@RequestParam plan: String): String {
+    fun choosePlan(@RequestParam plan: String, model: Model): String {
         if (plan == DefaultBillingPlan.STARTER.name) {
             return "redirect:/dashboard"
         }
-        val billingPlan = DefaultBillingPlan.valueOf(plan)
-        val url = billingService.createCheckoutSession(billingPlan)
-        return "redirect:$url"
+        return try {
+            val url = billingService.createCheckoutSession(DefaultBillingPlan.valueOf(plan))
+            "redirect:$url"
+        } catch (e: StripeException) {
+            log.error("Checkout failed for plan {}", plan, e)
+            model.addAttribute("plans", properties.billing.planPrices.keys.toList())
+            model.addAttribute("starterPlan", DefaultBillingPlan.STARTER.name)
+            model.addAttribute("error", "Couldn't start checkout. Try again or continue on the free trial.")
+            "onboarding/plan"
+        }
     }
 }

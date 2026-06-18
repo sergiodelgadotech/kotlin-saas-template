@@ -1,5 +1,6 @@
 package tech.sergiodelgado.saastemplate.organization
 
+import com.stripe.exception.InvalidRequestException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.ui.ExtendedModelMap
 import strikt.api.expectThat
+import strikt.assertions.contains
 import strikt.assertions.containsKey
 import strikt.assertions.isEqualTo
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
@@ -80,7 +82,7 @@ class OnboardingControllerTest {
 
     @Test
     fun `POST plan with STARTER redirects to dashboard`() {
-        val result = controller.choosePlan(DefaultBillingPlan.STARTER.name)
+        val result = controller.choosePlan(DefaultBillingPlan.STARTER.name, ExtendedModelMap())
 
         expectThat(result).isEqualTo("redirect:/dashboard")
     }
@@ -89,8 +91,22 @@ class OnboardingControllerTest {
     fun `POST plan with paid plan invokes checkout session and redirects`() {
         every { billingService.createCheckoutSession(DefaultBillingPlan.PRO) } returns "https://checkout.stripe.com/pay/cs_test"
 
-        val result = controller.choosePlan("PRO")
+        val result = controller.choosePlan("PRO", ExtendedModelMap())
 
         expectThat(result).isEqualTo("redirect:https://checkout.stripe.com/pay/cs_test")
+    }
+
+    @Test
+    fun `POST plan with Stripe exception re-renders plan form with error message`() {
+        every { billingService.createCheckoutSession(DefaultBillingPlan.PRO) } throws
+            InvalidRequestException("No such price: 'price_REPLACE_ME'", null, null, "resource_missing", 400, null)
+        val model = ExtendedModelMap()
+
+        val view = controller.choosePlan("PRO", model)
+
+        expectThat(view).isEqualTo("onboarding/plan")
+        expectThat(model).containsKey("plans")
+        expectThat(model).containsKey("starterPlan")
+        expectThat(model["error"] as String).contains("Couldn't start checkout")
     }
 }
