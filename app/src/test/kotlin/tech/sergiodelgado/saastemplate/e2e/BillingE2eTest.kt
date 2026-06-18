@@ -1,5 +1,6 @@
 package tech.sergiodelgado.saastemplate.e2e
 
+import com.stripe.exception.InvalidRequestException
 import io.mockk.every
 import tech.sergiodelgado.saasstarter.billing.Subscription
 import tech.sergiodelgado.saasstarter.billing.SubscriptionStatus
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.contains
+import strikt.assertions.endsWith
 import java.util.UUID
 
 class BillingE2eTest : PlaywrightE2eTestBase() {
@@ -20,6 +22,8 @@ class BillingE2eTest : PlaywrightE2eTestBase() {
             plan = "STARTER",
             status = SubscriptionStatus.ACTIVE,
         )
+        every { StripeStubConfig.starterSubscription.createCheckoutSession(any()) } returns StripeStubConfig.CHECKOUT_PATH
+        every { StripeStubConfig.starterSubscription.createPortalSession() } returns StripeStubConfig.PORTAL_PATH
     }
 
     @Test
@@ -56,5 +60,26 @@ class BillingE2eTest : PlaywrightE2eTestBase() {
         page.locator("button:has-text('Manage Subscription')").click()
 
         expectThat(page.url()).contains(StripeStubConfig.PORTAL_PATH)
+    }
+
+    @Test
+    fun `upgrade to pro when Stripe fails shows error alert on billing page`() {
+        every { StripeStubConfig.starterSubscription.createCheckoutSession(any()) } throws
+            InvalidRequestException(
+                "No such price: 'price_REPLACE_ME'",
+                null,
+                null,
+                "resource_missing",
+                400,
+                null,
+            )
+
+        page.navigate(url("/billing"))
+        page.waitForNavigation {
+            page.locator("button:has-text('Upgrade to Pro')").click()
+        }
+
+        expectThat(page.url()).endsWith("/billing/checkout")
+        expectThat(page.locator("body").innerText()).contains("Couldn't start checkout")
     }
 }
