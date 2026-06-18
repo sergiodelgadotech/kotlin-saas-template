@@ -82,10 +82,12 @@ class OnboardingControllerRenderTest {
     }
 
     @Test
-    fun `GET onboarding plan renders free-trial card without sidebar`() {
+    fun `GET onboarding plan renders Starter card with free-trial badge and no sidebar`() {
         mvc.perform(get("/onboarding/plan"))
             .andExpect(status().isOk)
-            .andExpect(content().string(containsString("Continue on free trial")))
+            .andExpect(content().string(containsString("Starter")))
+            .andExpect(content().string(containsString("Free trial")))
+            .andExpect(content().string(containsString("Start free trial")))
             .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
             .andExpect(content().string(not(containsString("href=\"/billing\""))))
     }

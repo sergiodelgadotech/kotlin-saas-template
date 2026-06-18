@@ -11,15 +11,23 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <!-- Free trial card (always STARTER) -->
+            <!-- Starter card (always STARTER) — starts as a free trial -->
             <div class="card bg-base-100 shadow-sm border border-base-200">
                 <div class="card-body">
-                    <h2 class="card-title">Free Trial</h2>
-                    <p class="text-base-content/60 text-sm mt-1">Try all features with no commitment.</p>
+                    <div class="flex items-center gap-2">
+                        <h2 class="card-title">Starter</h2>
+                        <span class="badge badge-outline">Free trial</span>
+                    </div>
+                    <p class="text-3xl font-bold mt-1">€0<span class="text-base font-normal text-base-content/60">/mo</span></p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li>&#10003; Up to 5 users</li>
+                        <li>&#10003; 1 GB storage</li>
+                        <li>&#10003; Community support</li>
+                    </ul>
                     <div class="card-actions mt-4">
                         <form th:action="@{/onboarding/plan}" method="post" class="w-full">
                             <input type="hidden" name="plan" th:value="${starterPlan}">
-                            <button class="btn btn-outline w-full" type="submit">Continue on free trial</button>
+                            <button class="btn btn-outline w-full" type="submit">Start free trial</button>
                         </form>
                     </div>
                 </div>
