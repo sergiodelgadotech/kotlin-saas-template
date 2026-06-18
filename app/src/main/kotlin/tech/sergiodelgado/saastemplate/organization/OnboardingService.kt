@@ -4,6 +4,7 @@ import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import tech.sergiodelgado.saasstarter.billing.BillingService
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import tech.sergiodelgado.saasstarter.billing.Subscription
 import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
 import tech.sergiodelgado.saasstarter.organization.DefaultMemberRole
@@ -11,7 +12,6 @@ import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationRepository
-import java.util.UUID
 import kotlin.random.Random
 
 @Service
@@ -51,7 +51,8 @@ class OnboardingService(
 
     // Idempotent: returns the existing subscription if one already exists, so repeated
     // calls (e.g. when the gate bounces the user back to the plan page) are safe.
-    fun ensureBilling(organizationId: UUID): Subscription {
+    fun ensureBilling(): Subscription {
+        val organizationId = TenantContext.get()
         subscriptionRepository.findByOrganizationId(organizationId)?.let { return it }
         val org = requireNotNull(organizationRepository.findById(organizationId).orElse(null)) {
             "Organization $organizationId not found"

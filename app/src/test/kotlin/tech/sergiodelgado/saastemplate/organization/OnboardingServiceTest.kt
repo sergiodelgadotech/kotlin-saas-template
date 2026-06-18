@@ -4,7 +4,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.matches
@@ -84,6 +87,16 @@ class OnboardingServiceTest {
     // --- ensureBilling ---
 
     private val testOrgId = UUID.randomUUID()
+
+    @BeforeEach
+    fun setTenantContext() {
+        TenantContext.set(testOrgId)
+    }
+
+    @AfterEach
+    fun clearTenantContext() {
+        TenantContext.clear()
+    }
     private val testOrg = Organization(id = testOrgId, name = "Acme", slug = "acme-123456")
     private val ownerMember = Member(
         organizationId = testOrgId,
@@ -105,7 +118,7 @@ class OnboardingServiceTest {
             status = SubscriptionStatus.TRIALING,
         )
 
-        service.ensureBilling(testOrgId)
+        service.ensureBilling()
 
         verify(exactly = 1) { billingService.createCustomer(testOrgId, email = "ceo@acme.com", name = "Acme") }
         verify(exactly = 1) { billingService.ensureSubscription(testOrgId, "cus_test") }
@@ -121,7 +134,7 @@ class OnboardingServiceTest {
         )
         every { subscriptionRepository.findByOrganizationId(testOrgId) } returns existing
 
-        val result = service.ensureBilling(testOrgId)
+        val result = service.ensureBilling()
 
         expectThat(result).isEqualTo(existing)
         verify(exactly = 0) { billingService.createCustomer(any(), any(), any()) }

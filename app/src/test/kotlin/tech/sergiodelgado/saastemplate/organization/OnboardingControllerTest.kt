@@ -100,7 +100,7 @@ class OnboardingControllerTest {
     fun `POST plan calls ensureBilling before routing`() {
         controller.choosePlan(DefaultBillingPlan.STARTER.name, ExtendedModelMap())
 
-        verify(exactly = 1) { onboardingService.ensureBilling(testOrgId) }
+        verify(exactly = 1) { onboardingService.ensureBilling() }
     }
 
     @Test

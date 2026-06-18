@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
-import tech.sergiodelgado.saasstarter.tenant.TenantContext
 
 @Controller
 @RequestMapping("/onboarding")
@@ -53,7 +52,7 @@ class OnboardingController(
     @PostMapping("/plan")
     fun choosePlan(@RequestParam plan: String, model: Model): String {
         return try {
-            onboardingService.ensureBilling(TenantContext.get())
+            onboardingService.ensureBilling()
             if (plan == DefaultBillingPlan.STARTER.name) {
                 "redirect:/dashboard"
             } else {
