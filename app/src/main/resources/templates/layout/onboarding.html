@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE — Kotlin SaaS Template">Kotlin SaaS Template</title>
+    <link rel="stylesheet" th:href="@{/css/output.css}">
+</head>
+<body class="bg-base-200 min-h-screen">
+
+<header class="navbar bg-base-100 border-b border-base-300 px-6">
+    <div class="flex-1">
+        <a href="/" class="text-lg font-bold">Kotlin SaaS Template</a>
+    </div>
+    <div class="flex-none">
+        <form th:action="@{/sign-out}" method="post" class="m-0">
+            <button type="submit" class="btn btn-ghost btn-sm">Sign out</button>
+        </form>
+    </div>
+</header>
+
+<main class="p-8">
+    <div th:if="${success}" class="alert alert-success mb-4 max-w-2xl mx-auto">
+        <span th:text="${success}"></span>
+        <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+            <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+        </button>
+    </div>
+    <div th:if="${error}" class="alert alert-error mb-4 max-w-2xl mx-auto">
+        <span th:text="${error}"></span>
+        <button class="ml-auto btn btn-ghost btn-xs btn-circle" onclick="this.closest('.alert').remove()" aria-label="Dismiss">
+            <svg th:replace="~{fragments/icons :: x-mark('size-4')}"></svg>
+        </button>
+    </div>
+
+    <div layout:fragment="content"></div>
+</main>
+
+<script th:src="@{/js/htmx.min.js}"></script>
+</body>
+</html>

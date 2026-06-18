@@ -3,6 +3,7 @@ package tech.sergiodelgado.saastemplate.integration.web
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.not
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -72,17 +73,21 @@ class OnboardingControllerRenderTest {
     }
 
     @Test
-    fun `GET onboarding organization renders form`() {
+    fun `GET onboarding organization renders form without sidebar`() {
         mvc.perform(get("/onboarding/organization"))
             .andExpect(status().isOk)
             .andExpect(content().string(containsString("Create your organization")))
+            .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
+            .andExpect(content().string(not(containsString("href=\"/billing\""))))
     }
 
     @Test
-    fun `GET onboarding plan renders free-trial card`() {
+    fun `GET onboarding plan renders free-trial card without sidebar`() {
         mvc.perform(get("/onboarding/plan"))
             .andExpect(status().isOk)
             .andExpect(content().string(containsString("Continue on free trial")))
+            .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
+            .andExpect(content().string(not(containsString("href=\"/billing\""))))
     }
 
     @Test
