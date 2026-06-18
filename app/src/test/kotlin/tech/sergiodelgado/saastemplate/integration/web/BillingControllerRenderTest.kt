@@ -119,12 +119,10 @@ class BillingControllerRenderTest {
 
     // ── CSRF regression ───────────────────────────────────────────────────────
 
-    /**
-     * Regression for the Starter→Pro upgrade bug:
-     * POST /webhooks/stripe was blocked by CSRF (403) before the fix.
-     * After exempting /webhooks/** from CSRF, the request reaches the controller and
-     * returns 400 (invalid Stripe signature) — not 403.
-     */
+    // Regression for the Starter→Pro upgrade bug:
+    // POST /webhooks/stripe was blocked by CSRF (403) before the fix.
+    // After exempting /webhooks/** from CSRF the request reaches the controller and
+    // returns 400 (invalid Stripe signature) — not 403.
     @Test
     fun `POST to webhook endpoint without CSRF token returns 400 not 403`() {
         mvc.perform(
@@ -151,7 +149,7 @@ class BillingControllerRenderTest {
 
         mvc.perform(get("/billing").param("success", "true"))
             .andExpect(status().isOk)
-            .andExpect(content().string(containsString("Pro")))
+            .andExpect(content().string(containsString("PRO")))
 
         verify(exactly = 1) { billingService.syncFromStripe() }
         verify(exactly = 0) { billingService.currentSubscription() }
