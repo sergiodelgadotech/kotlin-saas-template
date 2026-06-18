@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
 
 @Controller
 @RequestMapping("/onboarding")
@@ -51,12 +52,14 @@ class OnboardingController(
 
     @PostMapping("/plan")
     fun choosePlan(@RequestParam plan: String, model: Model): String {
-        if (plan == DefaultBillingPlan.STARTER.name) {
-            return "redirect:/dashboard"
-        }
         return try {
-            val url = billingService.createCheckoutSession(DefaultBillingPlan.valueOf(plan))
-            "redirect:$url"
+            onboardingService.ensureBilling(TenantContext.get())
+            if (plan == DefaultBillingPlan.STARTER.name) {
+                "redirect:/dashboard"
+            } else {
+                val url = billingService.createCheckoutSession(DefaultBillingPlan.valueOf(plan))
+                "redirect:$url"
+            }
         } catch (e: StripeException) {
             log.error("Checkout failed for plan {}", plan, e)
             model.addAttribute("plans", properties.billing.planPrices.keys.toList())

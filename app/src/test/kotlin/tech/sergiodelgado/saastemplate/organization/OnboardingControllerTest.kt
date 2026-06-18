@@ -4,6 +4,8 @@ import com.stripe.exception.InvalidRequestException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.ui.ExtendedModelMap
@@ -15,6 +17,8 @@ import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import java.util.UUID
 
 class OnboardingControllerTest {
 
@@ -27,6 +31,18 @@ class OnboardingControllerTest {
     )
 
     private val controller = OnboardingController(onboardingService, billingService, properties)
+
+    private val testOrgId = UUID.randomUUID()
+
+    @BeforeEach
+    fun setTenantContext() {
+        TenantContext.set(testOrgId)
+    }
+
+    @AfterEach
+    fun clearTenantContext() {
+        TenantContext.clear()
+    }
 
     private fun oidcUser(subject: String = "user-sub", email: String = "u@example.com") =
         mockk<OidcUser> {
@@ -78,6 +94,13 @@ class OnboardingControllerTest {
         expectThat(view).isEqualTo("onboarding/plan")
         expectThat(model).containsKey("plans")
         expectThat(model).containsKey("starterPlan")
+    }
+
+    @Test
+    fun `POST plan calls ensureBilling before routing`() {
+        controller.choosePlan(DefaultBillingPlan.STARTER.name, ExtendedModelMap())
+
+        verify(exactly = 1) { onboardingService.ensureBilling(testOrgId) }
     }
 
     @Test

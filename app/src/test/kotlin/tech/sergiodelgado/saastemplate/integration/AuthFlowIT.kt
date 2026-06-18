@@ -2,6 +2,7 @@ package tech.sergiodelgado.saastemplate.integration
 
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +22,9 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import tech.sergiodelgado.saasstarter.billing.BillingService
+import tech.sergiodelgado.saasstarter.billing.Subscription
+import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
+import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationService
 import tech.sergiodelgado.saasstarter.tenant.TenantResolver
@@ -49,6 +53,15 @@ class AuthFlowIT {
     // Without a mock returning a valid UUID, it would send 403 for protected routes.
     @MockkBean
     private lateinit var tenantResolver: TenantResolver
+
+    // OnboardingGateInterceptor and NavModelAdvice read member/subscription directly.
+    // Relaxed so NavModelAdvice.findByExternalUserId() returns null (renders "?" initials) without
+    // needing an explicit stub in every test.
+    @MockkBean(relaxed = true)
+    private lateinit var memberRepository: MemberRepository
+
+    @MockkBean(relaxed = true)
+    private lateinit var subscriptionRepository: SubscriptionRepository
 
     // DashboardController calls organizationService.current() and billingService.currentSubscription().
     // Mock these so the context renders without hitting the database.
@@ -83,6 +96,8 @@ class AuthFlowIT {
 
     @Test
     fun `authenticated user can access dashboard`() {
+        every { memberRepository.findOrganizationIdByUserId(any()) } returns orgId.toString()
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
         every { tenantResolver.resolveTenantId(any()) } returns orgId
         every { organizationService.current() } returns Organization(
             id = orgId,
@@ -93,6 +108,27 @@ class AuthFlowIT {
         mockMvc.perform(
             get("/dashboard").with(oidcLogin().idToken { it.subject("test-user-id") })
         ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `user without org is redirected to onboarding organization`() {
+        every { memberRepository.findOrganizationIdByUserId(any()) } returns null
+
+        mockMvc.perform(
+            get("/dashboard").with(oidcLogin().idToken { it.subject("new-user") })
+        ).andExpect(status().is3xxRedirection)
+         .andExpect(redirectedUrl("/onboarding/organization"))
+    }
+
+    @Test
+    fun `user with org but no subscription is redirected to onboarding plan`() {
+        every { memberRepository.findOrganizationIdByUserId(any()) } returns orgId.toString()
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns null
+
+        mockMvc.perform(
+            get("/dashboard").with(oidcLogin().idToken { it.subject("partial-user") })
+        ).andExpect(status().is3xxRedirection)
+         .andExpect(redirectedUrl("/onboarding/plan"))
     }
 
     @Test

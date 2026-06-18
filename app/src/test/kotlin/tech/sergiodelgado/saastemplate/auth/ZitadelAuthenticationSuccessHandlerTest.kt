@@ -12,14 +12,21 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import tech.sergiodelgado.saasstarter.billing.Subscription
+import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
+import java.util.UUID
 
 class ZitadelAuthenticationSuccessHandlerTest {
 
     private val memberRepository = mockk<MemberRepository>()
-    private val handler = ZitadelAuthenticationSuccessHandler(memberRepository)
+    private val subscriptionRepository = mockk<SubscriptionRepository>()
+    private val handler = ZitadelAuthenticationSuccessHandler(memberRepository, subscriptionRepository)
     private val request = MockHttpServletRequest()
     private val response = MockHttpServletResponse()
+
+    private val orgIdStr = "00000000-0000-0000-0000-000000000001"
+    private val orgId = UUID.fromString(orgIdStr)
 
     private fun authToken(
         subject: String,
@@ -41,9 +48,10 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    fun `redirects to dashboard when member exists`() {
+    fun `redirects to dashboard when member and subscription exist`() {
         stubUpdateProfile("user-abc")
-        every { memberRepository.findOrganizationIdByUserId("user-abc") } returns "org-uuid-string"
+        every { memberRepository.findOrganizationIdByUserId("user-abc") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
 
         handler.onAuthenticationSuccess(request, response, authToken("user-abc"))
 
@@ -61,9 +69,21 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
+    fun `redirects to onboarding plan when org exists but subscription does not`() {
+        stubUpdateProfile("partial-user")
+        every { memberRepository.findOrganizationIdByUserId("partial-user") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns null
+
+        handler.onAuthenticationSuccess(request, response, authToken("partial-user"))
+
+        expectThat(response.redirectedUrl).isEqualTo("/onboarding/plan")
+    }
+
+    @Test
     fun `updates member profile from OIDC claims on login`() {
         stubUpdateProfile("user-xyz")
-        every { memberRepository.findOrganizationIdByUserId("user-xyz") } returns "org-id"
+        every { memberRepository.findOrganizationIdByUserId("user-xyz") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
 
         handler.onAuthenticationSuccess(request, response, authToken("user-xyz", "jane@example.com", "Jane", "Doe"))
 
