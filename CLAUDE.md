@@ -104,10 +104,9 @@ The **Starter** plan is free and never calls Stripe — choosing it during onboa
 
 **One-time setup (test mode):**
 
-```bash
-# 0. Authenticate the Stripe CLI (opens browser — only needed once per machine)
-stripe login
+The Stripe CLI picks up `STRIPE_API_KEY` from the environment (loaded by direnv from `.env`), so no explicit `stripe login` is needed in this project.
 
+```bash
 # 1. Create a Pro product + recurring price (€79/mo)
 stripe products create --name="Pro"
 stripe prices create --product=prod_XXX --unit-amount=7900 \
