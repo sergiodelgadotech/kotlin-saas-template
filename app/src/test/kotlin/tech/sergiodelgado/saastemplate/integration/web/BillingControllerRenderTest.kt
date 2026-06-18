@@ -76,7 +76,7 @@ class BillingControllerRenderTest {
     }
 
     @Test
-    fun `billing renders plan details for active subscription`() {
+    fun `billing renders Starter as free tier with features and no status badge`() {
         every { billingService.currentSubscription() } returns Subscription(
             id = UUID.randomUUID(),
             organizationId = devOrgId,
@@ -87,14 +87,17 @@ class BillingControllerRenderTest {
 
         mvc.perform(get("/billing"))
             .andExpect(status().isOk)
-            .andExpect(content().string(containsString("STARTER")))
-            .andExpect(content().string(containsString("ACTIVE")))
+            .andExpect(content().string(containsString("€0")))
+            .andExpect(content().string(containsString("forever")))
+            .andExpect(content().string(containsString("Up to 5 users")))
+            .andExpect(content().string(not(containsString("ACTIVE"))))
+            .andExpect(content().string(not(containsString("TRIALING"))))
             .andExpect(content().string(containsString("Manage Subscription")))
             .andExpect(content().string(containsString("Upgrade to Pro")))
     }
 
     @Test
-    fun `billing renders trialing subscription and renewal date when currentPeriodEnd is set`() {
+    fun `billing does not show status badge or renewal date for Starter trialing`() {
         every { billingService.currentSubscription() } returns Subscription(
             id = UUID.randomUUID(),
             organizationId = devOrgId,
@@ -106,9 +109,8 @@ class BillingControllerRenderTest {
 
         mvc.perform(get("/billing"))
             .andExpect(status().isOk)
-            .andExpect(content().string(containsString("STARTER")))
-            .andExpect(content().string(containsString("TRIALING")))
-            // "Renews" text confirms th:if rendered and #temporals.format(Instant) didn't throw.
-            .andExpect(content().string(containsString("Renews")))
+            .andExpect(content().string(containsString("€0")))
+            .andExpect(content().string(not(containsString("TRIALING"))))
+            .andExpect(content().string(not(containsString("Renews"))))
     }
 }

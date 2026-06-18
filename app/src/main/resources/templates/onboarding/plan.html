@@ -30,11 +30,17 @@
                 </div>
             </div>
 
-            <!-- Paid plan cards (every plan that is not STARTER) -->
+            <!-- Pro card -->
             <div th:each="plan : ${plans}" th:if="${plan != starterPlan}"
                  class="card bg-base-100 shadow-sm border-2 border-primary">
                 <div class="card-body">
                     <h2 class="card-title" th:text="${plan}">PRO</h2>
+                    <p class="text-3xl font-bold mt-1">€79<span class="text-base font-normal text-base-content/60">/mo</span></p>
+                    <ul class="mt-4 space-y-2 text-sm">
+                        <li>&#10003; Unlimited users</li>
+                        <li>&#10003; 100 GB storage</li>
+                        <li>&#10003; Priority support</li>
+                    </ul>
                     <div class="card-actions mt-4">
                         <form th:action="@{/onboarding/plan}" method="post" class="w-full">
                             <input type="hidden" name="plan" th:value="${plan}">

@@ -18,15 +18,30 @@
     <div th:if="${subscription != null}" class="card bg-base-100 shadow-sm mb-8">
         <div class="card-body">
             <h2 class="card-title">Current Plan</h2>
-            <div class="flex items-center gap-4">
-                <span class="text-3xl font-bold" th:text="${subscription.plan}">STARTER</span>
-                <span class="badge"
-                      th:classappend="${subscription.status == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
-                      th:text="${subscription.status}">ACTIVE</span>
+
+            <!-- Starter: free tier display with features, no status badge -->
+            <div th:if="${subscription.plan == 'STARTER'}">
+                <p class="text-3xl font-bold mt-1">€0<span class="text-base font-normal text-base-content/60">/mo forever</span></p>
+                <ul class="mt-4 space-y-2 text-sm">
+                    <li>&#10003; Up to 5 users</li>
+                    <li>&#10003; 1 GB storage</li>
+                    <li>&#10003; Community support</li>
+                </ul>
             </div>
-            <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
-                Renews <span th:text="${#temporals.format(subscription.currentPeriodEnd, 'dd MMM yyyy')}"></span>
-            </p>
+
+            <!-- Paid plans: show name, status badge and renewal date -->
+            <div th:if="${subscription.plan != 'STARTER'}">
+                <div class="flex items-center gap-4">
+                    <span class="text-3xl font-bold" th:text="${subscription.plan}">PRO</span>
+                    <span class="badge"
+                          th:classappend="${subscription.status == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
+                          th:text="${subscription.status}">ACTIVE</span>
+                </div>
+                <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
+                    Renews <span th:text="${#temporals.format(subscription.currentPeriodEnd, 'dd MMM yyyy')}"></span>
+                </p>
+            </div>
+
             <div class="card-actions mt-4">
                 <form th:action="@{/billing/portal}" method="post">
                     <button class="btn btn-outline btn-sm">Manage Subscription</button>
@@ -42,9 +57,9 @@
                 <h2 class="card-title">Pro</h2>
                 <p class="text-3xl font-bold">€79<span class="text-base font-normal text-base-content/60">/mo</span></p>
                 <ul class="mt-4 space-y-2 text-sm">
-                    <li>✓ Unlimited users</li>
-                    <li>✓ 100 GB storage</li>
-                    <li>✓ Priority support</li>
+                    <li>&#10003; Unlimited users</li>
+                    <li>&#10003; 100 GB storage</li>
+                    <li>&#10003; Priority support</li>
                 </ul>
                 <div class="card-actions mt-4">
                     <form th:action="@{/billing/checkout}" method="post">
