@@ -37,13 +37,12 @@ class BillingE2eTest : PlaywrightE2eTestBase() {
     }
 
     @Test
-    fun `billing with active subscription shows plan and manage button`() {
+    fun `billing with starter subscription shows plan and upgrade button`() {
         page.navigate(url("/billing"))
 
         val body = page.locator("body").innerText()
-        expectThat(body).contains("STARTER")
-        expectThat(body).contains("ACTIVE")
-        expectThat(body).contains("Manage Subscription")
+        expectThat(body).contains("Starter")
+        expectThat(body).contains("Upgrade to Pro")
     }
 
     @Test
@@ -56,6 +55,14 @@ class BillingE2eTest : PlaywrightE2eTestBase() {
 
     @Test
     fun `manage subscription redirects to portal stub`() {
+        every { StripeStubConfig.starterSubscription.currentSubscription() } returns Subscription(
+            id = UUID.randomUUID(),
+            organizationId = StripeStubConfig.DEV_ORG_ID,
+            externalCustomerId = "cus_stub",
+            plan = "PRO",
+            status = SubscriptionStatus.ACTIVE,
+        )
+
         page.navigate(url("/billing"))
         page.locator("button:has-text('Manage Subscription')").click()
 

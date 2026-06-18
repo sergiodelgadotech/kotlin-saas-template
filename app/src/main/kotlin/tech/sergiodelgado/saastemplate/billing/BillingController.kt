@@ -3,10 +3,6 @@ package tech.sergiodelgado.saastemplate.billing
 import com.stripe.exception.SignatureVerificationException
 import com.stripe.exception.StripeException
 import com.stripe.net.Webhook
-import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
-import tech.sergiodelgado.saasstarter.billing.BillingService
-import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
-import tech.sergiodelgado.saasstarter.billing.StripeWebhookHandler
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -18,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
+import tech.sergiodelgado.saasstarter.billing.BillingService
+import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
+import tech.sergiodelgado.saasstarter.billing.StripeWebhookHandler
 
 @RestController
 @RequestMapping("/webhooks/stripe")
@@ -48,8 +48,18 @@ class BillingController(private val billingService: BillingService) {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @GetMapping
-    fun index(model: Model): String {
-        model.addAttribute("subscription", billingService.currentSubscription())
+    fun index(@RequestParam(required = false) success: Boolean?, model: Model): String {
+        val subscription = if (success == true) {
+            try {
+                billingService.syncFromStripe()
+            } catch (e: StripeException) {
+                log.warn("Stripe sync on return failed; showing DB state", e)
+                billingService.currentSubscription()
+            }
+        } else {
+            billingService.currentSubscription()
+        }
+        model.addAttribute("subscription", subscription)
         return "billing/index"
     }
 

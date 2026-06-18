@@ -29,6 +29,7 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
+            .csrf { it.ignoringRequestMatchers("/webhooks/**") }
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers(
                     "/", "/pricing", "/docs/**",

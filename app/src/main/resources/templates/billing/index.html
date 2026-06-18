@@ -14,13 +14,14 @@
         <span>No active subscription found. Contact support to get started.</span>
     </div>
 
-    <!-- Current plan -->
-    <div th:if="${subscription != null}" class="card bg-base-100 shadow-sm mb-8">
-        <div class="card-body">
-            <h2 class="card-title">Current Plan</h2>
-
-            <!-- Starter: free tier display with features, no status badge -->
-            <div th:if="${subscription.plan == 'STARTER'}">
+    <!-- Starter: side-by-side plan cards -->
+    <div th:if="${subscription != null and subscription.plan == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div class="card bg-base-100 shadow-sm">
+            <div class="card-body">
+                <div class="flex items-center gap-2">
+                    <h2 class="card-title">Starter</h2>
+                    <span class="badge badge-neutral">Current plan</span>
+                </div>
                 <p class="text-3xl font-bold mt-1">€0<span class="text-base font-normal text-base-content/60">/mo forever</span></p>
                 <ul class="mt-4 space-y-2 text-sm">
                     <li>&#10003; Up to 5 users</li>
@@ -28,30 +29,8 @@
                     <li>&#10003; Community support</li>
                 </ul>
             </div>
-
-            <!-- Paid plans: show name, status badge and renewal date -->
-            <div th:if="${subscription.plan != 'STARTER'}">
-                <div class="flex items-center gap-4">
-                    <span class="text-3xl font-bold" th:text="${subscription.plan}">PRO</span>
-                    <span class="badge"
-                          th:classappend="${subscription.status == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
-                          th:text="${subscription.status}">ACTIVE</span>
-                </div>
-                <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
-                    Renews <span th:text="${#temporals.format(subscription.currentPeriodEnd, 'dd MMM yyyy')}"></span>
-                </p>
-            </div>
-
-            <div class="card-actions mt-4">
-                <form th:action="@{/billing/portal}" method="post">
-                    <button class="btn btn-outline btn-sm">Manage Subscription</button>
-                </form>
-            </div>
         </div>
-    </div>
 
-    <!-- Upgrade options -->
-    <div th:if="${subscription != null and subscription.plan == 'STARTER'}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="card bg-base-100 shadow-sm border-2 border-primary">
             <div class="card-body">
                 <h2 class="card-title">Pro</h2>
@@ -67,6 +46,27 @@
                         <button class="btn btn-primary">Upgrade to Pro</button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paid plan: single card with name, status badge and renewal date -->
+    <div th:if="${subscription != null and subscription.plan != 'STARTER'}" class="card bg-base-100 shadow-sm mb-8">
+        <div class="card-body">
+            <div class="flex items-center gap-2">
+                <h2 class="card-title" th:text="${subscription.plan}">PRO</h2>
+                <span class="badge badge-neutral">Current plan</span>
+                <span class="badge"
+                      th:classappend="${subscription.status == 'ACTIVE'} ? 'badge-success' : 'badge-warning'"
+                      th:text="${subscription.status}">ACTIVE</span>
+            </div>
+            <p class="text-base-content/60" th:if="${subscription.currentPeriodEnd}">
+                Renews <span th:text="${#temporals.format(subscription.currentPeriodEnd, 'dd MMM yyyy')}"></span>
+            </p>
+            <div class="card-actions mt-4">
+                <form th:action="@{/billing/portal}" method="post">
+                    <button class="btn btn-outline btn-sm">Manage Subscription</button>
+                </form>
             </div>
         </div>
     </div>
