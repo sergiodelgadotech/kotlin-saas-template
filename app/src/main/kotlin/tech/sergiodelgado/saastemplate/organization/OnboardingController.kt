@@ -63,7 +63,7 @@ class OnboardingController(
             log.error("Checkout failed for plan {}", plan, e)
             model.addAttribute("plans", properties.billing.planPrices.keys.toList())
             model.addAttribute("starterPlan", DefaultBillingPlan.STARTER.name)
-            model.addAttribute("error", "Couldn't start checkout. Try again or continue on the free trial.")
+            model.addAttribute("error", "Couldn't start checkout. Try again or continue on the free Starter plan.")
             "onboarding/plan"
         }
     }

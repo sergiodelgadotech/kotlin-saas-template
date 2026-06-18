@@ -39,7 +39,7 @@ class ZitadelAuthE2eTest : PlaywrightE2eTestBase() {
     }
 
     @Test
-    fun `onboarding wizard - sign-in then create org then choose free trial then land on dashboard`() {
+    fun `onboarding wizard - sign-in then create org then choose free Starter plan then land on dashboard`() {
         page.navigate(url("/sign-in"))
 
         page.locator("input[name='loginName'], input[type='email']").fill("test@example.com")
