@@ -103,6 +103,7 @@ services:
     restart: no
   cloudflared:
     image: cloudflare/cloudflared:latest
+    profiles: [tunnel]
     restart: unless-stopped
     env_file:
     - path: .cloudflared.env
