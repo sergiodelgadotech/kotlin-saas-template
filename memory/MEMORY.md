@@ -1,7 +1,7 @@
 - [Sibling repo locations](repo_locations.md) — kotlin-saas-starter is at `../kotlin-saas-starter`, work in it directly
 - [Project board status automation](feedback_project_board_automation.md) — auto-move plan issues: In Progress on start, Done+close on user-confirmed completion
 - [Check off plan-issue checkboxes as substeps complete](feedback_plan_issue_checkboxes.md) — tick `- [ ]` → `- [x]` in the plan issue's body as substeps land, not just at task boundaries
-- [Trunk-based development — commit on main](feedback_trunk_based_development.md) — both repos commit directly to main; skip feature branches and worktrees
+- [PR-based workflow — feature branch + squash merge](feedback_pr_workflow.md) — feature branch per task, PR with conventional-commit title, CI gates merge, squash only; no direct pushes to main
 - [Prefer @ServiceConnection over @DynamicPropertySource](feedback_serviceconnection_over_dynamicpropertysource.md) — always use @ServiceConnection for Testcontainers wiring in Spring Boot tests
 - [Run ./gradlew check at end of ticket](feedback_run_check_at_end.md) — use `check` as final verification; note integrationTest/architectureTest not yet wired into check
 - [Commit type for CI work](feedback_commit_type_ci_work.md) — Use ci: or chore: for CI commits — never feat(ci): or fix(ci): which pollute the changelog
@@ -9,3 +9,4 @@
 - [Verify audit concerns before reporting](feedback_verify_audit_concerns.md) — when subagents flag library "sharp edges/bugs/risks", verify each against current code + open-issue state + user's stack before passing them up
 - [Zitadel SMTP must use port 465](feedback_zitadel_smtp.md) — port 587 STARTTLS drops credentials; use smtp.resend.com:465 with tls=true
 - [Project board Plan field is low priority](feedback_plan_field_low_priority.md) — don't ask which Plan N to assign; labels + Blocked-by lists are what matter
+- [Free tier vs. free trial copy](feedback_free_tier_vs_free_trial.md) — Don't label a permanent €0 plan as "Free trial" — free tier and free trial are different value propositions

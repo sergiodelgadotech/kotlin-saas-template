@@ -9,7 +9,7 @@ For plan issues tracked on the project board (`https://github.com/orgs/sergiodel
 - **On starting implementation:** move issue → "In Progress".
 - **On user-confirmed completion** (e.g. "good", "looks good", "works", "push it"): move issue → "Done" *and* close it (`gh issue close <n> --reason completed`). For cross-repo plans, do this in both repos.
 
-**Why:** trunk-based development means no PR auto-links to issue closure. Without this, the board drifts out of sync with reality. The user explicitly asked for this automation on 2026-05-08.
+**Why:** The user explicitly asked for this automation on 2026-05-08. Issue *closure* is now handled automatically via `Closes #N` in the PR body, but the project board status move ("In Progress" on start, "Done" on completion) still requires the manual `gh project item-edit` sequence below — GitHub Projects does not auto-move items to Done on issue close without explicit automation rules configured.
 
 **How to apply:** After committing, immediately close the issue and move the board status — do not wait for the user to ask. Use the exact command sequence below.
 
