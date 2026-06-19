@@ -22,7 +22,7 @@ Critically, **this template is not actively maintained per-fork**. Once you fork
 ```
 kotlin-saas-starter    →    Maven artifact at GitHub Packages
                                     ↑
-                                    │ implementation("org.granchi:kotlin-saas-starter:X.Y.Z")
+                                    │ implementation("tech.sergiodelgado:kotlin-saas-starter:X.Y.Z")
                                     │
                               kotlin-saas-template
                               (this repo)
@@ -62,7 +62,7 @@ When working in this repo, **do not duplicate code from the starter**. If you ne
 
 ```
 app/
-├── src/main/kotlin/org/granchi/saastemplate/
+├── src/main/kotlin/tech/sergiodelgado/saastemplate/
 │   ├── SaasTemplateApplication.kt
 │   ├── config/             ← MemberTenantResolver, WebMvcConfig, SecurityConfig, RedisConfig, ...
 │   ├── organization/       ← multi-tenant: Organization, Member entity + Service + Controller
