@@ -29,7 +29,7 @@ services:
       timeout: 5s
       retries: 5
   zitadel:
-    image: ghcr.io/zitadel/zitadel:v4.15.1
+    image: ghcr.io/zitadel/zitadel:v4.15.2
     user: root
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
