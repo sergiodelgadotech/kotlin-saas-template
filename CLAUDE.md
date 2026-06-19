@@ -4,7 +4,7 @@ This file gives Claude Code the context to work on this repository effectively. 
 
 ## Workflow Conventions
 
-- Use trunk-based development; do NOT propose feature branches.
+- Each task goes on a **feature branch** → commit → push → open a PR (title must be a [conventional commit](https://www.conventionalcommits.org/)) → CI must pass and branch must be up to date with `main` → squash-merge. Do not push directly to `main` — branch protection enforces this.
 - `kotlin-saas-starter` lives at `../kotlin-saas-starter` (real local clone). Do NOT clone fresh into `/tmp`.
 
 ## What this repo is
@@ -171,6 +171,8 @@ sbx exec -e STARTER_PATH=/var/home/serandel/Projects/kotlin-saas-starter \
 sbx rm kt-saas-<short-name>     # removes sandbox + worktree + branch
 ```
 
+**Important:** Don't run `sbx rm` until the PR for that sandbox's branch has been merged — removing the sandbox deletes the branch.
+
 **Known limitation — `maven.pkg.github.com` Basic auth:** `sbx`'s built-in `github` secret injects auth for `api.github.com` but not for `maven.pkg.github.com`. The `STARTER_PATH` composite build sidesteps this — Gradle never touches GitHub Packages. The proper fix is a project-specific `sbx kit` declaring a `serviceAuth` rule for `maven.pkg.github.com` with `Basic %s` format (verified working end-to-end against this repo, just not yet captured as a committed kit). Until that kit lands, use `STARTER_PATH` or prime `~/.gradle/caches` on host and mount it in.
 
 **Known limitation — workspace mount exposes `.env`:** `sbx create claude .` mounts the entire git root via virtio-fs, including gitignored files. That means `.env`, `.devcontainer/.env`, `.cloudflared.env`, and any other secret file at the workspace root are *readable* from inside the sandbox at their host paths, even though they're not in the worktree itself. They are **not** auto-loaded into the agent's environment (no `direnv` in the image, `sbx` doesn't source them), but an agent could `cat` them. Two real mitigations: (a) move secret files outside the workspace tree and update `docker-compose.yml`'s `env_file:` references, or (b) replace each external service credential with a project `sbx kit` declaring `proxyManaged` env vars + `serviceAuth` rules (same pattern as the GitHub/Anthropic built-ins). Until you do one of these, the `--dangerously-skip-permissions` blast radius for sandbox agents includes whatever's in your `.env` files.
@@ -233,6 +235,8 @@ Implementation plans live as **GitHub issues**, not markdown files in the repo. 
 - **Sequencing:** each plan issue has a `### Blocked by` task list whose items auto-check when the referenced issues close.
 
 When a new plan is needed, create the issue (or pair of issues for cross-repo work) — don't write a new markdown plan file. Specs remain markdown in `docs/superpowers/specs/`.
+
+Include `Closes #N` in the PR body to auto-close the plan issue when the PR is merged.
 
 ## Architectural conventions
 
