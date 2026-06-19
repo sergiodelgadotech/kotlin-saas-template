@@ -32,7 +32,7 @@ class DashboardController(
 
     @GetMapping("/activity-stream", produces = [MediaType.TEXT_EVENT_STREAM_VALUE])
     fun activityStream(): SseEmitter {
-        val emitter = SseEmitter(60_000L)
+        val emitter = SseEmitter(java.time.Duration.ofMinutes(30).toMillis())
         activityStreamService.register(emitter)
         return emitter
     }

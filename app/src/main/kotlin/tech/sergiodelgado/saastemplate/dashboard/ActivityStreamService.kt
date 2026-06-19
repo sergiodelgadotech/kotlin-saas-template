@@ -23,8 +23,12 @@ class ActivityStreamService {
         val list = emitters.computeIfAbsent(orgId) { CopyOnWriteArrayList() }
         list.add(emitter)
         emitter.onCompletion { list.remove(emitter) }
-        emitter.onTimeout { list.remove(emitter); emitter.complete() }
-        emitter.onError { list.remove(emitter); emitter.complete() }
+        // The container finalises the async response itself on timeout/error
+        // (onCompletion fires afterwards). Calling complete() here would try to
+        // flush a response that is already unusable and throw
+        // AsyncRequestNotUsableException.
+        emitter.onTimeout { list.remove(emitter) }
+        emitter.onError { list.remove(emitter) }
     }
 
     @Scheduled(fixedRate = 25_000)

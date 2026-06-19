@@ -65,7 +65,9 @@ class ActivityStreamServiceTest {
     }
 
     @Test
-    fun `onTimeout removes emitter and calls complete`() {
+    fun `onTimeout removes emitter without calling complete`() {
+        // The container finalises the async response itself on timeout; calling
+        // complete() from the callback would throw AsyncRequestNotUsableException.
         val orgId = UUID.randomUUID()
         val emitter = mockk<SseEmitter>(relaxed = true)
         val timeoutCallback = slot<Runnable>()
@@ -77,7 +79,31 @@ class ActivityStreamServiceTest {
 
         timeoutCallback.captured.run()
 
-        verify { emitter.complete() }
+        verify(exactly = 0) { emitter.complete() }
+        // Verify removed: a subsequent event doesn't reach this emitter
+        service.on(MemberInvitedEvent(
+            organizationId = orgId,
+            memberId = UUID.randomUUID(),
+            invitedExternalUserId = "u",
+            actorExternalUserId = "a",
+        ))
+        verify(exactly = 0) { emitter.send(any<SseEmitter.SseEventBuilder>()) }
+    }
+
+    @Test
+    fun `onError removes emitter without calling complete`() {
+        val orgId = UUID.randomUUID()
+        val emitter = mockk<SseEmitter>(relaxed = true)
+        val errorCallback = slot<java.util.function.Consumer<Throwable>>()
+        every { emitter.onError(capture(errorCallback)) } just runs
+
+        TenantContext.set(orgId)
+        service.register(emitter)
+        TenantContext.clear()
+
+        errorCallback.captured.accept(RuntimeException("connection reset"))
+
+        verify(exactly = 0) { emitter.complete() }
         // Verify removed: a subsequent event doesn't reach this emitter
         service.on(MemberInvitedEvent(
             organizationId = orgId,
