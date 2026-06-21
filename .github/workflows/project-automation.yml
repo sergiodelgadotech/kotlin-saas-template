@@ -1,0 +1,97 @@
+name: Project Board Automation
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add PR or linked issues to project as In Progress
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          ORG="sergiodelgadotech"
+          PROJECT=1
+
+          # Get project node ID
+          PROJECT_ID=$(gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) { id }
+              }
+            }' -f org="$ORG" -F number="$PROJECT" \
+            --jq '.data.organization.projectV2.id')
+
+          # Get Status field ID and "In Progress" option ID
+          FIELDS=$(gh api graphql -f query='
+            query($id: ID!) {
+              node(id: $id) {
+                ... on ProjectV2 {
+                  fields(first: 20) {
+                    nodes {
+                      ... on ProjectV2SingleSelectField {
+                        id name
+                        options { id name }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f id="$PROJECT_ID")
+          STATUS_FIELD_ID=$(echo "$FIELDS" \
+            | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .id')
+          IN_PROGRESS_ID=$(echo "$FIELDS" \
+            | jq -r '.data.node.fields.nodes[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id')
+
+          # Add a content node to the project and set Status = In Progress
+          set_in_progress() {
+            local content_id="$1"
+
+            local item_id
+            item_id=$(gh api graphql -f query='
+              mutation($project: ID!, $content: ID!) {
+                addProjectV2ItemById(input: {projectId: $project, contentId: $content}) {
+                  item { id }
+                }
+              }' -f project="$PROJECT_ID" -f content="$content_id" \
+              --jq '.data.addProjectV2ItemById.item.id')
+
+            gh api graphql -f query='
+              mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $project, itemId: $item, fieldId: $field,
+                  value: { singleSelectOptionId: $option }
+                }) { projectV2Item { id } }
+              }' \
+              -f project="$PROJECT_ID" -f item="$item_id" \
+              -f field="$STATUS_FIELD_ID" -f option="$IN_PROGRESS_ID"
+          }
+
+          # Collect linked issues from PR body (Closes/Fixes/Resolves #N)
+          mapfile -t ISSUES < <(echo "$PR_BODY" \
+            | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+' \
+            | grep -oE '[0-9]+' \
+            | sort -u) || true
+
+          if [[ ${#ISSUES[@]} -gt 0 ]]; then
+            # PR references issues — move the issues, not the PR itself
+            for issue_num in "${ISSUES[@]}"; do
+              node_id=$(gh api "/repos/$REPO_OWNER/$REPO_NAME/issues/$issue_num" --jq '.node_id')
+              set_in_progress "$node_id"
+              echo "Issue #$issue_num → In Progress"
+            done
+          else
+            # Standalone PR (Renovate, docs, chore, etc.) — track the PR itself
+            node_id=$(gh api "/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER" --jq '.node_id')
+            set_in_progress "$node_id"
+            echo "PR #$PR_NUMBER → In Progress"
+          fi
