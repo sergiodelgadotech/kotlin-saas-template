@@ -1,0 +1,69 @@
+name: Project Board Automation
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add PR or linked issues to project as In Progress
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          ORG="sergiodelgadotech"
+          PROJECT=1
+
+          PROJECT_ID=$(gh project list --owner "$ORG" --format json \
+            | jq -r --argjson n "$PROJECT" '.projects[] | select(.number == $n) | .id')
+
+          FIELDS=$(gh project field-list "$PROJECT" --owner "$ORG" --format json)
+          STATUS_FIELD_ID=$(echo "$FIELDS" | jq -r '.fields[] | select(.name == "Status") | .id')
+          IN_PROGRESS_ID=$(echo "$FIELDS" \
+            | jq -r '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id')
+
+          set_in_progress() {
+            local url="$1"
+            local number="$2"
+
+            gh project item-add "$PROJECT" --owner "$ORG" --url "$url"
+
+            local item_id
+            item_id=$(gh project item-list "$PROJECT" --owner "$ORG" --limit 200 --format json \
+              | jq -r --argjson n "$number" '.items[] | select(.content.number == $n) | .id')
+
+            [[ -z "$item_id" || "$item_id" == "null" ]] && return
+
+            gh project item-edit \
+              --id "$item_id" \
+              --project-id "$PROJECT_ID" \
+              --field-id "$STATUS_FIELD_ID" \
+              --single-select-option-id "$IN_PROGRESS_ID"
+          }
+
+          # Collect linked issues from PR body (Closes/Fixes/Resolves #N)
+          mapfile -t ISSUES < <(echo "$PR_BODY" \
+            | grep -oiE '(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]+#[0-9]+' \
+            | grep -oE '[0-9]+' \
+            | sort -u) || true
+
+          if [[ ${#ISSUES[@]} -gt 0 ]]; then
+            # PR references issues — move the issues, not the PR itself
+            for issue_num in "${ISSUES[@]}"; do
+              issue_url="https://github.com/$REPO_OWNER/$REPO_NAME/issues/$issue_num"
+              set_in_progress "$issue_url" "$issue_num"
+              echo "Issue #$issue_num → In Progress"
+            done
+          else
+            # Standalone PR (Renovate, docs, chore, etc.) — track the PR itself
+            set_in_progress "$PR_URL" "$PR_NUMBER"
+            echo "PR #$PR_NUMBER → In Progress"
+          fi
