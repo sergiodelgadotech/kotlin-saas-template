@@ -17,9 +17,10 @@ import tech.sergiodelgado.saasstarter.organization.MemberRepository
  * which UserAccountService updates immediately on save — means the nav reflects
  * the new name on the very next page load, without requiring a sign-out/sign-in.
  *
- * **Email** is rendered via `sec:authentication="principal.email"` in the template
- * and is intentionally not injected here — email changes require a Zitadel
- * re-authentication anyway, so OIDC-claim freshness is sufficient.
+ * **Email** is read directly from the OIDC principal rather than the members table — email
+ * changes require a Zitadel re-authentication anyway, so OIDC-claim freshness is sufficient.
+ * It is kept here (rather than using `sec:authentication` in the template) so that non-OidcUser
+ * principals in tests degrade gracefully to an empty string.
  */
 @ControllerAdvice
 class NavModelAdvice(private val memberRepository: MemberRepository) {
@@ -47,4 +48,8 @@ class NavModelAdvice(private val memberRepository: MemberRepository) {
         val last = member?.lastName.orEmpty()
         return if (first.isNotBlank() || last.isNotBlank()) "$first $last".trim() else principal.email.orEmpty()
     }
+
+    @ModelAttribute("navEmail")
+    fun navEmail(@AuthenticationPrincipal principal: OidcUser?): String =
+        principal?.email.orEmpty()
 }
