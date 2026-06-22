@@ -12,7 +12,9 @@ on:
 
 jobs:
   claude-review:
-    if: github.event.pull_request.user.type != 'Bot'
+    if: |
+      github.event.pull_request.user.type != 'Bot' &&
+      !contains(github.event.pull_request.body, 'Generated with [Claude Code]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
