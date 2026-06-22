@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <nav th:fragment="nav" class="navbar bg-base-100 border-b border-base-300 px-6">
     <div class="flex-1">
         <a href="/dashboard" class="text-lg font-bold">Kotlin SaaS Template</a>
     </div>
     <div class="flex-none gap-2">
-        <div class="dropdown dropdown-end">
+        <div sec:authorize="isAuthenticated()" class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar" aria-label="User menu">
                 <div class="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center">
                     <span class="text-sm font-bold" th:text="${navInitials}">?</span>

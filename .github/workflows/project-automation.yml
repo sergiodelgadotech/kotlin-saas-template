@@ -14,10 +14,17 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels) }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ github.event.repository.name }}
         run: |
           set -euo pipefail
+
+          # Release Please manages its own release PRs; skip them entirely.
+          if echo "$PR_LABELS" | jq -e '[.[].name] | any(. == "autorelease: pending")' > /dev/null 2>&1; then
+            echo "Release Please PR — skipping project board update"
+            exit 0
+          fi
 
           ORG="sergiodelgadotech"
           PROJECT=1

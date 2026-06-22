@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.spring.boot.validation)
     implementation(libs.spring.session.redis)
     implementation(libs.thymeleaf.layout)
+    implementation(libs.thymeleaf.extras.springsecurity)
 
     // ── Database ─────────────────────────────────────────────────────────────
     implementation(libs.spring.boot.starter.flyway)
