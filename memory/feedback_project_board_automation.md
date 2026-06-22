@@ -1,28 +1,15 @@
 ---
 name: Project board status automation
-description: When executing plan-as-issue, move the issue's project-board status automatically — In Progress on start, Done + close on user-confirmed completion
+description: When executing plan-as-issue, move the issue to In Progress on start — Done is handled automatically by GitHub Projects on PR merge
 type: feedback
 originSessionId: 6870ab81-6f65-424f-bf7b-0c4ad547b550
 ---
-For plan issues tracked on the project board (`https://github.com/orgs/sergiodelgadotech/projects/1`), move the status field automatically — don't expect the user to do it.
+For plan issues tracked on the project board (`https://github.com/orgs/sergiodelgadotech/projects/1`), only one manual status move is needed:
 
-- **On starting implementation:** move issue → "In Progress".
-- **On user-confirmed completion** (e.g. "good", "looks good", "works", "push it"): move issue → "Done" *and* close it (`gh issue close <n> --reason completed`). For cross-repo plans, do this in both repos.
+- **On starting implementation:** move issue → "In Progress" via GraphQL (the CI workflow does this automatically when a PR is opened, but do it immediately when starting work on a branch without a PR yet).
+- **On PR merge:** GitHub Projects' built-in "Pull request merged" automation moves the item to "Done" automatically. Do NOT do this manually.
+- **Issue closure:** handled automatically via `Closes #N` in the PR body.
 
-**Why:** The user explicitly asked for this automation on 2026-05-08. Issue *closure* is now handled automatically via `Closes #N` in the PR body, but the project board status move ("In Progress" on start, "Done" on completion) still requires the manual `gh project item-edit` sequence below — GitHub Projects does not auto-move items to Done on issue close without explicit automation rules configured.
+**Why:** The project board has a native "Pull request merged" workflow automation enabled. Manually setting Done is redundant and was corrected on 2026-06-22.
 
-**How to apply:** After committing, immediately close the issue and move the board status — do not wait for the user to ask. Use the exact command sequence below.
-
-## Correct gh project item-edit command
-
-`gh project item-edit` does NOT accept `--owner`. The correct sequence:
-
-```bash
-PROJECT_ID=$(gh project list --owner sergiodelgadotech --format json | jq -r '.projects[] | select(.number == 1) | .id')
-STATUS_FIELD_ID=$(gh project field-list 1 --owner sergiodelgadotech --format json | jq -r '.fields[] | select(.name == "Status") | .id')
-DONE_OPTION_ID=$(gh project field-list 1 --owner sergiodelgadotech --format json | jq -r '.fields[] | select(.name == "Status") | .options[] | select(.name == "Done") | .id')
-ITEM_ID=$(gh project item-list 1 --owner sergiodelgadotech --format json | jq -r '.items[] | select(.content.number == <N>) | .id')
-gh project item-edit --id "$ITEM_ID" --project-id "$PROJECT_ID" --field-id "$STATUS_FIELD_ID" --single-select-option-id "$DONE_OPTION_ID"
-```
-
-`--owner` is valid for `item-list` and `field-list` but NOT for `item-edit`. Only `--id`, `--project-id`, `--field-id`, and `--single-select-option-id` are used in `item-edit`.
+**How to apply:** Use the GraphQL sequence below only for the In Progress move at the start of work.
