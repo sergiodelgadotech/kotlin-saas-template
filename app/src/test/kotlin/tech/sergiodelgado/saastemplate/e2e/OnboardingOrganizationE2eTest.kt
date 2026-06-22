@@ -30,4 +30,12 @@ class OnboardingOrganizationE2eTest : PlaywrightE2eTestBase() {
 
         expectThat(page.locator("#org-submit").isDisabled).isTrue()
     }
+
+    @Test
+    fun `submit button stays disabled when name contains only whitespace`() {
+        page.navigate(url("/onboarding/organization"))
+        page.locator("input[name='name']").fill("   ")
+
+        expectThat(page.locator("#org-submit").isDisabled).isTrue()
+    }
 }
