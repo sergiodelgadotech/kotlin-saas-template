@@ -13,4 +13,12 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 export STARTER_PATH="${STARTER_PATH:-/var/home/serandel/Projects/kotlin-saas-starter}"
+
+# Clear any stale compose stack first. In an sbx sandbox the previous run's
+# containers get idle-killed except zitadel-login (restart: unless-stopped). That
+# leftover makes Spring Boot's docker-compose lifecycle log "services already
+# running, skipping startup" and never start Postgres/Redis/Zitadel, so the app
+# then fails with connection-refused. Starting from a clean stack avoids it.
+docker compose down --remove-orphans >/dev/null 2>&1 || true
+
 exec ./gradlew :app:bootRun "$@"
