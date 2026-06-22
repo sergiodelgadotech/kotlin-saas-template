@@ -77,6 +77,8 @@ class OnboardingControllerRenderTest {
         mvc.perform(get("/onboarding/organization"))
             .andExpect(status().isOk)
             .andExpect(content().string(containsString("Create your organization")))
+            .andExpect(content().string(containsString("id=\"org-submit\"")))
+            .andExpect(content().string(containsString("disabled")))
             .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
             .andExpect(content().string(not(containsString("href=\"/billing\""))))
     }
