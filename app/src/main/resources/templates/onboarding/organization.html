@@ -16,15 +16,25 @@
                         <legend class="fieldset-legend">Organization name</legend>
                         <input class="input input-bordered w-full"
                                type="text"
+                               id="org-name"
                                name="name"
                                placeholder="Acme Inc."
                                autofocus
                                required>
                     </fieldset>
                     <div class="card-actions">
-                        <button class="btn btn-primary w-full" type="submit">Create organization</button>
+                        <button class="btn btn-primary w-full" type="submit" id="org-submit" disabled>Create organization</button>
                     </div>
                 </form>
+                <script>
+                    (function () {
+                        var input = document.getElementById('org-name');
+                        var button = document.getElementById('org-submit');
+                        var sync = function () { button.disabled = input.value.trim().length === 0; };
+                        input.addEventListener('input', sync);
+                        sync();
+                    })();
+                </script>
             </div>
         </div>
     </div>
