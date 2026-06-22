@@ -7,8 +7,18 @@ Authenticates via the machine service account key file generated during Zitadel 
 """
 import json, sys, time, base64, os
 from pathlib import Path
+from urllib.parse import urlsplit
 
+# ZITADEL_URL is the *external* / public URL (issuer, JWT audience, and the Host
+# header Zitadel's virtual-host routing requires). CONNECT_URL is where we open the
+# actual TCP connection. They differ when this container can't share the host
+# network (e.g. inside an sbx microVM, where `network_mode: host` is not honored):
+# we then connect over the Docker bridge to `http://zitadel:8080` while still sending
+# `Host: localhost:8089` so Zitadel resolves the instance correctly. When CONNECT_URL
+# is unset they're identical, matching the original host-networking behavior.
 ZITADEL_URL = os.getenv("ZITADEL_URL", "http://zitadel:8080")
+CONNECT_URL = os.getenv("ZITADEL_CONNECT_URL", ZITADEL_URL).rstrip("/")
+_EXTERNAL_HOST = urlsplit(ZITADEL_URL).netloc  # e.g. "localhost:8089"
 KEY_FILE_PATH = Path(os.getenv("KEY_FILE_PATH", "/keys/zitadel-init-sa.json"))
 OUTPUT_FILE = Path(os.getenv("OUTPUT_FILE", "/output/.local-client-id"))
 MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
@@ -20,15 +30,28 @@ POST_LOGOUT_URI = "http://localhost:8080/"
 DEFAULT_REDIRECT_URI = "http://localhost:8080/"
 
 
+def _request(path: str, data: bytes | None = None,
+             headers: dict | None = None, method: str | None = None):
+    """Build a urllib Request against CONNECT_URL, always carrying the external
+    Host header so Zitadel's virtual-host routing resolves the instance even when
+    we connect over the Docker bridge (zitadel:8080) rather than localhost:8089."""
+    import urllib.request
+    merged = {"Host": _EXTERNAL_HOST}
+    if headers:
+        merged.update(headers)
+    return urllib.request.Request(f"{CONNECT_URL}{path}", data=data,
+                                  headers=merged, method=method)
+
+
 def wait_for_zitadel(max_attempts: int = 60, delay: int = 5) -> None:
     import urllib.request
     # Poll the OIDC discovery endpoint — it only becomes available after Zitadel
     # has completed setup and registered all routes (later than /debug/ready).
-    endpoint = f"{ZITADEL_URL}/.well-known/openid-configuration"
-    print(f"Waiting for Zitadel OIDC discovery at {endpoint} ...")
+    endpoint = f"{CONNECT_URL}/.well-known/openid-configuration"
+    print(f"Waiting for Zitadel OIDC discovery at {endpoint} (Host: {_EXTERNAL_HOST}) ...")
     for attempt in range(1, max_attempts + 1):
         try:
-            with urllib.request.urlopen(endpoint, timeout=3) as r:
+            with urllib.request.urlopen(_request("/.well-known/openid-configuration"), timeout=3) as r:
                 if r.status == 200:
                     print("  Zitadel is ready.")
                     return
@@ -76,10 +99,8 @@ def get_access_token(jwt: str) -> str:
         "assertion": jwt,
         "scope": "openid urn:zitadel:iam:org:project:id:zitadel:aud",
     }).encode()
-    req = urllib.request.Request(
-        f"{ZITADEL_URL}/oauth/v2/token", data=data,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
+    req = _request("/oauth/v2/token", data=data,
+                   headers={"Content-Type": "application/x-www-form-urlencoded"})
     with urllib.request.urlopen(req) as resp:
         return json.loads(resp.read())["access_token"]
 
@@ -88,8 +109,8 @@ def api(method: str, path: str, token: str, body: dict | None = None,
         _retries: int = 6, _retry_delay: int = 5):
     import urllib.request, urllib.error
     data = json.dumps(body).encode() if body else None
-    req = urllib.request.Request(
-        f"{ZITADEL_URL}{path}", data=data,
+    req = _request(
+        path, data=data,
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
         method=method,
     )

@@ -81,12 +81,35 @@ services:
       zitadel-init:
         condition: service_completed_successfully
     restart: unless-stopped
+    # Override the image's default healthcheck (which probes `localhost` and the
+    # readiness endpoint). Inside an sbx microVM a `network_mode: host` container
+    # can't resolve `localhost` (getaddrinfo ENOTFOUND) and can't reach Zitadel for
+    # the readiness check, so the default never goes healthy and Spring Boot's
+    # docker-compose lifecycle hangs. Probing the liveness endpoint via the numeric
+    # loopback address (no DNS) confirms the Next.js server is up and works on both
+    # plain Docker/Podman and inside sbx.
+    healthcheck:
+      test:
+      - CMD
+      - /usr/local/bin/node
+      - /app/healthcheck.mjs
+      - http://127.0.0.1:3000/ui/v2/login/healthy
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
   zitadel-init:
     image: python:3.14-alpine
-    network_mode: host
     command: sh -c "pip install cryptography -q && python /scripts/init.py"
     environment:
+      # ZITADEL_URL is the external/public URL — used for the JWT audience and the
+      # `Host` header Zitadel's vhost routing requires. ZITADEL_CONNECT_URL is the
+      # actual TCP target: the Docker bridge service name. Connecting over the bridge
+      # (instead of `network_mode: host` + localhost:8089) is the only thing that works
+      # inside an sbx microVM, where host networking is not honored, and it works
+      # identically on plain Docker/Podman. See docker/zitadel-init/scripts/init.py.
       ZITADEL_URL: http://localhost:8089
+      ZITADEL_CONNECT_URL: http://zitadel:8080
       KEY_FILE_PATH: /keys/zitadel-init-sa.json
       OUTPUT_FILE: /output/.local-client.properties
       MGMT_PAT_FILE: /output/management-api.pat
