@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ModelAttribute
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 
 /**
- * Injects nav display attributes (initials, display name, email) into every
+ * Injects nav display attributes (initials, display name) into every
  * authenticated controller's model.
  *
  * **Why read from the members table instead of OIDC claims?**
@@ -17,11 +17,9 @@ import tech.sergiodelgado.saasstarter.organization.MemberRepository
  * which UserAccountService updates immediately on save — means the nav reflects
  * the new name on the very next page load, without requiring a sign-out/sign-in.
  *
- * **Why not use the Thymeleaf Security extras dialect (#authentication / sec:)?**
- * The dialect isn't on the classpath yet. When it is added (to enable sec:authorize
- * for role-based nav sections), this advice can be retired for the display-name
- * concern but should remain for the members-table read so initials stay live.
- * See the GitHub issue tracking the Thymeleaf Security extras addition.
+ * **Email** is rendered via `sec:authentication="principal.email"` in the template
+ * and is intentionally not injected here — email changes require a Zitadel
+ * re-authentication anyway, so OIDC-claim freshness is sufficient.
  */
 @ControllerAdvice
 class NavModelAdvice(private val memberRepository: MemberRepository) {
@@ -49,8 +47,4 @@ class NavModelAdvice(private val memberRepository: MemberRepository) {
         val last = member?.lastName.orEmpty()
         return if (first.isNotBlank() || last.isNotBlank()) "$first $last".trim() else principal.email.orEmpty()
     }
-
-    @ModelAttribute("navEmail")
-    fun navEmail(@AuthenticationPrincipal principal: OidcUser?): String =
-        principal?.email.orEmpty()
 }
