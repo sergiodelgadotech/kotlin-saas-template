@@ -99,6 +99,18 @@ class UserAccountControllerTest {
     }
 
     @Test
+    fun `GET account renders nav email inside sec-authorize-gated dropdown`() {
+        every { userAccountService.getProfile(USER_SUB) } returns AccountProfile("Alice", "Smith")
+
+        mvc.perform(
+            get("/account")
+                .with(oidcLogin().idToken { it.subject(USER_SUB).claim("email", "nav@example.com") })
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("nav@example.com")))
+    }
+
+    @Test
     fun `POST account calls service and redirects with flash`() {
         justRun {
             userAccountService.updateDisplayName(any(), any(), any(), any())

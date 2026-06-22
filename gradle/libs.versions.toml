@@ -39,7 +39,8 @@ spring-boot-starter-flyway   = { module = "org.springframework.boot:spring-boot-
 spring-boot-testcontainers   = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-boot-docker-compose   = { module = "org.springframework.boot:spring-boot-docker-compose" }
 spring-session-redis    = { module = "org.springframework.session:spring-session-data-redis" }
-thymeleaf-layout        = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
+thymeleaf-layout                  = { module = "nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect", version.ref = "thymeleaf-layout" }
+thymeleaf-extras-springsecurity   = { module = "org.thymeleaf.extras:thymeleaf-extras-springsecurity6" }
 flyway-postgres         = { module = "org.flywaydb:flyway-database-postgresql" }
 postgresql              = { module = "org.postgresql:postgresql" }
 auth0-jwt               = { module = "com.auth0:java-jwt", version.ref = "auth0-jwt" }
