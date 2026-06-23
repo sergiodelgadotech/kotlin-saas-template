@@ -1,4 +1,4 @@
--- Local/test seed: one org + member for the shared test identity (TestAutoAuthFilter.TEST_USER_ID).
+-- Local/test seed: one org + member + STARTER subscription for the shared test identity.
 -- Applied when db/migration/local is in spring.flyway.locations; never runs in prod.
 
 INSERT INTO organizations (id, name, slug)
@@ -9,3 +9,12 @@ VALUES ('00000000-0000-0000-0000-000000000001', 'local-dev-user', 'OWNER', 'owne
 
 INSERT INTO members (organization_id, external_user_id, role, email)
 VALUES ('00000000-0000-0000-0000-000000000001', 'member-user', 'MEMBER', 'member@example.com');
+
+INSERT INTO subscriptions (id, organization_id, external_customer_id, plan, status)
+VALUES (
+    '00000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000001',
+    NULL,
+    'STARTER',
+    'ACTIVE'
+);
