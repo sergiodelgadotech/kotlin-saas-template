@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import strikt.assertions.matches
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
@@ -106,38 +107,38 @@ class OnboardingServiceTest {
     )
 
     @Test
-    fun `ensureBilling creates customer and TRIALING subscription when none exists`() {
+    fun `ensureBilling for STARTER does not call Stripe`() {
         every { subscriptionRepository.findByOrganizationId(testOrgId) } returns null
-        every { organizationRepository.findById(testOrgId) } returns Optional.of(testOrg)
-        every { memberRepository.findByOrganizationId(testOrgId) } returns listOf(ownerMember)
-        every { billingService.createCustomer(testOrgId, email = "ceo@acme.com", name = "Acme") } returns "cus_test"
-        every { billingService.ensureSubscription(testOrgId, "cus_test") } returns Subscription(
-            organizationId = testOrgId,
-            externalCustomerId = "cus_test",
-            plan = DefaultBillingPlan.STARTER.name,
-            status = SubscriptionStatus.TRIALING,
-        )
+        every { subscriptionRepository.save(any<Subscription>()) } answers { firstArg() }
 
-        service.ensureBilling()
+        service.ensureBilling(DefaultBillingPlan.STARTER.name)
 
-        verify(exactly = 1) { billingService.createCustomer(testOrgId, email = "ceo@acme.com", name = "Acme") }
-        verify(exactly = 1) { billingService.ensureSubscription(testOrgId, "cus_test") }
+        verify(exactly = 0) { billingService.createCustomer(any(), any(), any()) }
+        verify(exactly = 0) { billingService.ensureSubscription(any(), any()) }
     }
 
     @Test
-    fun `ensureBilling returns existing subscription without creating customer`() {
-        val existing = Subscription(
-            organizationId = testOrgId,
-            externalCustomerId = "cus_existing",
-            plan = DefaultBillingPlan.STARTER.name,
-            status = SubscriptionStatus.TRIALING,
-        )
-        every { subscriptionRepository.findByOrganizationId(testOrgId) } returns existing
+    fun `ensureBilling for STARTER saves subscription with null externalCustomerId and TRIALING status`() {
+        every { subscriptionRepository.findByOrganizationId(testOrgId) } returns null
+        val saved = slot<Subscription>()
+        every { subscriptionRepository.save(capture(saved)) } answers { firstArg() }
 
-        val result = service.ensureBilling()
+        service.ensureBilling(DefaultBillingPlan.STARTER.name)
 
-        expectThat(result).isEqualTo(existing)
-        verify(exactly = 0) { billingService.createCustomer(any(), any(), any()) }
-        verify(exactly = 0) { billingService.ensureSubscription(any(), any()) }
+        expectThat(saved.captured.externalCustomerId).isNull()
+        expectThat(saved.captured.plan).isEqualTo(DefaultBillingPlan.STARTER.name)
+        expectThat(saved.captured.status).isEqualTo(SubscriptionStatus.TRIALING)
+        expectThat(saved.captured.organizationId).isEqualTo(testOrgId)
+    }
+
+    @Test
+    fun `ensureBilling for paid plan delegates to billingService ensureStripeCustomer`() {
+        val sub = Subscription(organizationId = testOrgId, externalCustomerId = "cus_test")
+        every { billingService.ensureStripeCustomer() } returns sub
+
+        val result = service.ensureBilling(DefaultBillingPlan.PRO.name)
+
+        expectThat(result).isEqualTo(sub)
+        verify(exactly = 1) { billingService.ensureStripeCustomer() }
     }
 }

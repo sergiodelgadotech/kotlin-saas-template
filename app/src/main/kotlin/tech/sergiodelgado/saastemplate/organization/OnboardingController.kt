@@ -52,7 +52,7 @@ class OnboardingController(
     @PostMapping("/plan")
     fun choosePlan(@RequestParam plan: String, model: Model): String {
         return try {
-            onboardingService.ensureBilling()
+            onboardingService.ensureBilling(plan)
             if (plan == DefaultBillingPlan.STARTER.name) {
                 "redirect:/dashboard"
             } else {
