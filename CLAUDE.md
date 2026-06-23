@@ -99,6 +99,14 @@ Spring Boot auto-starts Postgres, Redis, and Zitadel via Docker Compose (`spring
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 
+### Enabling social login locally
+
+Social login buttons (Google, GitHub, Microsoft, Apple) appear automatically when the matching `ZITADEL_DEV_*` credentials are set in `.env` (loaded by direnv, forwarded to `zitadel-init`). Each provider is optional and silently skipped when its env vars are absent, so the stack always boots cleanly. To activate a provider, register your OAuth app in the relevant developer console with callback URL `http://localhost:8089/idps/callback`, fill in the vars documented in `.env.example`, then re-seed:
+
+```bash
+docker compose down -v && docker compose up -d
+```
+
 ### Testing plans / billing locally
 
 The **Starter** plan is free and never calls Stripe — choosing it during onboarding redirects straight to `/dashboard`. Only paid plans (currently Pro) need a real Stripe test price.
