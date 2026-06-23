@@ -35,9 +35,8 @@ class StripeStubConfig {
             every { createCheckoutSession(any()) } returns CHECKOUT_PATH
             every { createPortalSession() } returns PORTAL_PATH
             every { createCustomer(any(), any(), any(), any()) } returns "cus_stub"
-            every { ensureSubscription(any(), any()) } answers {
-                trialing(firstArg())
-            }
+            every { ensureSubscription(any(), any()) } answers { trialing(firstArg()) }
+            every { ensureStripeCustomer() } returns trialing(DEV_ORG_ID)
         }
 
         val starterSubscription: BillingService = mockk {
@@ -51,9 +50,14 @@ class StripeStubConfig {
             every { createCheckoutSession(any()) } returns CHECKOUT_PATH
             every { createPortalSession() } returns PORTAL_PATH
             every { createCustomer(any(), any(), any(), any()) } returns "cus_stub"
-            every { ensureSubscription(any(), any()) } answers {
-                trialing(firstArg())
-            }
+            every { ensureSubscription(any(), any()) } answers { trialing(firstArg()) }
+            every { ensureStripeCustomer() } returns Subscription(
+                id = UUID.randomUUID(),
+                organizationId = DEV_ORG_ID,
+                externalCustomerId = "cus_stub",
+                plan = DefaultBillingPlan.STARTER.name,
+                status = SubscriptionStatus.ACTIVE,
+            )
         }
     }
 
