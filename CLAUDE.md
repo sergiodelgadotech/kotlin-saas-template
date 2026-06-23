@@ -139,7 +139,26 @@ gh auth token | sbx secret set -g github       # stored globally, proxy MITMs ap
 # anthropic secret usually already set via `sbx secret set -g anthropic --oauth`
 ```
 
-**Spawn a sandbox for a feature:**
+**Convenience wrapper — `sbx-saas.sh`:**
+
+`./sbx-saas.sh` bakes in all the project defaults (name prefix, memory, CPU, `STARTER_PATH`, sibling mount) so you don't retype them. Use it instead of the raw commands below:
+
+```bash
+./sbx-saas.sh up <short-name>           # create + attach Claude Code
+./sbx-saas.sh run <short-name>          # re-attach to existing sandbox
+./sbx-saas.sh shell <short-name>        # interactive bash shell
+./sbx-saas.sh check <short-name>        # ./gradlew check (verification gate)
+./sbx-saas.sh bootrun <short-name>      # ./bootrun.sh inside sandbox (app launch)
+./sbx-saas.sh exec <short-name> -- …   # arbitrary command (STARTER_PATH injected)
+./sbx-saas.sh ports <short-name>        # publish 8080/8089/3000 to host
+./sbx-saas.sh down <short-name>         # destroy sandbox + branch (guarded — see below)
+```
+
+`down` prints a WARNING and prompts for confirmation. **Only run it after the PR is merged** — it permanently deletes the branch. Defaults are overridable via env: `SBX_NAME_PREFIX`, `SBX_MEM`, `SBX_CPUS`, `STARTER_PATH`, `SBX_ASSUME_YES`, `SBX_DRY_RUN`.
+
+---
+
+**Spawn a sandbox for a feature (raw commands):**
 
 ```bash
 sbx create claude . ../kotlin-saas-starter \
@@ -158,9 +177,7 @@ sbx exec kt-saas-<short-name> bash                                        # inte
 
 # Build/test commands need STARTER_PATH for composite build (see below):
 sbx exec -e STARTER_PATH=/var/home/serandel/Projects/kotlin-saas-starter \
-  kt-saas-<short-name> ./gradlew :app:test
-sbx exec -e STARTER_PATH=/var/home/serandel/Projects/kotlin-saas-starter \
-  kt-saas-<short-name> ./gradlew :app:integrationTest
+  kt-saas-<short-name> ./gradlew check
 ```
 
 `STARTER_PATH` points the composite build at the sibling repo's host-absolute path. The worktree under `.sbx/.../<branch>` is too deep for the relative `../kotlin-saas-starter` to resolve, so `settings.gradle.kts` looks at `STARTER_PATH` first.
