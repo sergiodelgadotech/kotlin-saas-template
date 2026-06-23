@@ -14,6 +14,13 @@ set -euo pipefail
 cd "$(dirname "$0")"
 export STARTER_PATH="${STARTER_PATH:-/var/home/serandel/Projects/kotlin-saas-starter}"
 
+# In an sbx sandbox, direnv doesn't run, so .env is never sourced automatically.
+# Load it from the canonical repo root (mounted via virtio-fs alongside the worktree).
+CANONICAL_ROOT="$(git worktree list --porcelain | awk '/^worktree/ { print $2; exit }')"
+if [[ -f "$CANONICAL_ROOT/.env" ]]; then
+    set -a; source "$CANONICAL_ROOT/.env"; set +a
+fi
+
 # Clear any stale compose stack first. In an sbx sandbox the previous run's
 # containers get idle-killed except zitadel-login (restart: unless-stopped). That
 # leftover makes Spring Boot's docker-compose lifecycle log "services already

@@ -66,6 +66,7 @@ class BillingController(private val billingService: BillingService) {
     @PostMapping("/checkout")
     fun checkout(@RequestParam plan: DefaultBillingPlan, model: Model): String {
         return try {
+            billingService.ensureStripeCustomer()
             "redirect:${billingService.createCheckoutSession(plan)}"
         } catch (e: StripeException) {
             log.error("Checkout failed for plan {}", plan, e)
