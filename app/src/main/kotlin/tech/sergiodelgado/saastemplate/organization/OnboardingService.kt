@@ -63,7 +63,7 @@ class OnboardingService(
                 Subscription(
                     organizationId = organizationId,
                     plan = DefaultBillingPlan.STARTER.name,
-                    status = SubscriptionStatus.TRIALING,
+                    status = SubscriptionStatus.ACTIVE,
                 )
             )
         }

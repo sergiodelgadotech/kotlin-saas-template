@@ -118,7 +118,7 @@ class OnboardingServiceTest {
     }
 
     @Test
-    fun `ensureBilling for STARTER saves subscription with null externalCustomerId and TRIALING status`() {
+    fun `ensureBilling for STARTER saves subscription with null externalCustomerId and ACTIVE status`() {
         every { subscriptionRepository.findByOrganizationId(testOrgId) } returns null
         val saved = slot<Subscription>()
         every { subscriptionRepository.save(capture(saved)) } answers { firstArg() }
@@ -127,7 +127,7 @@ class OnboardingServiceTest {
 
         expectThat(saved.captured.externalCustomerId).isNull()
         expectThat(saved.captured.plan).isEqualTo(DefaultBillingPlan.STARTER.name)
-        expectThat(saved.captured.status).isEqualTo(SubscriptionStatus.TRIALING)
+        expectThat(saved.captured.status).isEqualTo(SubscriptionStatus.ACTIVE)
         expectThat(saved.captured.organizationId).isEqualTo(testOrgId)
     }
 
