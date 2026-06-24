@@ -175,6 +175,158 @@ def configure_smtp(token: str) -> None:
     SMTP_CONFIGURED_FILE.touch()
 
 
+def find_idp_by_name(token: str, name: str):
+    """Search for an existing IDP template by exact name; return its id or None."""
+    resp = api("POST", "/management/v1/idps/templates/_search", token, {
+        "queries": [{"idpNameQuery": {"name": name, "method": "TEXT_QUERY_METHOD_EQUALS"}}]
+    })
+    results = resp.get("result") or []
+    return results[0]["id"] if results else None
+
+
+def register_idp(token: str, kind: str, name: str, body: dict) -> str:
+    """Idempotently register an IDP. Returns the IDP id (existing or newly created)."""
+    existing_id = find_idp_by_name(token, name)
+    if existing_id:
+        print(f"  {name} IDP already exists (id={existing_id}), skipping.")
+        return existing_id
+    resp = api("POST", f"/management/v1/idps/{kind}", token, body)
+    idp_id = resp["id"]
+    print(f"  Created {name} IDP (id={idp_id})")
+    return idp_id
+
+
+def link_idp_to_login_policy(token: str, idp_id: str) -> None:
+    """Add an IDP to the org's custom login policy. 409 means already linked."""
+    resp = api("POST", "/management/v1/policies/login/idps", token, {
+        "idpId": idp_id,
+        "ownerType": "IDP_OWNER_TYPE_ORG",
+    })
+    if resp.get("already_exists"):
+        print(f"  IDP {idp_id} already linked to login policy, skipping.")
+    else:
+        print(f"  Linked IDP {idp_id} to login policy.")
+
+
+def enable_external_login(token: str) -> None:
+    """Ensure the org has a custom login policy with allowExternalIdp=true.
+
+    The bootstrap org inherits the instance default policy until a custom one is
+    created. AddIDPToLoginPolicy requires a custom policy to exist first, so we
+    create-or-update it here.
+    """
+    get_resp = api("GET", "/management/v1/policies/login", token)
+    policy = get_resp.get("policy", {})
+
+    if not policy.get("isDefault", True) and policy.get("allowExternalIdp"):
+        print("  allowExternalIdp already enabled on custom login policy, skipping.")
+        return
+
+    # Build a copy of the current policy values for the write request, excluding
+    # read-only fields. This mirrors configure_default_redirect_uri's approach.
+    excluded = {"details", "isDefault"}
+    policy_body = {k: v for k, v in policy.items() if k not in excluded}
+    policy_body["allowExternalIdp"] = True
+
+    if policy.get("isDefault", True):
+        # No custom policy yet — create one
+        resp = api("POST", "/management/v1/policies/login", token, policy_body)
+        verb = "Created"
+    else:
+        # Custom policy exists but flag is off — update it
+        resp = api("PUT", "/management/v1/policies/login", token, policy_body)
+        verb = "Updated"
+
+    if resp.get("forbidden"):
+        print("  WARNING: zitadel-init-sa lacks permissions — cannot enable allowExternalIdp.")
+        print("  Enable it manually: http://localhost:8089/ui/console")
+        print("  Org Settings → Login Behavior → Allow External IDP")
+        return
+
+    print(f"  {verb} org login policy: allowExternalIdp=true.")
+
+
+def configure_social_idps(token: str) -> None:
+    """Register Google/GitHub/Microsoft/Apple IDPs when their env vars are set."""
+    PROVIDER_OPTIONS = {
+        "isLinkingAllowed": True,
+        "isCreationAllowed": True,
+        "isAutoCreation": True,
+        "isAutoUpdate": True,
+        "autoLinking": "AUTO_LINKING_OPTION_EMAIL",
+    }
+
+    providers = []
+
+    google_id = os.getenv("ZITADEL_DEV_GOOGLE_CLIENT_ID", "")
+    google_secret = os.getenv("ZITADEL_DEV_GOOGLE_CLIENT_SECRET", "")
+    if google_id and google_secret:
+        providers.append(("google", "Google", {
+            "clientId": google_id,
+            "clientSecret": google_secret,
+            "scopes": ["openid", "profile", "email"],
+            "providerOptions": PROVIDER_OPTIONS,
+        }))
+    else:
+        print("Google IDP: skipped (ZITADEL_DEV_GOOGLE_CLIENT_ID/_SECRET not set).")
+
+    github_id = os.getenv("ZITADEL_DEV_GITHUB_CLIENT_ID", "")
+    github_secret = os.getenv("ZITADEL_DEV_GITHUB_CLIENT_SECRET", "")
+    if github_id and github_secret:
+        providers.append(("github", "GitHub", {
+            "clientId": github_id,
+            "clientSecret": github_secret,
+            "providerOptions": PROVIDER_OPTIONS,
+        }))
+    else:
+        print("GitHub IDP: skipped (ZITADEL_DEV_GITHUB_CLIENT_ID/_SECRET not set).")
+
+    ms_id = os.getenv("ZITADEL_DEV_MICROSOFT_CLIENT_ID", "")
+    ms_secret = os.getenv("ZITADEL_DEV_MICROSOFT_CLIENT_SECRET", "")
+    ms_tenant = os.getenv("ZITADEL_DEV_MICROSOFT_TENANT", "")
+    if ms_id and ms_secret and ms_tenant:
+        providers.append(("azure", "Microsoft", {
+            "name": "Microsoft",
+            "clientId": ms_id,
+            "clientSecret": ms_secret,
+            "tenant": {"tenantId": ms_tenant},
+            "emailVerified": True,
+            "scopes": ["openid", "profile", "email", "User.Read"],
+            "providerOptions": PROVIDER_OPTIONS,
+        }))
+    else:
+        print("Microsoft IDP: skipped (ZITADEL_DEV_MICROSOFT_CLIENT_ID/_SECRET/_TENANT not set).")
+
+    apple_id = os.getenv("ZITADEL_DEV_APPLE_CLIENT_ID", "")
+    apple_team = os.getenv("ZITADEL_DEV_APPLE_TEAM_ID", "")
+    apple_key_id = os.getenv("ZITADEL_DEV_APPLE_KEY_ID", "")
+    apple_pk = os.getenv("ZITADEL_DEV_APPLE_PRIVATE_KEY", "")
+    if apple_id and apple_team and apple_key_id and apple_pk:
+        # privateKey is a bytes field in the proto — base64-encode the PEM before sending
+        pk_b64 = base64.b64encode(apple_pk.encode()).decode()
+        providers.append(("apple", "Apple", {
+            "clientId": apple_id,
+            "teamId": apple_team,
+            "keyId": apple_key_id,
+            "privateKey": pk_b64,
+            "scopes": ["name", "email"],
+            "providerOptions": PROVIDER_OPTIONS,
+        }))
+    else:
+        print("Apple IDP: skipped (ZITADEL_DEV_APPLE_CLIENT_ID/_TEAM_ID/_KEY_ID/_PRIVATE_KEY not set).")
+
+    if not providers:
+        return
+
+    print("Enabling allowExternalIdp on org login policy...")
+    enable_external_login(token)
+
+    for kind, name, body in providers:
+        print(f"Registering {name} IDP...")
+        idp_id = register_idp(token, kind, name, body)
+        link_idp_to_login_policy(token, idp_id)
+
+
 def configure_default_redirect_uri(token: str) -> None:
     if DEFAULT_REDIRECT_CONFIGURED_FILE.exists():
         print("Default Redirect URI already configured (flag file exists), skipping.")
@@ -333,6 +485,7 @@ def main():
     provision_management_service_account(token)
     configure_smtp(token)
     configure_default_redirect_uri(token)
+    configure_social_idps(token)
 
     print()
     print("=" * 60)
