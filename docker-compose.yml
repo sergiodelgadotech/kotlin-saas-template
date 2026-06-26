@@ -81,15 +81,14 @@ services:
     # Runs on the Docker bridge (not network_mode: host) so it works inside an sbx
     # microVM, where host networking is not honored and the login container can't
     # reach Zitadel's published localhost:8089. It talks to Zitadel through
-    # zitadel-proxy, which rewrites the Host header the instance requires. Port 3000
-    # is published for the browser; it was implicitly host-exposed before.
+    # zitadel-proxy, which rewrites the Host header the instance requires.
+    # Port 3001 is used internally; login-proxy (below) publishes port 3000 for
+    # the browser and rewrites the IDP callback path before forwarding here.
     environment:
       ZITADEL_API_URL: http://zitadel-proxy:8080
       ZITADEL_SERVICE_USER_TOKEN_FILE: /bootstrap/login-client.pat
       ZITADEL_TLS_ENABLED: 'false'
-      PORT: 3000
-    ports:
-    - 3000:3000
+      PORT: 3001
     volumes:
     - zitadel-bootstrap:/bootstrap:ro
     depends_on:
@@ -107,11 +106,26 @@ services:
       - CMD
       - /usr/local/bin/node
       - /app/healthcheck.mjs
-      - http://127.0.0.1:3000/ui/v2/login/healthy
+      - http://127.0.0.1:3001/ui/v2/login/healthy
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 5s
+  # Path-rewriting reverse proxy in front of zitadel-login.
+  # Zitadel v4 generates the external IDP callback URL as
+  # http://localhost:3000/idps/callback (host:port from LOGINV2_BASEURI, no path),
+  # but the login v2 Next.js app serves the handler at /ui/v2/login/idps/callback.
+  # This proxy rewrites /idps/callback → /ui/v2/login/idps/callback so the browser
+  # lands on the correct handler after the social-login OAuth round-trip.
+  login-proxy:
+    image: nginx:alpine
+    ports:
+    - 3000:80
+    volumes:
+    - ./docker/login-proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+    depends_on:
+    - zitadel-login
+    restart: unless-stopped
   zitadel-init:
     image: python:3.14-alpine
     command: sh -c "pip install cryptography -q && python /scripts/init.py"
