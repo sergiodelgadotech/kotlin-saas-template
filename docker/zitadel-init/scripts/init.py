@@ -223,8 +223,9 @@ def enable_external_login(token: str) -> None:
         return
 
     # Build a copy of the current policy values for the write request, excluding
-    # read-only fields. This mirrors configure_default_redirect_uri's approach.
-    excluded = {"details", "isDefault"}
+    # read-only fields and idps (Zitadel v4.15.3+ rejects IDP_OWNER_TYPE_UNSPECIFIED
+    # in the body; IDPs are linked separately via link_idp_to_login_policy).
+    excluded = {"details", "isDefault", "idps"}
     policy_body = {k: v for k, v in policy.items() if k not in excluded}
     policy_body["allowExternalIdp"] = True
 
@@ -344,7 +345,8 @@ def configure_default_redirect_uri(token: str) -> None:
 
     # UpdateLoginPolicy is a full-replacement PUT (no FieldMask) — copy all
     # existing fields to avoid zeroing MFA timeouts, allowUsernamePassword, etc.
-    excluded = {"details", "isDefault"}
+    # Exclude idps: Zitadel v4.15.3+ rejects IDP_OWNER_TYPE_UNSPECIFIED in the body.
+    excluded = {"details", "isDefault", "idps"}
     put_body = {k: v for k, v in policy.items() if k not in excluded}
     put_body["defaultRedirectUri"] = DEFAULT_REDIRECT_URI
 
