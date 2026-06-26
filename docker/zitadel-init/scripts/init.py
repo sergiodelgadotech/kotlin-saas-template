@@ -263,6 +263,7 @@ def configure_social_idps(token: str) -> None:
     google_secret = os.getenv("ZITADEL_DEV_GOOGLE_CLIENT_SECRET", "")
     if google_id and google_secret:
         providers.append(("google", "Google", {
+            "name": "Google",
             "clientId": google_id,
             "clientSecret": google_secret,
             "scopes": ["openid", "profile", "email"],
@@ -275,6 +276,7 @@ def configure_social_idps(token: str) -> None:
     github_secret = os.getenv("ZITADEL_DEV_GITHUB_CLIENT_SECRET", "")
     if github_id and github_secret:
         providers.append(("github", "GitHub", {
+            "name": "GitHub",
             "clientId": github_id,
             "clientSecret": github_secret,
             "providerOptions": PROVIDER_OPTIONS,
@@ -306,6 +308,7 @@ def configure_social_idps(token: str) -> None:
         # privateKey is a bytes field in the proto — base64-encode the PEM before sending
         pk_b64 = base64.b64encode(apple_pk.encode()).decode()
         providers.append(("apple", "Apple", {
+            "name": "Apple",
             "clientId": apple_id,
             "teamId": apple_team,
             "keyId": apple_key_id,
