@@ -36,7 +36,8 @@ Spring Boot's docker-compose integration starts Postgres, Redis, and Zitadel aut
 ### Social login (for scenarios A3 and B2)
 
 Register an OAuth app in your provider's developer console with callback URL
-`http://localhost:8089/idps/callback`, fill in the matching `ZITADEL_DEV_*` credentials in `.env`,
+`http://localhost:3000/idps/callback` (port 3000 — login-proxy, not Zitadel core on 8089),
+fill in the matching `ZITADEL_DEV_*` credentials in `.env`,
 then re-seed Zitadel:
 
 ```bash
