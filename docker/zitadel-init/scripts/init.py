@@ -252,7 +252,7 @@ def configure_social_idps(token: str) -> None:
     PROVIDER_OPTIONS = {
         "isLinkingAllowed": True,
         "isCreationAllowed": True,
-        "isAutoCreation": True,
+        "isAutoCreation": False,  # False: show prefilled completion form instead of silently failing when IDP omits required fields (e.g. GitHub name)
         "isAutoUpdate": True,
         "autoLinking": "AUTO_LINKING_OPTION_EMAIL",
     }
