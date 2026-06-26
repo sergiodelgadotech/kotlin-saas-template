@@ -154,6 +154,8 @@ Open http://localhost:8080
 ./gradlew :app:e2eTest
 ```
 
+For flows that can't be automated (real Zitadel auth, social login, Stripe, live SSE), see [docs/manual-testing.md](docs/manual-testing.md).
+
 ## Project structure
 
 ```

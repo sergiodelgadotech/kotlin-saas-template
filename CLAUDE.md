@@ -229,6 +229,8 @@ Without either a `STARTER_PATH` or a sibling directory (forks, CI), the `include
 ./gradlew :app:e2eTest            # Playwright
 ```
 
+For flows that can't be automated (real Zitadel auth, social login, Stripe, live SSE), see [`docs/manual-testing.md`](docs/manual-testing.md).
+
 ### Authenticating to GitHub Packages
 
 The library `kotlin-saas-starter` is published to GitHub Packages. To consume it:
