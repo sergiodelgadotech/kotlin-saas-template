@@ -125,7 +125,7 @@ Each scenario lists **Preconditions → Steps → Expected result**. Check the b
 1. Open http://localhost:8080/sign-in.
 2. On the Zitadel hosted login page, click the social provider button (e.g. **Continue with Google**).
 3. Complete the provider's OAuth consent screen.
-4. On first connection: Zitadel may show an account-linking screen — confirm.
+4. On first connection: Zitadel shows a prefilled **profile completion form** (first name, last name, email). Fill in any empty fields and submit. If an existing Zitadel account shares the same email, Zitadel may instead show an account-linking prompt — confirm.
 
 **Expected result:**
 - You are redirected back to the app and routed correctly (onboarding if new user, dashboard if returning).
