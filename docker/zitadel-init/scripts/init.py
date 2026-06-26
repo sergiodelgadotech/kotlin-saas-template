@@ -223,8 +223,9 @@ def enable_external_login(token: str) -> None:
         return
 
     # Build a copy of the current policy values for the write request, excluding
-    # read-only fields. This mirrors configure_default_redirect_uri's approach.
-    excluded = {"details", "isDefault"}
+    # read-only fields and idps (Zitadel v4.15.3+ rejects IDP_OWNER_TYPE_UNSPECIFIED
+    # in the body; IDPs are linked separately via link_idp_to_login_policy).
+    excluded = {"details", "isDefault", "idps"}
     policy_body = {k: v for k, v in policy.items() if k not in excluded}
     policy_body["allowExternalIdp"] = True
 
@@ -262,6 +263,7 @@ def configure_social_idps(token: str) -> None:
     google_secret = os.getenv("ZITADEL_DEV_GOOGLE_CLIENT_SECRET", "")
     if google_id and google_secret:
         providers.append(("google", "Google", {
+            "name": "Google",
             "clientId": google_id,
             "clientSecret": google_secret,
             "scopes": ["openid", "profile", "email"],
@@ -274,6 +276,7 @@ def configure_social_idps(token: str) -> None:
     github_secret = os.getenv("ZITADEL_DEV_GITHUB_CLIENT_SECRET", "")
     if github_id and github_secret:
         providers.append(("github", "GitHub", {
+            "name": "GitHub",
             "clientId": github_id,
             "clientSecret": github_secret,
             "providerOptions": PROVIDER_OPTIONS,
@@ -305,6 +308,7 @@ def configure_social_idps(token: str) -> None:
         # privateKey is a bytes field in the proto — base64-encode the PEM before sending
         pk_b64 = base64.b64encode(apple_pk.encode()).decode()
         providers.append(("apple", "Apple", {
+            "name": "Apple",
             "clientId": apple_id,
             "teamId": apple_team,
             "keyId": apple_key_id,
@@ -344,7 +348,8 @@ def configure_default_redirect_uri(token: str) -> None:
 
     # UpdateLoginPolicy is a full-replacement PUT (no FieldMask) — copy all
     # existing fields to avoid zeroing MFA timeouts, allowUsernamePassword, etc.
-    excluded = {"details", "isDefault"}
+    # Exclude idps: Zitadel v4.15.3+ rejects IDP_OWNER_TYPE_UNSPECIFIED in the body.
+    excluded = {"details", "isDefault", "idps"}
     put_body = {k: v for k, v in policy.items() if k not in excluded}
     put_body["defaultRedirectUri"] = DEFAULT_REDIRECT_URI
 
