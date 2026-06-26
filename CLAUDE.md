@@ -101,7 +101,7 @@ The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://lo
 
 ### Enabling social login locally
 
-Social login buttons (Google, GitHub, Microsoft, Apple) appear automatically when the matching `ZITADEL_DEV_*` credentials are set in `.env` (loaded by direnv, forwarded to `zitadel-init`). Each provider is optional and silently skipped when its env vars are absent, so the stack always boots cleanly. To activate a provider, register your OAuth app in the relevant developer console with callback URL `http://localhost:8089/idps/callback`, fill in the vars documented in `.env.example`, then re-seed:
+Social login buttons (Google, GitHub, Microsoft, Apple) appear automatically when the matching `ZITADEL_DEV_*` credentials are set in `.env` (loaded by direnv, forwarded to `zitadel-init`). Each provider is optional and silently skipped when its env vars are absent, so the stack always boots cleanly. To activate a provider, register your OAuth app in the relevant developer console with callback URL `http://localhost:3000/ui/v2/login/idps/callback` (port 3000 — the login-v2 UI, not Zitadel core on 8089), fill in the vars documented in `.env.example`, then re-seed:
 
 ```bash
 docker compose down -v && docker compose up -d
