@@ -249,8 +249,11 @@ def enable_external_login(token: str) -> None:
 
 def find_action_by_name(token: str, name: str):
     """Return the first action record with this name, or None."""
-    resp = api("GET", "/management/v1/actions", token)
-    return next((a for a in (resp.get("result") or []) if a["name"] == name), None)
+    resp = api("POST", "/management/v1/actions/_search", token, {
+        "queries": [{"actionNameQuery": {"name": name, "method": "TEXT_QUERY_METHOD_EQUALS"}}]
+    })
+    results = resp.get("result") or []
+    return results[0] if results else None
 
 
 def register_action(token: str, name: str, script: str) -> str:
@@ -272,7 +275,7 @@ def set_flow_trigger(token: str, flow_type: str, trigger_type: str, action_ids: 
     """Wire a list of action IDs to a flow trigger, replacing the existing list."""
     api(
         "POST",
-        f"/management/v1/flows/{flow_type}/trigger/{trigger_type}/actions",
+        f"/management/v1/flows/{flow_type}/trigger/{trigger_type}",
         token,
         {"actionIds": action_ids},
     )
