@@ -122,12 +122,13 @@ Each scenario lists **Preconditions → Steps → Expected result**. Check the b
 **Preconditions:** At least one social provider configured in `.env` and Zitadel re-seeded (see prerequisites). Use an email that does NOT already have a Zitadel password account.
 
 **Slack-specific setup:**
-1. Create an app at https://api.slack.com/apps.
+1. Create an app at https://api.slack.com/apps (pick any workspace as the dev workspace — it doesn't restrict who can sign in).
 2. Under **OpenID Connect**, enable "Sign in with Slack".
 3. Add `http://localhost:3000/idps/callback` as a Redirect URL.
-4. Copy Client ID / Secret into `.env` as `ZITADEL_DEV_SLACK_CLIENT_ID` / `ZITADEL_DEV_SLACK_CLIENT_SECRET`.
-5. Re-seed: `docker compose down -v && docker compose up -d`.
-6. Confirm `zitadel-init` logs `"Registering Slack IDP…"` on startup.
+4. **For production** (users from multiple Slack workspaces): go to **Manage Distribution** and enable Public Distribution. For local dev/testing with your own account this step is not needed.
+5. Copy Client ID / Secret into `.env` as `ZITADEL_DEV_SLACK_CLIENT_ID` / `ZITADEL_DEV_SLACK_CLIENT_SECRET`.
+6. Re-seed: `docker compose down -v && docker compose up -d`.
+7. Confirm `zitadel-init` logs `"Registering Slack IDP…"` on startup.
 
 Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as plain text **"Slack"** (no logo).
 
