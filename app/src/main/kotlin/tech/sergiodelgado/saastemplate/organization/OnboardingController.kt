@@ -24,7 +24,17 @@ class OnboardingController(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @GetMapping("/organization")
-    fun organizationForm(): String = "onboarding/organization"
+    fun organizationForm(
+        @AuthenticationPrincipal oidcUser: OidcUser?,
+        model: Model,
+    ): String {
+        val suggestions = oidcUser?.getClaim<List<*>>("org_suggestions")
+            ?.filterIsInstance<String>()
+            ?.filter { it.isNotBlank() }
+            ?.takeIf { it.isNotEmpty() }
+        model.addAttribute("suggestions", suggestions)
+        return "onboarding/organization"
+    }
 
     @PostMapping("/organization")
     fun createOrganization(

@@ -44,17 +44,40 @@ class OnboardingControllerTest {
         TenantContext.clear()
     }
 
-    private fun oidcUser(subject: String = "user-sub", email: String = "u@example.com") =
-        mockk<OidcUser> {
-            every { this@mockk.subject } returns subject
-            every { this@mockk.email } returns email
-            every { givenName } returns "Alice"
-            every { familyName } returns "Smith"
-        }
+    private fun oidcUser(
+        subject: String = "user-sub",
+        email: String = "u@example.com",
+        orgSuggestions: List<String>? = null,
+    ) = mockk<OidcUser> {
+        every { this@mockk.subject } returns subject
+        every { this@mockk.email } returns email
+        every { givenName } returns "Alice"
+        every { familyName } returns "Smith"
+        every { getClaim<List<*>>("org_suggestions") } returns orgSuggestions
+    }
 
     @Test
     fun `GET organization returns onboarding-organization template`() {
-        expectThat(controller.organizationForm()).isEqualTo("onboarding/organization")
+        val model = ExtendedModelMap()
+        expectThat(controller.organizationForm(oidcUser(), model)).isEqualTo("onboarding/organization")
+    }
+
+    @Test
+    fun `GET organization adds org suggestions from OIDC claim to model`() {
+        val model = ExtendedModelMap()
+
+        controller.organizationForm(oidcUser(orgSuggestions = listOf("Acme", "Other Org")), model)
+
+        expectThat(model["suggestions"]).isEqualTo(listOf("Acme", "Other Org"))
+    }
+
+    @Test
+    fun `GET organization adds null suggestions to model when claim is absent`() {
+        val model = ExtendedModelMap()
+
+        controller.organizationForm(oidcUser(orgSuggestions = null), model)
+
+        expectThat(model["suggestions"]).isEqualTo(null)
     }
 
     @Test
