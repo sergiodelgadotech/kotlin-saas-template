@@ -117,13 +117,23 @@ Each scenario lists **Preconditions → Steps → Expected result**. Check the b
 
 ---
 
-#### A3 — Social login (Google / GitHub / Microsoft / Apple)
+#### A3 — Social login (Google / GitHub / Microsoft / Apple / Slack)
 
 **Preconditions:** At least one social provider configured in `.env` and Zitadel re-seeded (see prerequisites). Use an email that does NOT already have a Zitadel password account.
 
+**Slack-specific setup:**
+1. Create an app at https://api.slack.com/apps.
+2. Under **OpenID Connect**, enable "Sign in with Slack".
+3. Add `http://localhost:3000/idps/callback` as a Redirect URL.
+4. Copy Client ID / Secret into `.env` as `ZITADEL_DEV_SLACK_CLIENT_ID` / `ZITADEL_DEV_SLACK_CLIENT_SECRET`.
+5. Re-seed: `docker compose down -v && docker compose up -d`.
+6. Confirm `zitadel-init` logs `"Registering Slack IDP…"` on startup.
+
+Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as plain text **"Slack"** (no logo).
+
 **Steps:**
 1. Open http://localhost:8080/sign-in.
-2. On the Zitadel hosted login page, click the social provider button (e.g. **Continue with Google**).
+2. On the Zitadel hosted login page, click the social provider button (e.g. **Continue with Google** or **Slack**).
 3. Complete the provider's OAuth consent screen.
 4. On first connection: Zitadel shows a prefilled **profile completion form** (first name, last name, email). Fill in any empty fields and submit. If an existing Zitadel account shares the same email, Zitadel may instead show an account-linking prompt — confirm.
 
@@ -132,6 +142,7 @@ Each scenario lists **Preconditions → Steps → Expected result**. Check the b
 - The Zitadel admin console shows the user with an external identity linked.
 
 - [ ] Pass (repeat for each configured provider)
+- [ ] Verify stack boots cleanly with Slack vars **unset** (init.py logs skip message, no errors)
 
 ---
 

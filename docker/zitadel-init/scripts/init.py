@@ -319,6 +319,21 @@ def configure_social_idps(token: str) -> None:
     else:
         print("Apple IDP: skipped (ZITADEL_DEV_APPLE_CLIENT_ID/_TEAM_ID/_KEY_ID/_PRIVATE_KEY not set).")
 
+    slack_id = os.getenv("ZITADEL_DEV_SLACK_CLIENT_ID", "")
+    slack_secret = os.getenv("ZITADEL_DEV_SLACK_CLIENT_SECRET", "")
+    if slack_id and slack_secret:
+        providers.append(("generic_oidc", "Slack", {
+            "name": "Slack",
+            "issuer": "https://slack.com",
+            "clientId": slack_id,
+            "clientSecret": slack_secret,
+            "scopes": ["openid", "profile", "email"],
+            "isIdTokenMapping": True,
+            "providerOptions": PROVIDER_OPTIONS,
+        }))
+    else:
+        print("Slack IDP: skipped (ZITADEL_DEV_SLACK_CLIENT_ID/_SECRET not set).")
+
     if not providers:
         return
 
