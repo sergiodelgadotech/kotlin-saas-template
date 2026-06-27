@@ -322,16 +322,20 @@ def configure_social_idps(token: str) -> None:
     slack_id = os.getenv("ZITADEL_DEV_SLACK_CLIENT_ID", "")
     slack_secret = os.getenv("ZITADEL_DEV_SLACK_CLIENT_SECRET", "")
     if slack_id and slack_secret:
-        # Slack has no preferred_username claim; isAutoCreation=True skips the
-        # completion form so Zitadel auto-creates the account using email as the
-        # login name fallback, avoiding the empty-username + password-text UX.
+        # Slack's OIDC has no preferred_username claim, so Zitadel can't derive a
+        # login name for auto-creation. Keep isAutoCreation=False (shared
+        # PROVIDER_OPTIONS) so login-v2 shows the prefilled completion form for the
+        # user to set a username instead of hard-failing with user_creation_failed.
+        # isIdTokenMapping is intentionally absent: without it Zitadel calls Slack's
+        # userinfo endpoint, which provides email/given_name/family_name to prefill
+        # the form. See docs/manual-testing.md "Slack first-login quirk".
         providers.append(("generic_oidc", "Slack", {
             "name": "Slack",
             "issuer": "https://slack.com",
             "clientId": slack_id,
             "clientSecret": slack_secret,
             "scopes": ["openid", "profile", "email"],
-            "providerOptions": {**PROVIDER_OPTIONS, "isAutoCreation": True},
+            "providerOptions": PROVIDER_OPTIONS,
         }))
     else:
         print("Slack IDP: skipped (ZITADEL_DEV_SLACK_CLIENT_ID/_SECRET not set).")
