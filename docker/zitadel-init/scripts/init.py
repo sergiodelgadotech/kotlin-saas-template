@@ -247,6 +247,142 @@ def enable_external_login(token: str) -> None:
     print(f"  {verb} org login policy: allowExternalIdp=true.")
 
 
+def find_action_by_name(token: str, name: str):
+    """Return the first action record with this name, or None."""
+    resp = api("GET", "/management/v1/actions", token)
+    return next((a for a in (resp.get("result") or []) if a["name"] == name), None)
+
+
+def register_action(token: str, name: str, script: str) -> str:
+    """Idempotently create or update a Zitadel action. Returns the action ID."""
+    existing = find_action_by_name(token, name)
+    payload = {"name": name, "script": script, "timeout": "10s", "allowedToFail": True}
+    if existing:
+        action_id = existing["id"]
+        api("PUT", f"/management/v1/actions/{action_id}", token, payload)
+        print(f"  Updated action '{name}' (id={action_id})")
+        return action_id
+    resp = api("POST", "/management/v1/actions", token, payload)
+    action_id = resp["id"]
+    print(f"  Created action '{name}' (id={action_id})")
+    return action_id
+
+
+def set_flow_trigger(token: str, flow_type: str, trigger_type: str, action_ids: list[str]) -> None:
+    """Wire a list of action IDs to a flow trigger, replacing the existing list."""
+    api(
+        "POST",
+        f"/management/v1/flows/{flow_type}/trigger/{trigger_type}/actions",
+        token,
+        {"actionIds": action_ids},
+    )
+    print(f"  Wired {len(action_ids)} action(s) to {flow_type}/{trigger_type}")
+
+
+def configure_actions(token: str) -> None:
+    """Register org-suggestion Actions and wire them to the appropriate Zitadel flows."""
+
+    EXTRACT_SCRIPT = """\
+let http = require('zitadel/http')
+
+function extractOrgSuggestions(ctx, api) {
+    let suggestions = [];
+
+    try {
+        // Google Workspace: hd claim is only present for Workspace accounts, not personal Gmail
+        const hd = ctx.getClaim('hd');
+        if (hd) {
+            suggestions = [domainToName(hd)];
+            api.v1.user.appendMetadata('orgSuggestions', JSON.stringify(suggestions));
+            return;
+        }
+
+        // Microsoft Entra: tid claim is only present for work/school (Entra ID) accounts
+        const tid = ctx.getClaim('tid');
+        if (tid) {
+            const email = ctx.getClaim('email') || ctx.getClaim('preferred_username') || '';
+            const at = email.indexOf('@');
+            if (at > -1) {
+                suggestions = [domainToName(email.substring(at + 1).split('.')[0])];
+            }
+            api.v1.user.appendMetadata('orgSuggestions', JSON.stringify(suggestions));
+            return;
+        }
+
+        // GitHub: no hd or tid — try fetching user's organizations via the access token
+        if (ctx.accessToken) {
+            const resp = http.fetch('https://api.github.com/user/orgs', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + ctx.accessToken,
+                    'Accept': 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                },
+            });
+            if (resp.status === 200) {
+                const orgs = resp.json();
+                suggestions = orgs.map(function(o) { return o.name || o.login; });
+            }
+        }
+    } catch (e) {
+        // silently fail — empty suggestions is safe
+    }
+
+    api.v1.user.appendMetadata('orgSuggestions', JSON.stringify(suggestions));
+}
+
+function domainToName(base) {
+    return base.charAt(0).toUpperCase() + base.slice(1).replace(/-/g, ' ');
+}
+"""
+
+    CLAIM_SCRIPT = """\
+function addOrgSuggestionsClaim(ctx, api) {
+    try {
+        const metadata = ctx.v1.user.getMetadata();
+        if (!metadata || !metadata.metadata) return;
+
+        // Iterate in reverse so the most recent login's metadata wins if duplicates exist
+        for (let i = metadata.metadata.length - 1; i >= 0; i--) {
+            const entry = metadata.metadata[i];
+            if (entry.key === 'orgSuggestions') {
+                const suggestions = JSON.parse(entry.value);
+                if (suggestions && suggestions.length > 0) {
+                    api.v1.claims.setClaim('org_suggestions', suggestions);
+                }
+                return;
+            }
+        }
+    } catch (e) {
+        // silently fail
+    }
+}
+"""
+
+    print("Configuring Zitadel Actions for org name suggestions...")
+    extract_id = register_action(token, "extractOrgSuggestions", EXTRACT_SCRIPT)
+    claim_id = register_action(token, "addOrgSuggestionsClaim", CLAIM_SCRIPT)
+
+    set_flow_trigger(
+        token,
+        "FLOW_TYPE_EXTERNAL_AUTHENTICATION",
+        "TRIGGER_TYPE_POST_AUTHENTICATION",
+        [extract_id],
+    )
+    set_flow_trigger(
+        token,
+        "FLOW_TYPE_COMPLEMENT_TOKEN",
+        "TRIGGER_TYPE_PRE_USERINFO_CREATION",
+        [claim_id],
+    )
+    set_flow_trigger(
+        token,
+        "FLOW_TYPE_COMPLEMENT_TOKEN",
+        "TRIGGER_TYPE_PRE_ACCESS_TOKEN_CREATION",
+        [claim_id],
+    )
+
+
 def configure_social_idps(token: str) -> None:
     """Register Google/GitHub/Microsoft/Apple IDPs when their env vars are set."""
     PROVIDER_OPTIONS = {
@@ -279,6 +415,7 @@ def configure_social_idps(token: str) -> None:
             "name": "GitHub",
             "clientId": github_id,
             "clientSecret": github_secret,
+            "scopes": ["read:org"],
             "providerOptions": PROVIDER_OPTIONS,
         }))
     else:
@@ -512,6 +649,7 @@ def main():
     configure_smtp(token)
     configure_default_redirect_uri(token)
     configure_social_idps(token)
+    configure_actions(token)
 
     print()
     print("=" * 60)
