@@ -117,21 +117,35 @@ Each scenario lists **Preconditions → Steps → Expected result**. Check the b
 
 ---
 
-#### A3 — Social login (Google / GitHub / Microsoft / Apple)
+#### A3 — Social login (Google / GitHub / Microsoft / Apple / Slack)
 
 **Preconditions:** At least one social provider configured in `.env` and Zitadel re-seeded (see prerequisites). Use an email that does NOT already have a Zitadel password account.
 
+**Slack-specific setup:**
+1. Create an app at https://api.slack.com/apps (pick any workspace as the dev workspace — it doesn't restrict who can sign in).
+2. Go to **Features** → **OAuth & Permissions**. Under **User Token Scopes**, add `openid`, `profile`, `email`. Under **Redirect URLs**, add `http://localhost:3000/idps/callback`.
+3. **For production** (users from multiple Slack workspaces): go to **Manage Distribution** and enable Public Distribution. For local dev/testing with your own account this step is not needed.
+4. Copy Client ID / Secret from **Settings** → **Basic Information** → **App Credentials** into `.env` as `ZITADEL_DEV_SLACK_CLIENT_ID` / `ZITADEL_DEV_SLACK_CLIENT_SECRET`.
+5. Re-seed: `docker compose down -v && docker compose up -d`.
+6. Confirm `zitadel-init` logs `"Registering Slack IDP…"` on startup.
+
+Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as plain text **"Slack"** (no logo).
+
 **Steps:**
 1. Open http://localhost:8080/sign-in.
-2. On the Zitadel hosted login page, click the social provider button (e.g. **Continue with Google**).
+2. On the Zitadel hosted login page, click the social provider button (e.g. **Continue with Google** or **Slack**).
 3. Complete the provider's OAuth consent screen.
 4. On first connection: Zitadel shows a prefilled **profile completion form** (first name, last name, email). Fill in any empty fields and submit. If an existing Zitadel account shares the same email, Zitadel may instead show an account-linking prompt — confirm.
+
+**Slack first-login quirk (expected, not a bug):** Slack's OIDC does not return a `preferred_username` claim, so Zitadel cannot pre-fill the username field. On first sign-in the form will show an empty **username** field — enter your email address or any handle you want to use. The form's help text may also mention "password"; ignore it, no password is required and the field is not shown. This form only appears once; subsequent sign-ins go straight to the app.
 
 **Expected result:**
 - You are redirected back to the app and routed correctly (onboarding if new user, dashboard if returning).
 - The Zitadel admin console shows the user with an external identity linked.
 
-- [ ] Pass (repeat for each configured provider)
+- [ ] Pass for Google / GitHub / Microsoft / Apple (no username prompt, no password text)
+- [ ] Pass for Slack (username prompt on first sign-in only; enter email; ignore password help text)
+- [ ] Verify stack boots cleanly with Slack vars **unset** (init.py logs skip message, no errors)
 
 ---
 
