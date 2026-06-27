@@ -137,11 +137,14 @@ Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as
 3. Complete the provider's OAuth consent screen.
 4. On first connection: Zitadel shows a prefilled **profile completion form** (first name, last name, email). Fill in any empty fields and submit. If an existing Zitadel account shares the same email, Zitadel may instead show an account-linking prompt — confirm.
 
+**Slack first-login quirk (expected, not a bug):** Slack's OIDC does not return a `preferred_username` claim, so Zitadel cannot pre-fill the username field. On first sign-in the form will show an empty **username** field — enter your email address or any handle you want to use. The form's help text may also mention "password"; ignore it, no password is required and the field is not shown. This form only appears once; subsequent sign-ins go straight to the app.
+
 **Expected result:**
 - You are redirected back to the app and routed correctly (onboarding if new user, dashboard if returning).
 - The Zitadel admin console shows the user with an external identity linked.
 
-- [ ] Pass (repeat for each configured provider)
+- [ ] Pass for Google / GitHub / Microsoft / Apple (no username prompt, no password text)
+- [ ] Pass for Slack (username prompt on first sign-in only; enter email; ignore password help text)
 - [ ] Verify stack boots cleanly with Slack vars **unset** (init.py logs skip message, no errors)
 
 ---

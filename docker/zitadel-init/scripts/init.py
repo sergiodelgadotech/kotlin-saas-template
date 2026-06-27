@@ -322,14 +322,16 @@ def configure_social_idps(token: str) -> None:
     slack_id = os.getenv("ZITADEL_DEV_SLACK_CLIENT_ID", "")
     slack_secret = os.getenv("ZITADEL_DEV_SLACK_CLIENT_SECRET", "")
     if slack_id and slack_secret:
+        # Slack has no preferred_username claim; isAutoCreation=True skips the
+        # completion form so Zitadel auto-creates the account using email as the
+        # login name fallback, avoiding the empty-username + password-text UX.
         providers.append(("generic_oidc", "Slack", {
             "name": "Slack",
             "issuer": "https://slack.com",
             "clientId": slack_id,
             "clientSecret": slack_secret,
             "scopes": ["openid", "profile", "email"],
-            "isIdTokenMapping": True,
-            "providerOptions": PROVIDER_OPTIONS,
+            "providerOptions": {**PROVIDER_OPTIONS, "isAutoCreation": True},
         }))
     else:
         print("Slack IDP: skipped (ZITADEL_DEV_SLACK_CLIENT_ID/_SECRET not set).")
