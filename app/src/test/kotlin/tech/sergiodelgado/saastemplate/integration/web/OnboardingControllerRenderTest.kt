@@ -13,6 +13,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
@@ -81,6 +82,23 @@ class OnboardingControllerRenderTest {
             .andExpect(content().string(containsString("disabled")))
             .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
             .andExpect(content().string(not(containsString("href=\"/billing\""))))
+            .andExpect(content().string(not(containsString("<datalist"))))
+    }
+
+    @Test
+    fun `GET onboarding organization renders datalist when org_suggestions claim is present`() {
+        mvc.perform(
+            get("/onboarding/organization")
+                .with(
+                    oidcLogin().idToken { token ->
+                        token.claim("org_suggestions", listOf("Acme", "Other Org"))
+                    }
+                )
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("<datalist")))
+            .andExpect(content().string(containsString("Acme")))
+            .andExpect(content().string(containsString("Other Org")))
     }
 
     @Test
