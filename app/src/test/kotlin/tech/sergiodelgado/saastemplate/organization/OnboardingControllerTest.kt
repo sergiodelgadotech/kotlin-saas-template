@@ -53,7 +53,7 @@ class OnboardingControllerTest {
         every { this@mockk.email } returns email
         every { givenName } returns "Alice"
         every { familyName } returns "Smith"
-        every { getClaim<List<*>>("org_suggestions") } returns orgSuggestions
+        every { getClaimAsStringList("org_suggestions") } returns orgSuggestions
     }
 
     @Test

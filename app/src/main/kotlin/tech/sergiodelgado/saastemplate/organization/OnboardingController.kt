@@ -28,8 +28,7 @@ class OnboardingController(
         @AuthenticationPrincipal oidcUser: OidcUser?,
         model: Model,
     ): String {
-        val suggestions = oidcUser?.getClaim<List<*>>("org_suggestions")
-            ?.filterIsInstance<String>()
+        val suggestions = oidcUser?.getClaimAsStringList("org_suggestions")
             ?.filter { it.isNotBlank() }
             ?.takeIf { it.isNotEmpty() }
         model.addAttribute("suggestions", suggestions)
