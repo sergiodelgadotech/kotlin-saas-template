@@ -97,7 +97,7 @@ class OnboardingControllerRenderTest {
         )
             .andExpect(status().isOk)
             .andExpect(content().string(containsString("<datalist")))
-            .andExpect(content().string(containsString("Acme")))
+            .andExpect(content().string(containsString("value=\"Acme\"")))
             .andExpect(content().string(containsString("Other Org")))
     }
 

@@ -345,7 +345,6 @@ function addOrgSuggestionsClaim(ctx, api) {
         const metadata = ctx.v1.user.getMetadata();
         if (!metadata || !metadata.metadata) return;
 
-        // Iterate in reverse so the most recent login's metadata wins if duplicates exist
         for (let i = metadata.metadata.length - 1; i >= 0; i--) {
             const entry = metadata.metadata[i];
             if (entry.key === 'orgSuggestions') {
