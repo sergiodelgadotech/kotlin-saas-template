@@ -24,7 +24,7 @@
                                autofocus
                                required>
                         <datalist id="org-suggestions" th:if="${suggestions != null && !suggestions.isEmpty()}">
-                            <option th:each="s : ${suggestions}" th:value="${s}"/>
+                            <option th:each="suggestion : ${suggestions}" th:value="${suggestion}"/>
                         </datalist>
                     </fieldset>
                     <div class="card-actions">
