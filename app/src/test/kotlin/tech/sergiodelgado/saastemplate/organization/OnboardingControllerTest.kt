@@ -13,26 +13,25 @@ import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsKey
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
-import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import java.util.UUID
 
 class OnboardingControllerTest {
 
     private val onboardingService = mockk<OnboardingService>(relaxed = true)
     private val billingService = mockk<BillingService>(relaxed = true)
-    private val zitadelUserDirectory = mockk<ZitadelUserDirectory>(relaxed = true)
     private val properties = SaasStarterProperties(
         billing = SaasStarterProperties.Billing(
             planPrices = mapOf("STARTER" to "price_starter", "PRO" to "price_pro"),
         )
     )
 
-    private val controller = OnboardingController(onboardingService, billingService, properties, zitadelUserDirectory)
+    private val controller = OnboardingController(onboardingService, billingService, properties)
 
     private val testOrgId = UUID.randomUUID()
 
@@ -49,11 +48,15 @@ class OnboardingControllerTest {
     private fun oidcUser(
         subject: String = "user-sub",
         email: String = "u@example.com",
+        hd: String? = null,
+        tid: String? = null,
     ) = mockk<OidcUser> {
         every { this@mockk.subject } returns subject
         every { this@mockk.email } returns email
         every { givenName } returns "Alice"
         every { familyName } returns "Smith"
+        every { getClaim<String>("hd") } returns hd
+        every { getClaim<String>("tid") } returns tid
     }
 
     @Test
@@ -63,23 +66,17 @@ class OnboardingControllerTest {
     }
 
     @Test
-    fun `GET organization adds org suggestions from metadata to model`() {
+    fun `GET organization passes Google Workspace hd suggestion to model`() {
         val model = ExtendedModelMap()
-        every { zitadelUserDirectory.getOrgSuggestions("user-sub") } returns listOf("Acme", "Other Org")
-
-        controller.organizationForm(oidcUser(), model)
-
-        expectThat(model["suggestions"]).isEqualTo(listOf("Acme", "Other Org"))
+        controller.organizationForm(oidcUser(hd = "acme.com"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("Acme"))
     }
 
     @Test
-    fun `GET organization adds null suggestions to model when metadata is absent`() {
+    fun `GET organization passes null suggestions for personal email when no hd or tid`() {
         val model = ExtendedModelMap()
-        every { zitadelUserDirectory.getOrgSuggestions("user-sub") } returns null
-
-        controller.organizationForm(oidcUser(), model)
-
-        expectThat(model["suggestions"]).isEqualTo(null)
+        controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
+        expectThat(model["suggestions"]).isNull()
     }
 
     @Test
@@ -156,5 +153,59 @@ class OnboardingControllerTest {
         expectThat(model).containsKey("plans")
         expectThat(model).containsKey("starterPlan")
         expectThat(model["error"] as String).contains("Couldn't start checkout")
+    }
+
+    // ── deriveOrgSuggestions ─────────────────────────────────────────────────
+
+    @Test
+    fun `deriveOrgSuggestions returns hd domain name for Google Workspace`() {
+        expectThat(deriveOrgSuggestions(hd = "acme.com", tid = null, email = null))
+            .isEqualTo(listOf("Acme"))
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns email domain label for Entra ID work account`() {
+        expectThat(
+            deriveOrgSuggestions(
+                hd = null,
+                tid = "aaaabbbb-cccc-dddd-eeee-ffffaaaabbbb",
+                email = "alice@contoso.com",
+            )
+        ).isEqualTo(listOf("Contoso"))
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns null for Microsoft consumer pseudo-tenant`() {
+        expectThat(
+            deriveOrgSuggestions(
+                hd = null,
+                tid = "9188040d-6c67-4c5b-b112-36a304b66dad",
+                email = "user@hotmail.com",
+            )
+        ).isNull()
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns email domain label for business GitHub email`() {
+        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "dev@mycompany.io"))
+            .isEqualTo(listOf("Mycompany"))
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns null for personal Gmail`() {
+        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "user@gmail.com"))
+            .isNull()
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns null when no claims at all`() {
+        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = null))
+            .isNull()
+    }
+
+    @Test
+    fun `deriveOrgSuggestions handles hyphenated domain label`() {
+        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "user@my-company.com"))
+            .isEqualTo(listOf("My company"))
     }
 }

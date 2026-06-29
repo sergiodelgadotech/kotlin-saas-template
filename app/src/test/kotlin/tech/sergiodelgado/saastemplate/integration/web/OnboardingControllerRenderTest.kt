@@ -28,7 +28,6 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.tenant.TenantResolver
 import tech.sergiodelgado.saastemplate.SaasTemplateApplication
-import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import tech.sergiodelgado.saastemplate.organization.OnboardingService
 import java.util.UUID
 
@@ -69,13 +68,9 @@ class OnboardingControllerRenderTest {
     @MockkBean(relaxed = true)
     lateinit var onboardingService: OnboardingService
 
-    @MockkBean(relaxed = true)
-    lateinit var zitadelUserDirectory: ZitadelUserDirectory
-
     @BeforeEach
     fun setup() {
         every { tenantResolver.resolveTenantId(any()) } returns devOrgId
-        every { zitadelUserDirectory.getOrgSuggestions(any()) } returns null
     }
 
     @Test
@@ -91,14 +86,14 @@ class OnboardingControllerRenderTest {
     }
 
     @Test
-    fun `GET onboarding organization renders datalist when org suggestions are available from metadata`() {
-        every { zitadelUserDirectory.getOrgSuggestions(any()) } returns listOf("Acme", "Other Org")
-
-        mvc.perform(get("/onboarding/organization").with(oidcLogin()))
+    fun `GET onboarding organization renders datalist when Google Workspace hd claim is present`() {
+        mvc.perform(
+            get("/onboarding/organization")
+                .with(oidcLogin().idToken { it.claim("hd", "acme.com") })
+        )
             .andExpect(status().isOk)
             .andExpect(content().string(containsString("<datalist")))
             .andExpect(content().string(containsString("value=\"Acme\"")))
-            .andExpect(content().string(containsString("Other Org")))
     }
 
     @Test

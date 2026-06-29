@@ -1,6 +1,5 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.zitadel.ApiException
 import com.zitadel.api.UserServiceApi
 import com.zitadel.model.UserServiceAddHumanUserRequest
@@ -14,13 +13,10 @@ import com.zitadel.model.UserServiceSendInviteCode
 import com.zitadel.model.UserServiceSetHumanEmail
 import com.zitadel.model.UserServiceSetHumanProfile
 import com.zitadel.model.UserServiceUpdateHumanUserRequest
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
-import org.springframework.web.client.RestClient
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
-import java.util.Base64
 
 /**
  * Zitadel-backed implementation of [IdpUserDirectory].
@@ -39,7 +35,6 @@ import java.util.Base64
 class ZitadelUserDirectory(
     private val properties: ZitadelManagementProperties,
     private val userService: UserServiceApi,
-    @Qualifier("zitadelManagementRestClient") private val restClient: RestClient,
     @Value("\${app.base-url}") private val appBaseUrl: String,
 ) : IdpUserDirectory {
 
@@ -119,24 +114,6 @@ class ZitadelUserDirectory(
         } catch (e: RuntimeException) {
             throw IllegalStateException("Zitadel connection error: ${e.message}", e)
         }
-    }
-
-    fun getOrgSuggestions(userId: String): List<String>? = try {
-        val body = restClient.get()
-            .uri("/management/v1/users/{userId}/metadata/orgSuggestions", userId)
-            .retrieve()
-            .body(String::class.java) ?: return null
-        val mapper = ObjectMapper()
-        val root = mapper.readTree(body)
-        val encoded = root.path("metadata").path("value").asText(null) ?: return null
-        val decoded = String(Base64.getDecoder().decode(encoded))
-        val array = mapper.readTree(decoded)
-        if (!array.isArray) return null
-        array.mapNotNull { if (it.isTextual) it.asText() else null }
-            .filter { it.isNotBlank() }
-            .takeIf { it.isNotEmpty() }
-    } catch (_: Exception) {
-        null
     }
 
     // Derives a placeholder given/family name from the email local-part so Zitadel's

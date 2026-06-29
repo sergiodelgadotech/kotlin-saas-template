@@ -11,3 +11,4 @@
 - [Project board Plan field is low priority](feedback_plan_field_low_priority.md) — don't ask which Plan N to assign; labels + Blocked-by lists are what matter
 - [Free tier vs. free trial copy](feedback_free_tier_vs_free_trial.md) — Don't label a permanent €0 plan as "Free trial" — free tier and free trial are different value propositions
 - [Plans go in GitHub issues, not markdown files](feedback_plan_location.md) — never create docs/superpowers/plans/*.md; use GitHub issues instead
+- [local is the default Spring Boot profile](feedback_local_profile_default.md) — never add `--args='--spring.profiles.active=local'` to bootRun; it's already the default
