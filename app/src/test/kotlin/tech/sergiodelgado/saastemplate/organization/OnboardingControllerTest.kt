@@ -18,19 +18,21 @@ import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import java.util.UUID
 
 class OnboardingControllerTest {
 
     private val onboardingService = mockk<OnboardingService>(relaxed = true)
     private val billingService = mockk<BillingService>(relaxed = true)
+    private val zitadelUserDirectory = mockk<ZitadelUserDirectory>(relaxed = true)
     private val properties = SaasStarterProperties(
         billing = SaasStarterProperties.Billing(
             planPrices = mapOf("STARTER" to "price_starter", "PRO" to "price_pro"),
         )
     )
 
-    private val controller = OnboardingController(onboardingService, billingService, properties)
+    private val controller = OnboardingController(onboardingService, billingService, properties, zitadelUserDirectory)
 
     private val testOrgId = UUID.randomUUID()
 
@@ -47,13 +49,11 @@ class OnboardingControllerTest {
     private fun oidcUser(
         subject: String = "user-sub",
         email: String = "u@example.com",
-        orgSuggestions: List<String>? = null,
     ) = mockk<OidcUser> {
         every { this@mockk.subject } returns subject
         every { this@mockk.email } returns email
         every { givenName } returns "Alice"
         every { familyName } returns "Smith"
-        every { getClaimAsStringList("org_suggestions") } returns orgSuggestions
     }
 
     @Test
@@ -63,19 +63,21 @@ class OnboardingControllerTest {
     }
 
     @Test
-    fun `GET organization adds org suggestions from OIDC claim to model`() {
+    fun `GET organization adds org suggestions from metadata to model`() {
         val model = ExtendedModelMap()
+        every { zitadelUserDirectory.getOrgSuggestions("user-sub") } returns listOf("Acme", "Other Org")
 
-        controller.organizationForm(oidcUser(orgSuggestions = listOf("Acme", "Other Org")), model)
+        controller.organizationForm(oidcUser(), model)
 
         expectThat(model["suggestions"]).isEqualTo(listOf("Acme", "Other Org"))
     }
 
     @Test
-    fun `GET organization adds null suggestions to model when claim is absent`() {
+    fun `GET organization adds null suggestions to model when metadata is absent`() {
         val model = ExtendedModelMap()
+        every { zitadelUserDirectory.getOrgSuggestions("user-sub") } returns null
 
-        controller.organizationForm(oidcUser(orgSuggestions = null), model)
+        controller.organizationForm(oidcUser(), model)
 
         expectThat(model["suggestions"]).isEqualTo(null)
     }

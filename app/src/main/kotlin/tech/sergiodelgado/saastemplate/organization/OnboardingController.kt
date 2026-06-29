@@ -2,6 +2,7 @@ package tech.sergiodelgado.saastemplate.organization
 
 import com.stripe.exception.StripeException
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Controller
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
+import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 
 @Controller
 @RequestMapping("/onboarding")
@@ -20,6 +22,7 @@ class OnboardingController(
     private val onboardingService: OnboardingService,
     private val billingService: BillingService,
     private val properties: SaasStarterProperties,
+    @Autowired(required = false) private val zitadelUserDirectory: ZitadelUserDirectory? = null,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -28,9 +31,8 @@ class OnboardingController(
         @AuthenticationPrincipal oidcUser: OidcUser?,
         model: Model,
     ): String {
-        val suggestions = oidcUser?.getClaimAsStringList("org_suggestions")
-            ?.filter { it.isNotBlank() }
-            ?.takeIf { it.isNotEmpty() }
+        val suggestions = oidcUser?.subject
+            ?.let { zitadelUserDirectory?.getOrgSuggestions(it) }
         model.addAttribute("suggestions", suggestions)
         return "onboarding/organization"
     }

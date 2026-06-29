@@ -17,10 +17,12 @@ import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.web.client.RestClient
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
 import strikt.assertions.one
+import java.util.Base64
 
 class ZitadelUserDirectoryTest {
 
@@ -32,8 +34,9 @@ class ZitadelUserDirectoryTest {
     )
 
     private val userService = mockk<UserServiceApi>()
+    private val restClient = mockk<RestClient>(relaxed = true)
 
-    private val directory = ZitadelUserDirectory(properties, userService, "https://app.example.com")
+    private val directory = ZitadelUserDirectory(properties, userService, restClient, "https://app.example.com")
 
     @Test
     fun `returns userId when user found by email in correct org`() {
@@ -205,5 +208,47 @@ class ZitadelUserDirectoryTest {
         assertThrows<IllegalStateException> {
             directory.updateProfile("user-123", "Alice", "Smith")
         }
+    }
+
+    // ── getOrgSuggestions ────────────────────────────────────────────────────
+
+    @Test
+    fun `getOrgSuggestions returns parsed list from metadata response`() {
+        val encoded = Base64.getEncoder().encodeToString("""["Acme","Other Org"]""".toByteArray())
+        val body = """{"metadata":{"value":"$encoded"}}"""
+
+        val getSpec = mockk<RestClient.RequestHeadersUriSpec<*>>(relaxed = true)
+        val responseSpec = mockk<RestClient.ResponseSpec>(relaxed = true)
+        every { restClient.get() } returns getSpec
+        every { getSpec.uri(any<String>(), any<Any>()) } returns getSpec
+        every { getSpec.retrieve() } returns responseSpec
+        every { responseSpec.body(String::class.java) } returns body
+
+        val result = directory.getOrgSuggestions("user-123")
+
+        expectThat(result).isEqualTo(listOf("Acme", "Other Org"))
+    }
+
+    @Test
+    fun `getOrgSuggestions returns null when API call throws`() {
+        every { restClient.get() } throws RuntimeException("connection refused")
+
+        val result = directory.getOrgSuggestions("user-456")
+
+        expectThat(result).isNull()
+    }
+
+    @Test
+    fun `getOrgSuggestions returns null when metadata body is absent`() {
+        val getSpec = mockk<RestClient.RequestHeadersUriSpec<*>>(relaxed = true)
+        val responseSpec = mockk<RestClient.ResponseSpec>(relaxed = true)
+        every { restClient.get() } returns getSpec
+        every { getSpec.uri(any<String>(), any<Any>()) } returns getSpec
+        every { getSpec.retrieve() } returns responseSpec
+        every { responseSpec.body(String::class.java) } returns null
+
+        val result = directory.getOrgSuggestions("user-789")
+
+        expectThat(result).isNull()
     }
 }
