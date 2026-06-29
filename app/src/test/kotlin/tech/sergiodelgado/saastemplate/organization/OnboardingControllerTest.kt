@@ -19,19 +19,21 @@ import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import java.util.UUID
 
 class OnboardingControllerTest {
 
     private val onboardingService = mockk<OnboardingService>(relaxed = true)
     private val billingService = mockk<BillingService>(relaxed = true)
+    private val zitadelUserDirectory = mockk<ZitadelUserDirectory>(relaxed = true)
     private val properties = SaasStarterProperties(
         billing = SaasStarterProperties.Billing(
             planPrices = mapOf("STARTER" to "price_starter", "PRO" to "price_pro"),
         )
     )
 
-    private val controller = OnboardingController(onboardingService, billingService, properties)
+    private val controller = OnboardingController(onboardingService, billingService, properties, zitadelUserDirectory)
 
     private val testOrgId = UUID.randomUUID()
 
@@ -73,10 +75,27 @@ class OnboardingControllerTest {
     }
 
     @Test
-    fun `GET organization passes null suggestions for personal email when no hd or tid`() {
+    fun `GET organization passes null suggestions for personal email when all sources return null`() {
+        every { zitadelUserDirectory.getGitHubOrgs(any()) } returns null
         val model = ExtendedModelMap()
         controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
         expectThat(model["suggestions"]).isNull()
+    }
+
+    @Test
+    fun `GET organization uses GitHub public orgs when no OIDC signals but directory is available`() {
+        every { zitadelUserDirectory.getGitHubOrgs("user-sub") } returns listOf("My Org", "Another Org")
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("My Org", "Another Org"))
+    }
+
+    @Test
+    fun `GET organization falls back to email domain when GitHub orgs returns null`() {
+        every { zitadelUserDirectory.getGitHubOrgs(any()) } returns null
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(email = "dev@mycompany.io"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("Mycompany"))
     }
 
     @Test
@@ -186,26 +205,34 @@ class OnboardingControllerTest {
     }
 
     @Test
-    fun `deriveOrgSuggestions returns email domain label for business GitHub email`() {
+    fun `deriveOrgSuggestions returns null when no hd or qualifying tid`() {
         expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "dev@mycompany.io"))
+            .isNull()
+    }
+
+    // ── deriveEmailDomainSuggestion ──────────────────────────────────────────
+
+    @Test
+    fun `deriveEmailDomainSuggestion returns label for business email domain`() {
+        expectThat(deriveEmailDomainSuggestion(email = "dev@mycompany.io"))
             .isEqualTo(listOf("Mycompany"))
     }
 
     @Test
-    fun `deriveOrgSuggestions returns null for personal Gmail`() {
-        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "user@gmail.com"))
+    fun `deriveEmailDomainSuggestion returns null for personal Gmail`() {
+        expectThat(deriveEmailDomainSuggestion(email = "user@gmail.com"))
             .isNull()
     }
 
     @Test
-    fun `deriveOrgSuggestions returns null when no claims at all`() {
-        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = null))
+    fun `deriveEmailDomainSuggestion returns null for null email`() {
+        expectThat(deriveEmailDomainSuggestion(email = null))
             .isNull()
     }
 
     @Test
-    fun `deriveOrgSuggestions handles hyphenated domain label`() {
-        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "user@my-company.com"))
+    fun `deriveEmailDomainSuggestion handles hyphenated domain label`() {
+        expectThat(deriveEmailDomainSuggestion(email = "user@my-company.com"))
             .isEqualTo(listOf("My company"))
     }
 }

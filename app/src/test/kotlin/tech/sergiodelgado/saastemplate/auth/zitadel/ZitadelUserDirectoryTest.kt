@@ -17,10 +17,14 @@ import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.web.client.RestClient
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
 import strikt.assertions.one
+
+/** Concrete type so mockk can infer S (avoids wildcard-capture type inference issues on uri()). */
+private interface TestHeadersSpec : RestClient.RequestHeadersUriSpec<TestHeadersSpec>
 
 class ZitadelUserDirectoryTest {
 
@@ -32,8 +36,12 @@ class ZitadelUserDirectoryTest {
     )
 
     private val userService = mockk<UserServiceApi>()
+    private val restClient = mockk<RestClient>(relaxed = true)
+    private val gitHubRestClient = mockk<RestClient>(relaxed = true)
 
-    private val directory = ZitadelUserDirectory(properties, userService, "https://app.example.com")
+    private val directory = ZitadelUserDirectory(
+        properties, userService, restClient, gitHubRestClient, "https://app.example.com"
+    )
 
     @Test
     fun `returns userId when user found by email in correct org`() {
@@ -205,6 +213,72 @@ class ZitadelUserDirectoryTest {
         assertThrows<IllegalStateException> {
             directory.updateProfile("user-123", "Alice", "Smith")
         }
+    }
+
+    // ── getGitHubOrgs ────────────────────────────────────────────────────────
+
+    private fun stubIdpLinks(userId: String, responseJson: String) {
+        val postSpec = mockk<RestClient.RequestBodyUriSpec>(relaxed = true)
+        val bodySpec = mockk<RestClient.RequestBodySpec>(relaxed = true)
+        val responseSpec = mockk<RestClient.ResponseSpec>(relaxed = true)
+
+        every { restClient.post() } returns postSpec
+        every { postSpec.uri(any<String>(), userId) } returns bodySpec
+        every { bodySpec.contentType(any()) } returns bodySpec
+        // body() returns RequestBodySpec; retrieve() is on RequestHeadersSpec which RequestBodySpec extends
+        every { bodySpec.body(any<Any>()) } returns bodySpec
+        every { bodySpec.retrieve() } returns responseSpec
+        every { responseSpec.body(String::class.java) } returns responseJson
+    }
+
+    private fun stubGitHubOrgs(login: String, responseJson: String) {
+        val responseSpec = mockk<RestClient.ResponseSpec> {
+            every { body(String::class.java) } returns responseJson
+        }
+        // Stub uri() and retrieve() outside the mockk{} init block so the receiver is the explicit
+        // TestHeadersSpec mock — giving Kotlin the concrete S needed to infer T in every{}.
+        val getSpec = mockk<TestHeadersSpec>(relaxed = true)
+        every { getSpec.uri(any<String>()) } returns getSpec
+        every { getSpec.retrieve() } returns responseSpec
+        every { gitHubRestClient.get() } returns getSpec
+    }
+
+    @Test
+    fun `getGitHubOrgs returns org names for user with GitHub IDP link and public memberships`() {
+        stubIdpLinks("user-123", """{"result":[{"idpName":"GitHub","providedUserName":"octocat"}]}""")
+        stubGitHubOrgs("octocat", """[{"name":"Acme Corp","login":"acme-corp"},{"name":"","login":"other-org"}]""")
+
+        val result = directory.getGitHubOrgs("user-123")
+
+        expectThat(result).isEqualTo(listOf("Acme Corp", "other-org"))
+    }
+
+    @Test
+    fun `getGitHubOrgs returns null when user has no GitHub IDP link`() {
+        stubIdpLinks("user-123", """{"result":[{"idpName":"Google","providedUserName":"someone"}]}""")
+
+        val result = directory.getGitHubOrgs("user-123")
+
+        expectThat(result).isNull()
+    }
+
+    @Test
+    fun `getGitHubOrgs returns null when GitHub returns no public orgs`() {
+        stubIdpLinks("user-123", """{"result":[{"idpName":"GitHub","providedUserName":"octocat"}]}""")
+        stubGitHubOrgs("octocat", "[]")
+
+        val result = directory.getGitHubOrgs("user-123")
+
+        expectThat(result).isNull()
+    }
+
+    @Test
+    fun `getGitHubOrgs returns null when Zitadel IDP link search throws`() {
+        every { restClient.post() } throws RuntimeException("connection refused")
+
+        val result = directory.getGitHubOrgs("user-123")
+
+        expectThat(result).isNull()
     }
 
 }
