@@ -283,7 +283,13 @@ def set_flow_trigger(token: str, flow_type: str, trigger_type: str, action_ids: 
 
 
 def configure_actions(token: str) -> None:
-    """Register org-suggestion Actions and wire them to the appropriate Zitadel flows."""
+    """Register the org-suggestion extraction Action and wire it to the external auth flow.
+
+    The action stores org suggestions in Zitadel user metadata (key: orgSuggestions).
+    The Spring app reads that metadata via the management API on the /onboarding/organization
+    page — the old FLOW_TYPE_COMPLEMENT_TOKEN / FLOW_TYPE_CUSTOMIZE_TOKEN approach for injecting
+    a custom OIDC claim is not available in Zitadel v4.15.x management API v1.
+    """
 
     EXTRACT_SCRIPT = """\
 let http = require('zitadel/http')
@@ -339,49 +345,14 @@ function domainToName(base) {
 }
 """
 
-    CLAIM_SCRIPT = """\
-function addOrgSuggestionsClaim(ctx, api) {
-    try {
-        const metadata = ctx.v1.user.getMetadata();
-        if (!metadata || !metadata.metadata) return;
-
-        for (let i = metadata.metadata.length - 1; i >= 0; i--) {
-            const entry = metadata.metadata[i];
-            if (entry.key === 'orgSuggestions') {
-                const suggestions = JSON.parse(entry.value);
-                if (suggestions && suggestions.length > 0) {
-                    api.v1.claims.setClaim('org_suggestions', suggestions);
-                }
-                return;
-            }
-        }
-    } catch (e) {
-        // silently fail
-    }
-}
-"""
-
     print("Configuring Zitadel Actions for org name suggestions...")
     extract_id = register_action(token, "extractOrgSuggestions", EXTRACT_SCRIPT)
-    claim_id = register_action(token, "addOrgSuggestionsClaim", CLAIM_SCRIPT)
 
     set_flow_trigger(
         token,
         "FLOW_TYPE_EXTERNAL_AUTHENTICATION",
         "TRIGGER_TYPE_POST_AUTHENTICATION",
         [extract_id],
-    )
-    set_flow_trigger(
-        token,
-        "FLOW_TYPE_COMPLEMENT_TOKEN",
-        "TRIGGER_TYPE_PRE_USERINFO_CREATION",
-        [claim_id],
-    )
-    set_flow_trigger(
-        token,
-        "FLOW_TYPE_COMPLEMENT_TOKEN",
-        "TRIGGER_TYPE_PRE_ACCESS_TOKEN_CREATION",
-        [claim_id],
     )
 
 
