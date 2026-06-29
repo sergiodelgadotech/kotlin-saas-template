@@ -124,6 +124,14 @@ def api(method: str, path: str, token: str, body: dict | None = None,
                 return {"already_exists": True, "detail": body_text}
             if e.code == 403:
                 return {"forbidden": True, "detail": body_text}
+            if e.code == 400:
+                # gRPC code 9 = "No changes" — treat as a successful no-op
+                try:
+                    parsed = json.loads(body_text)
+                    if parsed.get("code") == 9:
+                        return {"no_changes": True, "detail": body_text}
+                except (json.JSONDecodeError, AttributeError):
+                    pass
             if e.code == 503 and attempt < _retries:
                 print(f"  503 on {method} {path}, retrying in {_retry_delay}s... ({attempt}/{_retries})")
                 time.sleep(_retry_delay)
@@ -262,8 +270,11 @@ def register_action(token: str, name: str, script: str) -> str:
     payload = {"name": name, "script": script, "timeout": "10s", "allowedToFail": True}
     if existing:
         action_id = existing["id"]
-        api("PUT", f"/management/v1/actions/{action_id}", token, payload)
-        print(f"  Updated action '{name}' (id={action_id})")
+        result = api("PUT", f"/management/v1/actions/{action_id}", token, payload)
+        if result.get("no_changes"):
+            print(f"  Action '{name}' unchanged (id={action_id}), skipping.")
+        else:
+            print(f"  Updated action '{name}' (id={action_id})")
         return action_id
     resp = api("POST", "/management/v1/actions", token, payload)
     action_id = resp["id"]
