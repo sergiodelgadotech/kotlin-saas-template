@@ -303,25 +303,26 @@ def configure_actions(token: str) -> None:
     """
 
     EXTRACT_SCRIPT = """\
-let http = require('zitadel/http')
-
 function extractOrgSuggestions(ctx, api) {
-    let suggestions = [];
+    var suggestions = [];
 
     try {
         // Google Workspace: hd claim is only present for Workspace accounts, not personal Gmail
-        const hd = ctx.getClaim('hd');
+        var hd = ctx.getClaim('hd');
         if (hd) {
             suggestions = [domainToName(hd)];
             api.v1.user.appendMetadata('orgSuggestions', JSON.stringify(suggestions));
             return;
         }
 
-        // Microsoft Entra: tid claim is only present for work/school (Entra ID) accounts
-        const tid = ctx.getClaim('tid');
-        if (tid) {
-            const email = ctx.getClaim('email') || ctx.getClaim('preferred_username') || '';
-            const at = email.indexOf('@');
+        // Microsoft Entra ID (work/school only): tid is always present for Microsoft
+        // accounts but the consumer pseudo-tenant id is a well-known fixed value that
+        // is not useful as an org signal — skip it to avoid surfacing "Hotmail" etc.
+        var tid = ctx.getClaim('tid');
+        var CONSUMER_TENANT = '9188040d-6c67-4c5b-b112-36a304b66dad';
+        if (tid && tid !== CONSUMER_TENANT) {
+            var email = ctx.getClaim('email') || ctx.getClaim('preferred_username') || '';
+            var at = email.indexOf('@');
             if (at > -1) {
                 suggestions = [domainToName(email.substring(at + 1).split('.')[0])];
             }
@@ -329,9 +330,13 @@ function extractOrgSuggestions(ctx, api) {
             return;
         }
 
-        // GitHub: no hd or tid — try fetching user's organizations via the access token
+        // GitHub: no hd or tid — try fetching user's organizations via the access token.
+        // require() is placed inside the function (not at module top level) so a missing
+        // or unavailable http module falls into the catch below instead of aborting the
+        // entire script before extractOrgSuggestions is ever called.
         if (ctx.accessToken) {
-            const resp = http.fetch('https://api.github.com/user/orgs', {
+            var http = require('zitadel/http');
+            var resp = http.fetch('https://api.github.com/user/orgs', {
                 method: 'GET',
                 headers: {
                     'Authorization': 'Bearer ' + ctx.accessToken,
@@ -340,7 +345,7 @@ function extractOrgSuggestions(ctx, api) {
                 },
             });
             if (resp.status === 200) {
-                const orgs = resp.json();
+                var orgs = resp.json();
                 suggestions = orgs.map(function(o) { return o.name || o.login; });
             }
         }
