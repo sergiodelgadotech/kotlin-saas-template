@@ -99,6 +99,8 @@ Spring Boot auto-starts Postgres, Redis, and Zitadel via Docker Compose (`spring
 
 The Jobrunr dashboard is at `http://localhost:8000`, Zitadel admin at `http://localhost:8089/ui/console`.
 
+To reset local Zitadel state and re-seed from scratch: `./gradlew reset`.
+
 ### Enabling social login locally
 
 Social login buttons (Google, GitHub, Microsoft, Apple, Slack) appear automatically when the matching `ZITADEL_DEV_*` credentials are set in `.env` (loaded by direnv, forwarded to `zitadel-init`). Each provider is optional and silently skipped when its env vars are absent, so the stack always boots cleanly. To activate a provider, register your OAuth app in the relevant developer console with callback URL `http://localhost:3000/idps/callback` (`login-proxy` — routes `/idps/callback` to Zitadel core; `LOGINV2_BASEURI` points at port 3000 so the OAuth `redirect_uri` Zitadel sends to providers matches this address), fill in the vars documented in `.env.example`, then re-seed:
