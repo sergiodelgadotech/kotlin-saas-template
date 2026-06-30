@@ -1,5 +1,6 @@
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
+import org.gradle.api.file.ProjectLayout
 import org.gradle.process.ExecOperations
 
 plugins {
@@ -11,6 +12,7 @@ plugins {
 
 abstract class ResetTask @Inject constructor(
     private val execOps: ExecOperations,
+    private val layout: ProjectLayout,
 ) : DefaultTask() {
 
     @TaskAction
@@ -53,7 +55,7 @@ abstract class ResetTask @Inject constructor(
             ".local-management.properties",
             "management-api.pat",
             ".smtp-configured",
-        ).forEach { project.file("docker/zitadel-init/$it").delete() }
+        ).forEach { layout.projectDirectory.file("docker/zitadel-init/$it").asFile.delete() }
 
         execOps.exec { commandLine("docker", "compose", "up", "-d", "--remove-orphans", "zitadel-init") }
         execOps.exec { commandLine("docker", "compose", "wait", "zitadel-init") }
