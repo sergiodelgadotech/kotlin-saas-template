@@ -107,8 +107,6 @@ services:
     volumes:
     - zitadel-bootstrap:/bootstrap:ro
     depends_on:
-      zitadel-init:
-        condition: service_completed_successfully
       zitadel-proxy:
         condition: service_started
     restart: unless-stopped
@@ -127,6 +125,7 @@ services:
       retries: 3
       start_period: 5s
   zitadel-init:
+    profiles: ["init"]
     image: python:3.14-alpine
     command: sh -c "pip install cryptography -q && python /scripts/init.py"
     environment:

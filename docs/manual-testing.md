@@ -149,6 +149,42 @@ Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as
 
 ---
 
+#### A3a — Org name prefill from social login (Google Workspace / GitHub / Microsoft Entra)
+
+**Preconditions:** Social provider configured and re-seeded. Use a **brand-new** email that has never signed up (so onboarding is triggered).
+
+**Steps:**
+1. Sign up via **Google** using a **Google Workspace** account (a company `@yourdomain.com` account, not `@gmail.com`).
+2. After the OAuth flow, land on `/onboarding/organization`.
+
+**Expected result (Google Workspace):**
+- The "Organization name" input is prefilled with the company name derived from your Workspace domain (e.g. `acme.com` → `"Acme"`).
+- The field is fully editable — you can type a different name.
+- Submitting with the prefilled value or a custom value creates the organization normally.
+
+**Repeat for GitHub (if configured):**
+1. Sign up via **GitHub** with an account that belongs to one or more GitHub organizations.
+2. GitHub consent screen shows "Read access to your organization membership" — authorize it.
+3. Land on `/onboarding/organization`.
+
+**Expected result (GitHub with orgs):**
+- The input is prefilled with the first org name. A dropdown appears with all your GitHub org names.
+- You can select a different org from the dropdown or type a custom name.
+
+**Repeat for GitHub (no orgs):**
+- If the GitHub account belongs to no organizations, the field is blank (normal placeholder shown).
+
+**Repeat for Microsoft Entra (if configured):**
+- Sign up via Microsoft with a **work/school account** (Entra ID, not `@outlook.com` / `@hotmail.com`).
+- Field prefilled with domain-derived name (e.g. `contoso.com` → `"Contoso"`).
+
+**Personal providers (should NOT prefill):**
+- Sign up via **Google** using a personal `@gmail.com` account → field is blank.
+
+- [ ] Pass (document which providers were tested and their results)
+
+---
+
 #### A4 — Forgot password
 
 **Preconditions:** A Zitadel user with a password (not social-only) exists.

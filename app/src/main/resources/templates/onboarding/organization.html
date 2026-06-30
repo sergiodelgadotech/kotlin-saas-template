@@ -18,9 +18,14 @@
                                type="text"
                                id="org-name"
                                name="name"
+                               list="org-suggestions"
+                               th:value="${suggestions != null && !suggestions.isEmpty() ? suggestions.get(0) : ''}"
                                placeholder="Acme Inc."
                                autofocus
                                required>
+                        <datalist id="org-suggestions" th:if="${suggestions != null && !suggestions.isEmpty()}">
+                            <option th:each="suggestion : ${suggestions}" th:value="${suggestion}"/>
+                        </datalist>
                     </fieldset>
                     <div class="card-actions">
                         <button class="btn btn-primary w-full" type="submit" id="org-submit" disabled>Create organization</button>

@@ -13,24 +13,27 @@ import strikt.api.expectThat
 import strikt.assertions.contains
 import strikt.assertions.containsKey
 import strikt.assertions.isEqualTo
+import strikt.assertions.isNull
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import tech.sergiodelgado.saastemplate.auth.OrgSuggestions
 import java.util.UUID
 
 class OnboardingControllerTest {
 
     private val onboardingService = mockk<OnboardingService>(relaxed = true)
     private val billingService = mockk<BillingService>(relaxed = true)
+    private val orgSuggestions = mockk<OrgSuggestions>(relaxed = true)
     private val properties = SaasStarterProperties(
         billing = SaasStarterProperties.Billing(
             planPrices = mapOf("STARTER" to "price_starter", "PRO" to "price_pro"),
         )
     )
 
-    private val controller = OnboardingController(onboardingService, billingService, properties)
+    private val controller = OnboardingController(onboardingService, billingService, properties, orgSuggestions)
 
     private val testOrgId = UUID.randomUUID()
 
@@ -44,17 +47,55 @@ class OnboardingControllerTest {
         TenantContext.clear()
     }
 
-    private fun oidcUser(subject: String = "user-sub", email: String = "u@example.com") =
-        mockk<OidcUser> {
-            every { this@mockk.subject } returns subject
-            every { this@mockk.email } returns email
-            every { givenName } returns "Alice"
-            every { familyName } returns "Smith"
-        }
+    private fun oidcUser(
+        subject: String = "user-sub",
+        email: String = "u@example.com",
+        hd: String? = null,
+        tid: String? = null,
+    ) = mockk<OidcUser> {
+        every { this@mockk.subject } returns subject
+        every { this@mockk.email } returns email
+        every { givenName } returns "Alice"
+        every { familyName } returns "Smith"
+        every { getClaim<String>("hd") } returns hd
+        every { getClaim<String>("tid") } returns tid
+    }
 
     @Test
     fun `GET organization returns onboarding-organization template`() {
-        expectThat(controller.organizationForm()).isEqualTo("onboarding/organization")
+        val model = ExtendedModelMap()
+        expectThat(controller.organizationForm(oidcUser(), model)).isEqualTo("onboarding/organization")
+    }
+
+    @Test
+    fun `GET organization passes Google Workspace hd suggestion to model`() {
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(hd = "acme.com"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("Acme"))
+    }
+
+    @Test
+    fun `GET organization passes null suggestions for personal email when all sources return null`() {
+        every { orgSuggestions.getOrgNames(any()) } returns null
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
+        expectThat(model["suggestions"]).isNull()
+    }
+
+    @Test
+    fun `GET organization uses GitHub public orgs when no OIDC signals but directory is available`() {
+        every { orgSuggestions.getOrgNames("user-sub") } returns listOf("My Org", "Another Org")
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("My Org", "Another Org"))
+    }
+
+    @Test
+    fun `GET organization falls back to email domain when GitHub orgs returns null`() {
+        every { orgSuggestions.getOrgNames(any()) } returns null
+        val model = ExtendedModelMap()
+        controller.organizationForm(oidcUser(email = "dev@mycompany.io"), model)
+        expectThat(model["suggestions"]).isEqualTo(listOf("Mycompany"))
     }
 
     @Test
@@ -131,5 +172,67 @@ class OnboardingControllerTest {
         expectThat(model).containsKey("plans")
         expectThat(model).containsKey("starterPlan")
         expectThat(model["error"] as String).contains("Couldn't start checkout")
+    }
+
+    // ── deriveOrgSuggestions ─────────────────────────────────────────────────
+
+    @Test
+    fun `deriveOrgSuggestions returns hd domain name for Google Workspace`() {
+        expectThat(deriveOrgSuggestions(hd = "acme.com", tid = null, email = null))
+            .isEqualTo(listOf("Acme"))
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns email domain label for Entra ID work account`() {
+        expectThat(
+            deriveOrgSuggestions(
+                hd = null,
+                tid = "aaaabbbb-cccc-dddd-eeee-ffffaaaabbbb",
+                email = "alice@contoso.com",
+            )
+        ).isEqualTo(listOf("Contoso"))
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns null for Microsoft consumer pseudo-tenant`() {
+        expectThat(
+            deriveOrgSuggestions(
+                hd = null,
+                tid = "9188040d-6c67-4c5b-b112-36a304b66dad",
+                email = "user@hotmail.com",
+            )
+        ).isNull()
+    }
+
+    @Test
+    fun `deriveOrgSuggestions returns null when no hd or qualifying tid`() {
+        expectThat(deriveOrgSuggestions(hd = null, tid = null, email = "dev@mycompany.io"))
+            .isNull()
+    }
+
+    // ── deriveEmailDomainSuggestion ──────────────────────────────────────────
+
+    @Test
+    fun `deriveEmailDomainSuggestion returns label for business email domain`() {
+        expectThat(deriveEmailDomainSuggestion(email = "dev@mycompany.io"))
+            .isEqualTo(listOf("Mycompany"))
+    }
+
+    @Test
+    fun `deriveEmailDomainSuggestion returns null for personal Gmail`() {
+        expectThat(deriveEmailDomainSuggestion(email = "user@gmail.com"))
+            .isNull()
+    }
+
+    @Test
+    fun `deriveEmailDomainSuggestion returns null for null email`() {
+        expectThat(deriveEmailDomainSuggestion(email = null))
+            .isNull()
+    }
+
+    @Test
+    fun `deriveEmailDomainSuggestion handles hyphenated domain label`() {
+        expectThat(deriveEmailDomainSuggestion(email = "user@my-company.com"))
+            .isEqualTo(listOf("My company"))
     }
 }

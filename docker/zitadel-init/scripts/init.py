@@ -124,6 +124,14 @@ def api(method: str, path: str, token: str, body: dict | None = None,
                 return {"already_exists": True, "detail": body_text}
             if e.code == 403:
                 return {"forbidden": True, "detail": body_text}
+            if e.code == 400:
+                # gRPC code 9 = "No changes" — treat as a successful no-op
+                try:
+                    parsed = json.loads(body_text)
+                    if parsed.get("code") == 9:
+                        return {"no_changes": True, "detail": body_text}
+                except (json.JSONDecodeError, AttributeError):
+                    pass
             if e.code == 503 and attempt < _retries:
                 print(f"  503 on {method} {path}, retrying in {_retry_delay}s... ({attempt}/{_retries})")
                 time.sleep(_retry_delay)
@@ -247,6 +255,8 @@ def enable_external_login(token: str) -> None:
     print(f"  {verb} org login policy: allowExternalIdp=true.")
 
 
+
+
 def configure_social_idps(token: str) -> None:
     """Register Google/GitHub/Microsoft/Apple IDPs when their env vars are set."""
     PROVIDER_OPTIONS = {
@@ -279,6 +289,7 @@ def configure_social_idps(token: str) -> None:
             "name": "GitHub",
             "clientId": github_id,
             "clientSecret": github_secret,
+            "scopes": ["openid", "profile", "email"],
             "providerOptions": PROVIDER_OPTIONS,
         }))
     else:

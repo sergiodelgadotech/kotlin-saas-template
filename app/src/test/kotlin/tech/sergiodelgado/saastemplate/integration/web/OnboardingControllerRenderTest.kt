@@ -13,6 +13,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.MediaType
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
@@ -27,6 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.tenant.TenantResolver
 import tech.sergiodelgado.saastemplate.SaasTemplateApplication
+import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import tech.sergiodelgado.saastemplate.organization.OnboardingService
 import java.util.UUID
 
@@ -67,6 +69,9 @@ class OnboardingControllerRenderTest {
     @MockkBean(relaxed = true)
     lateinit var onboardingService: OnboardingService
 
+    @MockkBean(relaxed = true)
+    lateinit var zitadelUserDirectory: ZitadelUserDirectory
+
     @BeforeEach
     fun setup() {
         every { tenantResolver.resolveTenantId(any()) } returns devOrgId
@@ -81,6 +86,18 @@ class OnboardingControllerRenderTest {
             .andExpect(content().string(containsString("disabled")))
             .andExpect(content().string(not(containsString("href=\"/dashboard\""))))
             .andExpect(content().string(not(containsString("href=\"/billing\""))))
+            .andExpect(content().string(not(containsString("<datalist"))))
+    }
+
+    @Test
+    fun `GET onboarding organization renders datalist when Google Workspace hd claim is present`() {
+        mvc.perform(
+            get("/onboarding/organization")
+                .with(oidcLogin().idToken { it.claim("hd", "acme.com") })
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().string(containsString("<datalist")))
+            .andExpect(content().string(containsString("value=\"Acme\"")))
     }
 
     @Test
