@@ -20,11 +20,12 @@ class NavModelAdviceTest {
         every { this@mockk.email } returns email
     }
 
-    private fun member(firstName: String?, lastName: String?) = Member(
+    private fun member(firstName: String?, lastName: String?, avatarUrl: String? = null) = Member(
         organizationId = UUID.randomUUID(),
         externalUserId = "test-sub",
         firstName = firstName,
         lastName = lastName,
+        avatarUrl = avatarUrl,
     )
 
     // navInitials
@@ -80,5 +81,33 @@ class NavModelAdviceTest {
     fun `navEmail returns email from OIDC principal`() {
         val principal = oidcUser("sub", "alice@example.com")
         expectThat(advice.navEmail(principal)).isEqualTo("alice@example.com")
+    }
+
+    // navAvatarUrl
+
+    @Test
+    fun `navAvatarUrl returns null when principal is null`() {
+        expectThat(advice.navAvatarUrl(null)).isEqualTo(null)
+    }
+
+    @Test
+    fun `navAvatarUrl returns avatar URL from members table`() {
+        val principal = oidcUser("sub", "a@example.com")
+        every { memberRepository.findByExternalUserId("sub") } returns member("Alice", "Smith", "https://example.com/avatar.jpg")
+        expectThat(advice.navAvatarUrl(principal)).isEqualTo("https://example.com/avatar.jpg")
+    }
+
+    @Test
+    fun `navAvatarUrl returns null when member has no avatar`() {
+        val principal = oidcUser("sub", "a@example.com")
+        every { memberRepository.findByExternalUserId("sub") } returns member("Alice", "Smith", null)
+        expectThat(advice.navAvatarUrl(principal)).isEqualTo(null)
+    }
+
+    @Test
+    fun `navAvatarUrl returns null when no member found`() {
+        val principal = oidcUser("sub", "a@example.com")
+        every { memberRepository.findByExternalUserId("sub") } returns null
+        expectThat(advice.navAvatarUrl(principal)).isEqualTo(null)
     }
 }

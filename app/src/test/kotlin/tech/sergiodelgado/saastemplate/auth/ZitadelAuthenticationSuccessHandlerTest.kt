@@ -33,23 +33,26 @@ class ZitadelAuthenticationSuccessHandlerTest {
         email: String? = "user@example.com",
         givenName: String? = "Test",
         familyName: String? = "User",
+        picture: String? = null,
     ): OAuth2AuthenticationToken {
         val oidcUser = mockk<OidcUser> {
             every { this@mockk.subject } returns subject
             every { this@mockk.email } returns email
             every { this@mockk.givenName } returns givenName
             every { this@mockk.familyName } returns familyName
+            every { this@mockk.picture } returns picture
         }
         return OAuth2AuthenticationToken(oidcUser, emptyList(), "zitadel")
     }
 
-    private fun stubUpdateProfile(subject: String) {
+    private fun stubLoginSync(subject: String) {
         every { memberRepository.updateProfile(subject, any<String>(), any(), any()) } just Runs
+        every { memberRepository.updateAvatarUrl(subject, any()) } just Runs
     }
 
     @Test
     fun `redirects to dashboard when member and subscription exist`() {
-        stubUpdateProfile("user-abc")
+        stubLoginSync("user-abc")
         every { memberRepository.findOrganizationIdByUserId("user-abc") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
 
@@ -60,7 +63,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
 
     @Test
     fun `redirects to onboarding organization when member does not exist`() {
-        stubUpdateProfile("new-user")
+        stubLoginSync("new-user")
         every { memberRepository.findOrganizationIdByUserId("new-user") } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("new-user"))
@@ -70,7 +73,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
 
     @Test
     fun `redirects to onboarding plan when org exists but subscription does not`() {
-        stubUpdateProfile("partial-user")
+        stubLoginSync("partial-user")
         every { memberRepository.findOrganizationIdByUserId("partial-user") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns null
 
@@ -81,12 +84,36 @@ class ZitadelAuthenticationSuccessHandlerTest {
 
     @Test
     fun `updates member profile from OIDC claims on login`() {
-        stubUpdateProfile("user-xyz")
+        stubLoginSync("user-xyz")
         every { memberRepository.findOrganizationIdByUserId("user-xyz") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
 
         handler.onAuthenticationSuccess(request, response, authToken("user-xyz", "jane@example.com", "Jane", "Doe"))
 
         verify { memberRepository.updateProfile("user-xyz", "jane@example.com", "Jane", "Doe") }
+    }
+
+    @Test
+    fun `syncs OIDC picture claim to avatar on login`() {
+        stubLoginSync("user-pic")
+        every { memberRepository.findOrganizationIdByUserId("user-pic") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+
+        handler.onAuthenticationSuccess(
+            request, response,
+            authToken("user-pic", picture = "https://example.com/avatar.jpg"),
+        )
+
+        verify { memberRepository.updateAvatarUrl("user-pic", "https://example.com/avatar.jpg") }
+    }
+
+    @Test
+    fun `syncs null picture when OIDC has no picture claim`() {
+        stubLoginSync("user-no-pic")
+        every { memberRepository.findOrganizationIdByUserId("user-no-pic") } returns null
+
+        handler.onAuthenticationSuccess(request, response, authToken("user-no-pic", picture = null))
+
+        verify { memberRepository.updateAvatarUrl("user-no-pic", null) }
     }
 }

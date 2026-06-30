@@ -27,6 +27,7 @@ class ZitadelAuthenticationSuccessHandler(
         // Keep profile columns fresh from the IdP's own source of truth.
         // No-op if the member row doesn't exist yet (first-time user, no org created).
         memberRepository.updateProfile(subject, oidcUser.email.orEmpty(), oidcUser.givenName, oidcUser.familyName)
+        memberRepository.updateAvatarUrl(subject, oidcUser.picture)
         val orgIdStr = memberRepository.findOrganizationIdByUserId(subject)
         defaultTargetUrl = when {
             orgIdStr == null -> "/onboarding/organization"

@@ -52,4 +52,11 @@ class NavModelAdvice(private val memberRepository: MemberRepository) {
     @ModelAttribute("navEmail")
     fun navEmail(@AuthenticationPrincipal principal: OidcUser?): String =
         principal?.email.orEmpty()
+
+    @ModelAttribute("navAvatarUrl")
+    fun navAvatarUrl(@AuthenticationPrincipal principal: OidcUser?): String? {
+        if (principal == null) return null
+        val sub = principal.subject ?: return null
+        return memberRepository.findByExternalUserId(sub)?.avatarUrl
+    }
 }
