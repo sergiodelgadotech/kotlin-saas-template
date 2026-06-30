@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import tech.sergiodelgado.saasstarter.autoconfigure.SaasStarterProperties
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
-import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
+import tech.sergiodelgado.saastemplate.auth.OrgSuggestions
 
 @Controller
 @RequestMapping("/onboarding")
@@ -22,7 +22,7 @@ class OnboardingController(
     private val onboardingService: OnboardingService,
     private val billingService: BillingService,
     private val properties: SaasStarterProperties,
-    @Autowired(required = false) private val zitadelUserDirectory: ZitadelUserDirectory? = null,
+    @Autowired(required = false) private val orgSuggestions: OrgSuggestions? = null,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -35,7 +35,7 @@ class OnboardingController(
             // Definitive: Google Workspace hd or Microsoft Entra tenant ID
             deriveOrgSuggestions(user.getClaim("hd"), user.getClaim("tid"), user.email)
                 // More precise than email domain: actual GitHub public org memberships
-                ?: user.subject?.let { sub -> zitadelUserDirectory?.getGitHubOrgs(sub) }
+                ?: user.subject?.let { sub -> orgSuggestions?.getOrgNames(sub) }
                 // Last resort: email domain heuristic for any other provider
                 ?: deriveEmailDomainSuggestion(user.email)
         }

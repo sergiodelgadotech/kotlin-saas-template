@@ -21,6 +21,7 @@ import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
+import tech.sergiodelgado.saastemplate.auth.OrgSuggestions
 
 /**
  * Zitadel-backed implementation of [IdpUserDirectory].
@@ -42,7 +43,7 @@ class ZitadelUserDirectory(
     @Qualifier("zitadelManagementRestClient") private val restClient: RestClient,
     @Qualifier("gitHubRestClient") private val gitHubRestClient: RestClient,
     @Value("\${app.base-url}") private val appBaseUrl: String,
-) : IdpUserDirectory {
+) : IdpUserDirectory, OrgSuggestions {
 
     private val mapper = ObjectMapper()
 
@@ -54,7 +55,7 @@ class ZitadelUserDirectory(
      * Returns null when the user has no GitHub IDP link, has no public org memberships,
      * or any API call fails — caller falls back to email domain heuristic.
      */
-    fun getGitHubOrgs(userId: String): List<String>? = try {
+    override fun getOrgNames(userId: String): List<String>? = try {
         val idpBody = restClient.post()
             .uri("/management/v1/users/{userId}/idps/_search", userId)
             .contentType(MediaType.APPLICATION_JSON)

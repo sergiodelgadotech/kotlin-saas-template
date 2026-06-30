@@ -215,7 +215,7 @@ class ZitadelUserDirectoryTest {
         }
     }
 
-    // ── getGitHubOrgs ────────────────────────────────────────────────────────
+    // ── getOrgNames ────────────────────────────────────────────────────────
 
     private fun stubIdpLinks(userId: String, responseJson: String) {
         val postSpec = mockk<RestClient.RequestBodyUriSpec>(relaxed = true)
@@ -244,39 +244,39 @@ class ZitadelUserDirectoryTest {
     }
 
     @Test
-    fun `getGitHubOrgs returns org names for user with GitHub IDP link and public memberships`() {
+    fun `getOrgNames returns org names for user with GitHub IDP link and public memberships`() {
         stubIdpLinks("user-123", """{"result":[{"idpName":"GitHub","providedUserName":"octocat"}]}""")
         stubGitHubOrgs("octocat", """[{"name":"Acme Corp","login":"acme-corp"},{"name":"","login":"other-org"}]""")
 
-        val result = directory.getGitHubOrgs("user-123")
+        val result = directory.getOrgNames("user-123")
 
         expectThat(result).isEqualTo(listOf("Acme Corp", "other-org"))
     }
 
     @Test
-    fun `getGitHubOrgs returns null when user has no GitHub IDP link`() {
+    fun `getOrgNames returns null when user has no GitHub IDP link`() {
         stubIdpLinks("user-123", """{"result":[{"idpName":"Google","providedUserName":"someone"}]}""")
 
-        val result = directory.getGitHubOrgs("user-123")
+        val result = directory.getOrgNames("user-123")
 
         expectThat(result).isNull()
     }
 
     @Test
-    fun `getGitHubOrgs returns null when GitHub returns no public orgs`() {
+    fun `getOrgNames returns null when GitHub returns no public orgs`() {
         stubIdpLinks("user-123", """{"result":[{"idpName":"GitHub","providedUserName":"octocat"}]}""")
         stubGitHubOrgs("octocat", "[]")
 
-        val result = directory.getGitHubOrgs("user-123")
+        val result = directory.getOrgNames("user-123")
 
         expectThat(result).isNull()
     }
 
     @Test
-    fun `getGitHubOrgs returns null when Zitadel IDP link search throws`() {
+    fun `getOrgNames returns null when Zitadel IDP link search throws`() {
         every { restClient.post() } throws RuntimeException("connection refused")
 
-        val result = directory.getGitHubOrgs("user-123")
+        val result = directory.getOrgNames("user-123")
 
         expectThat(result).isNull()
     }

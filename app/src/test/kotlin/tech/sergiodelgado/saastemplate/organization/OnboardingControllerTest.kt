@@ -19,21 +19,21 @@ import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.billing.DefaultBillingPlan
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
-import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
+import tech.sergiodelgado.saastemplate.auth.OrgSuggestions
 import java.util.UUID
 
 class OnboardingControllerTest {
 
     private val onboardingService = mockk<OnboardingService>(relaxed = true)
     private val billingService = mockk<BillingService>(relaxed = true)
-    private val zitadelUserDirectory = mockk<ZitadelUserDirectory>(relaxed = true)
+    private val orgSuggestions = mockk<OrgSuggestions>(relaxed = true)
     private val properties = SaasStarterProperties(
         billing = SaasStarterProperties.Billing(
             planPrices = mapOf("STARTER" to "price_starter", "PRO" to "price_pro"),
         )
     )
 
-    private val controller = OnboardingController(onboardingService, billingService, properties, zitadelUserDirectory)
+    private val controller = OnboardingController(onboardingService, billingService, properties, orgSuggestions)
 
     private val testOrgId = UUID.randomUUID()
 
@@ -76,7 +76,7 @@ class OnboardingControllerTest {
 
     @Test
     fun `GET organization passes null suggestions for personal email when all sources return null`() {
-        every { zitadelUserDirectory.getGitHubOrgs(any()) } returns null
+        every { orgSuggestions.getOrgNames(any()) } returns null
         val model = ExtendedModelMap()
         controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
         expectThat(model["suggestions"]).isNull()
@@ -84,7 +84,7 @@ class OnboardingControllerTest {
 
     @Test
     fun `GET organization uses GitHub public orgs when no OIDC signals but directory is available`() {
-        every { zitadelUserDirectory.getGitHubOrgs("user-sub") } returns listOf("My Org", "Another Org")
+        every { orgSuggestions.getOrgNames("user-sub") } returns listOf("My Org", "Another Org")
         val model = ExtendedModelMap()
         controller.organizationForm(oidcUser(email = "user@gmail.com"), model)
         expectThat(model["suggestions"]).isEqualTo(listOf("My Org", "Another Org"))
@@ -92,7 +92,7 @@ class OnboardingControllerTest {
 
     @Test
     fun `GET organization falls back to email domain when GitHub orgs returns null`() {
-        every { zitadelUserDirectory.getGitHubOrgs(any()) } returns null
+        every { orgSuggestions.getOrgNames(any()) } returns null
         val model = ExtendedModelMap()
         controller.organizationForm(oidcUser(email = "dev@mycompany.io"), model)
         expectThat(model["suggestions"]).isEqualTo(listOf("Mycompany"))
