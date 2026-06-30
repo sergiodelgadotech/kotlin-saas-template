@@ -28,7 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import tech.sergiodelgado.saasstarter.billing.BillingService
 import tech.sergiodelgado.saasstarter.tenant.TenantResolver
 import tech.sergiodelgado.saastemplate.SaasTemplateApplication
-import tech.sergiodelgado.saastemplate.auth.OrgSuggestions
+import tech.sergiodelgado.saastemplate.auth.zitadel.ZitadelUserDirectory
 import tech.sergiodelgado.saastemplate.organization.OnboardingService
 import java.util.UUID
 
@@ -70,7 +70,7 @@ class OnboardingControllerRenderTest {
     lateinit var onboardingService: OnboardingService
 
     @MockkBean(relaxed = true)
-    lateinit var orgSuggestions: OrgSuggestions
+    lateinit var zitadelUserDirectory: ZitadelUserDirectory
 
     @BeforeEach
     fun setup() {
