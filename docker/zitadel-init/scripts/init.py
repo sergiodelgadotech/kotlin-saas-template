@@ -5,7 +5,7 @@ provisions a management-api service account with a PAT for the Spring app,
 and configures SMTP for invitation emails via the Zitadel Admin API.
 Authenticates via the machine service account key file generated during Zitadel setup.
 """
-import json, sys, time, base64, os, socket
+import json, sys, time, base64, os
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -462,20 +462,6 @@ def provision_management_service_account(token: str) -> None:
     print(f"  Management properties written to {MGMT_PROPS_FILE}")
 
 
-def get_docker_host_ip() -> str | None:
-    """Detect the Docker host IP via the default gateway in the kernel routing table."""
-    try:
-        with open('/proc/net/route') as f:
-            for line in f.readlines()[1:]:
-                parts = line.strip().split()
-                if parts[1] == '00000000':  # default route (destination = 0.0.0.0)
-                    gw_bytes = bytes.fromhex(parts[2])
-                    return socket.inet_ntoa(gw_bytes[::-1])  # little-endian → dotted-decimal
-    except Exception:
-        pass
-    return None
-
-
 def configure_avatar_v2_webhook(token: str) -> None:
     """Register a Zitadel v2 webhook target + execution so the IDP picture claim is
     captured on social login (RetrieveIdentityProviderIntent response).
@@ -487,13 +473,10 @@ def configure_avatar_v2_webhook(token: str) -> None:
         print("Avatar v2 webhook already configured, skipping.")
         return
 
-    webhook_base = os.getenv("WEBHOOK_BASE_URL", "").rstrip("/")
-    if not webhook_base:
-        host_ip = get_docker_host_ip()
-        if not host_ip:
-            print("WARNING: Cannot detect Docker host IP, skipping avatar v2 webhook setup.")
-            return
-        webhook_base = f"http://{host_ip}:8080"
+    # host.docker.internal resolves to the host machine from inside Docker/Podman
+    # containers (169.254.x.x in rootless Podman, host bridge IP in Docker for
+    # Linux). Override with WEBHOOK_BASE_URL for non-local environments.
+    webhook_base = os.getenv("WEBHOOK_BASE_URL", "http://host.docker.internal:8080").rstrip("/")
 
     webhook_url = f"{webhook_base}/internal/zitadel/idp-picture"
     print(f"Configuring avatar v2 webhook target at {webhook_url}...")
