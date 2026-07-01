@@ -29,7 +29,7 @@ class SecurityConfig(
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
-            .csrf { it.ignoringRequestMatchers("/webhooks/**") }
+            .csrf { it.ignoringRequestMatchers("/webhooks/**", "/internal/**") }
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers(
                     "/", "/pricing", "/docs/**",
@@ -39,7 +39,7 @@ class SecurityConfig(
                     "/error",
                     "/sign-in", "/sign-up",
                 ).permitAll()
-                auth.requestMatchers("/webhooks/**").permitAll()
+                auth.requestMatchers("/webhooks/**", "/internal/**").permitAll()
                 auth.anyRequest().authenticated()
             }
             .oauth2Login { login ->
