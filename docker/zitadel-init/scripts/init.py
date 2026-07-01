@@ -5,7 +5,7 @@ provisions a management-api service account with a PAT for the Spring app,
 and configures SMTP for invitation emails via the Zitadel Admin API.
 Authenticates via the machine service account key file generated during Zitadel setup.
 """
-import json, sys, time, base64, os
+import json, sys, time, base64, os, socket
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -25,6 +25,8 @@ MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
 MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.properties"))
 SMTP_CONFIGURED_FILE = Path("/output/.smtp-configured")
 DEFAULT_REDIRECT_CONFIGURED_FILE = Path("/output/.default-redirect-uri-configured")
+AVATAR_ACTIONS_CONFIGURED_FILE = Path("/output/.avatar-actions-configured")
+AVATAR_V2_WEBHOOK_CONFIGURED_FILE = Path("/output/.avatar-v2-webhook-configured")
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
 DEFAULT_REDIRECT_URI = "http://localhost:8080/"
@@ -460,6 +462,154 @@ def provision_management_service_account(token: str) -> None:
     print(f"  Management properties written to {MGMT_PROPS_FILE}")
 
 
+def get_docker_host_ip() -> str | None:
+    """Detect the Docker host IP via the default gateway in the kernel routing table."""
+    try:
+        with open('/proc/net/route') as f:
+            for line in f.readlines()[1:]:
+                parts = line.strip().split()
+                if parts[1] == '00000000':  # default route (destination = 0.0.0.0)
+                    gw_bytes = bytes.fromhex(parts[2])
+                    return socket.inet_ntoa(gw_bytes[::-1])  # little-endian → dotted-decimal
+    except Exception:
+        pass
+    return None
+
+
+def configure_avatar_v2_webhook(token: str) -> None:
+    """Register a Zitadel v2 webhook target + execution so the IDP picture claim is
+    captured on social login (RetrieveIdentityProviderIntent response).
+
+    Zitadel's v2 login UI bypasses all v1 action flows, so only this v2 webhook
+    approach reliably receives the IDP's raw_information (including picture).
+    """
+    if AVATAR_V2_WEBHOOK_CONFIGURED_FILE.exists():
+        print("Avatar v2 webhook already configured, skipping.")
+        return
+
+    webhook_base = os.getenv("WEBHOOK_BASE_URL", "").rstrip("/")
+    if not webhook_base:
+        host_ip = get_docker_host_ip()
+        if not host_ip:
+            print("WARNING: Cannot detect Docker host IP, skipping avatar v2 webhook setup.")
+            return
+        webhook_base = f"http://{host_ip}:8080"
+
+    webhook_url = f"{webhook_base}/internal/zitadel/idp-picture"
+    print(f"Configuring avatar v2 webhook target at {webhook_url}...")
+
+    resp = api("POST", "/v2/actions/targets", token, {
+        "name": "avatar-idp-picture-webhook",
+        "restWebhook": {"interruptOnError": False},
+        "endpoint": webhook_url,
+        "timeout": "10s",
+    })
+
+    if resp.get("forbidden"):
+        print("  WARNING: token lacks IAM_OWNER — cannot create v2 action targets.")
+        return
+
+    if resp.get("already_exists"):
+        print("  Avatar webhook target already exists.")
+        AVATAR_V2_WEBHOOK_CONFIGURED_FILE.touch()
+        return
+
+    target_id = resp["id"]
+    print(f"  Created webhook target (ID: {target_id})")
+
+    api("PUT", "/v2/actions/executions", token, {
+        "condition": {
+            "response": {
+                "method": "/zitadel.user.v2.UserService/RetrieveIdentityProviderIntent"
+            }
+        },
+        "targets": [target_id],
+    })
+    print("  Execution set on RetrieveIdentityProviderIntent response.")
+
+    AVATAR_V2_WEBHOOK_CONFIGURED_FILE.touch()
+    print("Avatar v2 webhook configured.")
+
+
+def configure_avatar_actions(token: str) -> None:
+    """
+    Creates two Zitadel v1 inline actions that together inject the OIDC `picture`
+    claim into every token issued by Zitadel:
+
+    1. External Authentication / Post Authentication
+       Reads the `picture` claim from the social IdP's token and stores it as
+       Zitadel user metadata under the key `idpPicture`.
+
+    2. Complement Token / Pre Userinfo Creation + Pre Access Token Creation
+       Reads `idpPicture` from user metadata and adds it as the `picture` claim
+       so Spring Security's OidcUser.getPicture() is populated on login.
+    """
+    if AVATAR_ACTIONS_CONFIGURED_FILE.exists():
+        print("Avatar picture actions already configured, skipping.")
+        return
+
+    print("Configuring avatar picture actions...")
+
+    set_picture_script = (
+        "function set_idp_picture_metadata(ctx, api) {\n"
+        "  if (api === undefined) { return; }\n"
+        "  var picture = ctx.v1.providerInfo.rawInfo.picture;\n"
+        "  if (picture) {\n"
+        "    api.v1.user.appendMetadata('idpPicture', picture);\n"
+        "  }\n"
+        "}"
+    )
+
+    add_picture_script = (
+        "function add_picture_claim_from_idp_metadata(ctx, api) {\n"
+        "  if (ctx.v1.claims && ctx.v1.claims.picture) { return; }\n"
+        "  var metadata = ctx.v1.user.getMetadata();\n"
+        "  metadata.metadata.forEach(function(entry) {\n"
+        "    if (entry.key === 'idpPicture' && entry.value) {\n"
+        "      api.v1.claims.setClaim('picture', entry.value);\n"
+        "    }\n"
+        "  });\n"
+        "}"
+    )
+
+    # Action 1: capture picture from IdP at social login
+    resp1 = api("POST", "/management/v1/actions", token, {
+        "name": "set_idp_picture_metadata",
+        "script": set_picture_script,
+        "timeout": "10s",
+        "allowedToFail": True,
+    })
+    if resp1.get("already_exists"):
+        print("  Action 'set_idp_picture_metadata' already exists.")
+    else:
+        action1_id = resp1["id"]
+        print(f"  Created action 'set_idp_picture_metadata' (ID: {action1_id})")
+        # External Authentication (1) / Post Authentication (1)
+        api("POST", "/management/v1/flows/1/trigger/1", token, {"actionIds": [action1_id]})
+        print("  Registered on External Authentication / Post Authentication")
+
+    # Action 2: inject picture claim into every issued token
+    resp2 = api("POST", "/management/v1/actions", token, {
+        "name": "add_picture_claim_from_idp_metadata",
+        "script": add_picture_script,
+        "timeout": "10s",
+        "allowedToFail": True,
+    })
+    if resp2.get("already_exists"):
+        print("  Action 'add_picture_claim_from_idp_metadata' already exists.")
+    else:
+        action2_id = resp2["id"]
+        print(f"  Created action 'add_picture_claim_from_idp_metadata' (ID: {action2_id})")
+        # Complement Token (2) / Pre Userinfo Creation (4)
+        api("POST", "/management/v1/flows/2/trigger/4", token, {"actionIds": [action2_id]})
+        # Complement Token (2) / Pre Access Token Creation (5)
+        api("POST", "/management/v1/flows/2/trigger/5", token, {"actionIds": [action2_id]})
+        print("  Registered on Complement Token / Pre Userinfo + Pre Access Token")
+
+    AVATAR_ACTIONS_CONFIGURED_FILE.touch()
+    print("Avatar picture actions configured.")
+
+
 def main():
     wait_for_zitadel()
 
@@ -523,6 +673,7 @@ def main():
     configure_smtp(token)
     configure_default_redirect_uri(token)
     configure_social_idps(token)
+    configure_avatar_v2_webhook(token)
 
     print()
     print("=" * 60)

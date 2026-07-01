@@ -108,12 +108,12 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    fun `syncs null picture when OIDC has no picture claim`() {
+    fun `skips avatar update when OIDC has no picture claim`() {
         stubLoginSync("user-no-pic")
         every { memberRepository.findOrganizationIdByUserId("user-no-pic") } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("user-no-pic", picture = null))
 
-        verify { memberRepository.updateAvatarUrl("user-no-pic", null) }
+        verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
     }
 }

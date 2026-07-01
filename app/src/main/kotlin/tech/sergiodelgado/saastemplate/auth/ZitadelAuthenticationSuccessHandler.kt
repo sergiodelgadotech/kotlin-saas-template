@@ -27,7 +27,12 @@ class ZitadelAuthenticationSuccessHandler(
         // Keep profile columns fresh from the IdP's own source of truth.
         // No-op if the member row doesn't exist yet (first-time user, no org created).
         memberRepository.updateProfile(subject, oidcUser.email.orEmpty(), oidcUser.givenName, oidcUser.familyName)
-        memberRepository.updateAvatarUrl(subject, oidcUser.picture)
+        // Only overwrite avatar when the OIDC token carries a picture; the Zitadel
+        // v2 webhook (ZitadelIdpPictureWebhookController) stores the IDP picture
+        // earlier in the flow, so we must not clobber it with null on re-login.
+        if (oidcUser.picture != null) {
+            memberRepository.updateAvatarUrl(subject, oidcUser.picture)
+        }
         val orgIdStr = memberRepository.findOrganizationIdByUserId(subject)
         defaultTargetUrl = when {
             orgIdStr == null -> "/onboarding/organization"

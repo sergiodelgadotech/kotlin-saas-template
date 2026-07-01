@@ -31,7 +31,7 @@ services:
   zitadel:
     image: ghcr.io/zitadel/zitadel:v4.15.3
     user: root
-    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml --config /zitadel-actions-config.yaml
     environment:
       ZITADEL_DATABASE_POSTGRES_HOST: postgres
       ZITADEL_DATABASE_POSTGRES_PORT: 5432
@@ -61,6 +61,12 @@ services:
       # IDP callback is handled by login-proxy (which forwards /idps/callback
       # to Zitadel core). See docker/login-proxy/nginx.conf.
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: http://localhost:3000/ui/v2/login/
+      # Allow Zitadel v2 webhook actions to reach Docker-internal services (app:8080).
+      # Omits 10.0.0.0/8 and 172.16.0.0/12 from the default denylist so the Docker
+      # bridge network is reachable. Keep all other SSRF-protection ranges.
+      ZITADEL_HTTPCLIENT_DENYLIST: "localhost,0.0.0.0/8,127.0.0.0/8,169.254.0.0/16,192.168.0.0/16,198.18.0.0/15,::/128,::1/128,fc00::/7,fe80::/10"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
     - 8089:8080
     depends_on:
@@ -68,6 +74,7 @@ services:
         condition: service_healthy
     volumes:
     - ./docker/zitadel-init/setup.yaml:/zitadel-setup/setup.yaml:ro,z
+    - ./docker/zitadel-actions-config.yaml:/zitadel-actions-config.yaml:ro,z
     - zitadel-init-keys:/zitadel-keys
     - zitadel-bootstrap:/zitadel-bootstrap
   # Host-rewriting reverse proxy so bridge clients (zitadel-login) can reach
