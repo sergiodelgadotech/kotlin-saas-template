@@ -1,7 +1,6 @@
 package tech.sergiodelgado.saastemplate.auth
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -35,7 +34,6 @@ import tech.sergiodelgado.saastemplate.account.UserAccountService
 @RequestMapping("/internal/zitadel")
 class ZitadelIdpIntentWebhookController(
     private val userAccountService: UserAccountService,
-    private val objectMapper: ObjectMapper,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 

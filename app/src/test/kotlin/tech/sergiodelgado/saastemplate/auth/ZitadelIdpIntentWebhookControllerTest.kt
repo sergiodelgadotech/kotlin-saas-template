@@ -10,7 +10,6 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
-import strikt.assertions.isNotNull
 import strikt.assertions.isNull
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 
@@ -18,7 +17,7 @@ class ZitadelIdpIntentWebhookControllerTest {
 
     private val userAccountService = mockk<UserAccountService>(relaxed = true)
     private val objectMapper = ObjectMapper()
-    private val controller = ZitadelIdpIntentWebhookController(userAccountService, objectMapper)
+    private val controller = ZitadelIdpIntentWebhookController(userAccountService)
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 
