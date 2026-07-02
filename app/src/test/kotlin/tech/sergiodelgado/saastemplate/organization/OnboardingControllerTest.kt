@@ -52,11 +52,13 @@ class OnboardingControllerTest {
         email: String = "u@example.com",
         hd: String? = null,
         tid: String? = null,
+        picture: String? = "https://example.com/avatar.jpg",
     ) = mockk<OidcUser> {
         every { this@mockk.subject } returns subject
         every { this@mockk.email } returns email
         every { givenName } returns "Alice"
         every { familyName } returns "Smith"
+        every { this@mockk.picture } returns picture
         every { getClaim<String>("hd") } returns hd
         every { getClaim<String>("tid") } returns tid
     }
@@ -100,7 +102,7 @@ class OnboardingControllerTest {
 
     @Test
     fun `POST organization calls createOrganization with OIDC principal fields`() {
-        every { onboardingService.createOrganization(any(), any(), any(), any(), any()) } returns
+        every { onboardingService.createOrganization(any(), any(), any(), any(), any(), any()) } returns
             Organization(name = "Acme", slug = "acme-abc123")
 
         controller.createOrganization("Acme", oidcUser())
@@ -112,13 +114,14 @@ class OnboardingControllerTest {
                 email = "u@example.com",
                 firstName = "Alice",
                 lastName = "Smith",
+                avatarUrl = "https://example.com/avatar.jpg",
             )
         }
     }
 
     @Test
     fun `POST organization redirects to onboarding plan`() {
-        every { onboardingService.createOrganization(any(), any(), any(), any(), any()) } returns
+        every { onboardingService.createOrganization(any(), any(), any(), any(), any(), any()) } returns
             Organization(name = "Acme", slug = "acme-abc123")
 
         val result = controller.createOrganization("Acme", oidcUser())

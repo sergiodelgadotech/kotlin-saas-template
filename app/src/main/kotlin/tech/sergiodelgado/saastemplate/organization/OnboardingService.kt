@@ -33,6 +33,7 @@ class OnboardingService(
         email: String = "",
         firstName: String? = null,
         lastName: String? = null,
+        avatarUrl: String? = null,
     ): Organization {
         val org = organizationRepository.save(Organization(name = name, slug = slugFor(name)))
         memberRepository.save(
@@ -43,6 +44,7 @@ class OnboardingService(
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
+                avatarUrl = avatarUrl,
             )
         )
         // Billing is deferred to ensureBilling (called at plan-selection step) so that
