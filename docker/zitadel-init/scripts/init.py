@@ -26,7 +26,7 @@ MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.p
 SMTP_CONFIGURED_FILE = Path("/output/.smtp-configured")
 DEFAULT_REDIRECT_CONFIGURED_FILE = Path("/output/.default-redirect-uri-configured")
 AVATAR_ACTIONS_CONFIGURED_FILE = Path("/output/.avatar-actions-configured")
-AVATAR_V2_WEBHOOK_CONFIGURED_FILE = Path("/output/.avatar-v2-webhook-configured")
+IDP_INTENT_WEBHOOK_CONFIGURED_FILE = Path("/output/.idp-intent-webhook-configured")
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
 DEFAULT_REDIRECT_URI = "http://localhost:8080/"
@@ -335,13 +335,12 @@ def configure_social_idps(token: str) -> None:
     slack_id = os.getenv("ZITADEL_DEV_SLACK_CLIENT_ID", "")
     slack_secret = os.getenv("ZITADEL_DEV_SLACK_CLIENT_SECRET", "")
     if slack_id and slack_secret:
-        # Slack's OIDC has no preferred_username claim, so Zitadel can't derive a
-        # login name for auto-creation. Keep isAutoCreation=False (shared
-        # PROVIDER_OPTIONS) so login-v2 shows the prefilled completion form for the
-        # user to set a username instead of hard-failing with user_creation_failed.
+        # Slack's OIDC does not return preferred_username. The idp-intent restCall
+        # (configure_idp_intent_webhook) injects username from email before Zitadel
+        # processes the intent, so AddIDPLink receives a valid providedUserName for
+        # auto-link and the new-user completion form is pre-filled.
         # isIdTokenMapping is intentionally absent: without it Zitadel calls Slack's
-        # userinfo endpoint, which provides email/given_name/family_name to prefill
-        # the form. See docs/manual-testing.md "Slack first-login quirk".
+        # userinfo endpoint, which provides email/given_name/family_name.
         providers.append(("generic_oidc", "Slack", {
             "name": "Slack",
             "issuer": "https://slack.com",
@@ -462,15 +461,22 @@ def provision_management_service_account(token: str) -> None:
     print(f"  Management properties written to {MGMT_PROPS_FILE}")
 
 
-def configure_avatar_v2_webhook(token: str) -> None:
-    """Register a Zitadel v2 webhook target + execution so the IDP picture claim is
-    captured on social login (RetrieveIdentityProviderIntent response).
+def configure_idp_intent_webhook(token: str) -> None:
+    """Register a Zitadel v2 restCall target + execution on the
+    RetrieveIdentityProviderIntent response.
 
-    Zitadel's v2 login UI bypasses all v1 action flows, so only this v2 webhook
-    approach reliably receives the IDP's raw_information (including picture).
+    Using restCall (not restWebhook) so Zitadel applies the returned JSON as the
+    modified response. interruptOnError:false means a bug here falls back to the
+    original response and never breaks social login for all providers.
+
+    The Spring endpoint (/internal/zitadel/idp-intent) handles two concerns in one
+    call because Zitadel allows only one execution per condition:
+      1. Username injection: sets idpInformation.username from IDP email when blank,
+         fixing Slack auto-link (Slack omits preferred_username — see #153).
+      2. Avatar capture: persists the IDP picture URL (preserves #149 behaviour).
     """
-    if AVATAR_V2_WEBHOOK_CONFIGURED_FILE.exists():
-        print("Avatar v2 webhook already configured, skipping.")
+    if IDP_INTENT_WEBHOOK_CONFIGURED_FILE.exists():
+        print("IDP intent webhook already configured, skipping.")
         return
 
     # host.docker.internal resolves to the host machine from inside Docker/Podman
@@ -478,12 +484,12 @@ def configure_avatar_v2_webhook(token: str) -> None:
     # Linux). Override with WEBHOOK_BASE_URL for non-local environments.
     webhook_base = os.getenv("WEBHOOK_BASE_URL", "http://host.docker.internal:8080").rstrip("/")
 
-    webhook_url = f"{webhook_base}/internal/zitadel/idp-picture"
-    print(f"Configuring avatar v2 webhook target at {webhook_url}...")
+    webhook_url = f"{webhook_base}/internal/zitadel/idp-intent"
+    print(f"Configuring IDP intent restCall target at {webhook_url}...")
 
     resp = api("POST", "/v2/actions/targets", token, {
-        "name": "avatar-idp-picture-webhook",
-        "restWebhook": {"interruptOnError": False},
+        "name": "idp-intent-webhook",
+        "restCall": {"interruptOnError": False},
         "endpoint": webhook_url,
         "timeout": "10s",
     })
@@ -493,12 +499,12 @@ def configure_avatar_v2_webhook(token: str) -> None:
         return
 
     if resp.get("already_exists"):
-        print("  Avatar webhook target already exists.")
-        AVATAR_V2_WEBHOOK_CONFIGURED_FILE.touch()
+        print("  IDP intent target already exists.")
+        IDP_INTENT_WEBHOOK_CONFIGURED_FILE.touch()
         return
 
     target_id = resp["id"]
-    print(f"  Created webhook target (ID: {target_id})")
+    print(f"  Created restCall target (ID: {target_id})")
 
     api("PUT", "/v2/actions/executions", token, {
         "condition": {
@@ -510,8 +516,8 @@ def configure_avatar_v2_webhook(token: str) -> None:
     })
     print("  Execution set on RetrieveIdentityProviderIntent response.")
 
-    AVATAR_V2_WEBHOOK_CONFIGURED_FILE.touch()
-    print("Avatar v2 webhook configured.")
+    IDP_INTENT_WEBHOOK_CONFIGURED_FILE.touch()
+    print("IDP intent webhook configured.")
 
 
 def configure_avatar_actions(token: str) -> None:
@@ -656,7 +662,7 @@ def main():
     configure_smtp(token)
     configure_default_redirect_uri(token)
     configure_social_idps(token)
-    configure_avatar_v2_webhook(token)
+    configure_idp_intent_webhook(token)
 
     print()
     print("=" * 60)
