@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import tech.sergiodelgado.saasstarter.organization.MemberRepository
+import tech.sergiodelgado.saastemplate.account.UserAccountService
 
 @RestController
 @RequestMapping("/internal/zitadel")
 class ZitadelIdpPictureWebhookController(
-    private val memberRepository: MemberRepository,
+    private val userAccountService: UserAccountService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -30,7 +30,7 @@ class ZitadelIdpPictureWebhookController(
             ?: raw?.get("picture") as? String
             ?: raw?.get("avatar_url") as? String
             ?: return ResponseEntity.ok().build()
-        memberRepository.updateAvatarUrl(userId, picture)
+        userAccountService.updateAvatarUrl(userId, picture)
         log.info("Updated avatar for user {}", userId)
         return ResponseEntity.ok().build()
     }

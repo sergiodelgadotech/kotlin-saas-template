@@ -19,6 +19,12 @@ class UserAccountService(
         )
     }
 
+    fun getAvatarUrl(userId: String): String? =
+        memberRepository.findByExternalUserId(userId)?.avatarUrl?.takeIf { it.isNotBlank() }
+
+    fun updateAvatarUrl(userId: String, avatarUrl: String) =
+        memberRepository.updateAvatarUrl(userId, avatarUrl)
+
     fun updateDisplayName(userId: String, givenName: String, familyName: String, email: String) {
         idpUserDirectory.updateProfile(userId, givenName, familyName)
         memberRepository.updateProfile(userId, email, givenName, familyName)

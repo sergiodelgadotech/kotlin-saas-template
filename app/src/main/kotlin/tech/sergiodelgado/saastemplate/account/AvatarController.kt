@@ -5,20 +5,19 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import java.net.HttpURLConnection
 import java.net.URI
 
 @Controller
-class AvatarController(private val memberRepository: MemberRepository) {
+class AvatarController(private val userAccountService: UserAccountService) {
 
     @GetMapping("/avatar")
     fun avatar(
         @AuthenticationPrincipal principal: OidcUser,
         response: HttpServletResponse,
     ) {
-        val url = principal.subject?.let { memberRepository.findByExternalUserId(it)?.avatarUrl }
-        if (url.isNullOrBlank()) {
+        val url = principal.subject?.let { userAccountService.getAvatarUrl(it) }
+        if (url == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND)
             return
         }
