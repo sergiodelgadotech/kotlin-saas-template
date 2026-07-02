@@ -64,20 +64,24 @@ class ZitadelIdpIntentWebhookController(
             }
         }
 
-        // 2. Avatar capture — unchanged from the original #149 restWebhook behaviour.
-        val userId = response.path("userId").asText("").takeIf { it.isNotBlank() }
-        if (userId != null) {
-            val picture = userNode?.path("picture")?.asText("")?.takeIf { it.isNotBlank() }
-                ?: userNode?.path("avatar_url")?.asText("")?.takeIf { it.isNotBlank() }
-                ?: rawInfo?.path("picture")?.asText("")?.takeIf { it.isNotBlank() }
-                ?: rawInfo?.path("avatar_url")?.asText("")?.takeIf { it.isNotBlank() }
-            if (picture != null) {
-                try {
-                    userAccountService.syncAvatarFromIdp(userId, picture)
-                    log.debug("Synced avatar for user {}", userId)
-                } catch (e: Exception) {
-                    log.warn("Avatar sync failed for user {}: {}", userId, e.message)
-                }
+        // 2. Avatar capture — keyed by the real email claim because the Zitadel user ID in
+        //    the webhook envelope does not match the subject the app receives for new users
+        //    (the final Zitadel ID is assigned after the action fires). The key must equal
+        //    the OIDC `email` the app sees later, so we must NOT use idpInformation.userName:
+        //    for some providers (GitHub) that is a login handle ("serandel"), not an email.
+        val email = userNode?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: rawInfo?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: response.path("addHumanUser").path("email").path("email").asText("").takeIf { it.isNotBlank() }
+            ?: response.path("createUser").path("human").path("email").path("email").asText("").takeIf { it.isNotBlank() }
+        val picture = userNode?.path("picture")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: userNode?.path("avatar_url")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: rawInfo?.path("picture")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: rawInfo?.path("avatar_url")?.asText("")?.takeIf { it.isNotBlank() }
+        if (email != null && picture != null) {
+            try {
+                userAccountService.syncAvatarFromIdp(email, picture)
+            } catch (e: Exception) {
+                log.warn("Avatar sync failed for email {}: {}", email, e.message)
             }
         }
 
