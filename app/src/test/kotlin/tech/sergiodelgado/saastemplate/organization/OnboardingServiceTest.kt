@@ -42,6 +42,7 @@ class OnboardingServiceTest {
     private fun stubOrgSave(pendingAvatar: String? = null) {
         every { organizationRepository.save(capture(orgSlot)) } answers { orgSlot.captured }
         every { memberRepository.save(capture(memberSlot)) } answers { memberSlot.captured }
+        // consumePendingAvatarUrl is now keyed by email, not Zitadel user ID
         every { userAccountService.consumePendingAvatarUrl(any()) } returns pendingAvatar
     }
 
@@ -71,12 +72,13 @@ class OnboardingServiceTest {
     }
 
     @Test
-    fun `createOrganization sets avatarUrl from pending IDP cache`() {
+    fun `createOrganization sets avatarUrl from pending IDP cache keyed by email`() {
         stubOrgSave(pendingAvatar = "https://example.com/avatar.jpg")
 
         service.createOrganization("user-sub", "Acme", "ceo@acme.com")
 
         expectThat(memberSlot.captured.avatarUrl).isEqualTo("https://example.com/avatar.jpg")
+        verify { userAccountService.consumePendingAvatarUrl("ceo@acme.com") }
     }
 
     @Test
@@ -85,6 +87,17 @@ class OnboardingServiceTest {
 
         service.createOrganization("user-sub", "Acme", "ceo@acme.com")
 
+        expectThat(memberSlot.captured.avatarUrl).isNull()
+    }
+
+    @Test
+    fun `createOrganization skips consumePendingAvatarUrl when email is blank`() {
+        every { organizationRepository.save(capture(orgSlot)) } answers { orgSlot.captured }
+        every { memberRepository.save(capture(memberSlot)) } answers { memberSlot.captured }
+
+        service.createOrganization("user-sub", "Acme", email = "")
+
+        verify(exactly = 0) { userAccountService.consumePendingAvatarUrl(any()) }
         expectThat(memberSlot.captured.avatarUrl).isNull()
     }
 

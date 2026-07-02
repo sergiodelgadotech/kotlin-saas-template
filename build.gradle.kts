@@ -61,7 +61,28 @@ abstract class ResetTask @Inject constructor(
         ).forEach { layout.projectDirectory.file("docker/zitadel-init/$it").asFile.delete() }
 
         execOps.exec { commandLine("docker", "compose", "up", "-d", "--remove-orphans", "zitadel-init") }
-        execOps.exec { commandLine("docker", "compose", "wait", "zitadel-init") }
+        // `up -d` runs the seeder detached, so `wait` only yields its exit code — the
+        // init.py stdout/stderr (which holds the actual failure reason) is never shown.
+        // Capture the exit code and, on failure, dump the container logs before tearing
+        // down, so a failed reset is self-diagnosing instead of an opaque "exit status 1".
+        val waitResult = execOps.exec {
+            commandLine("docker", "compose", "wait", "zitadel-init")
+            isIgnoreExitValue = true
+        }
+        if (waitResult.exitValue != 0) {
+            logger.error("zitadel-init exited with ${waitResult.exitValue}; seeder logs follow:")
+            execOps.exec {
+                commandLine("docker", "compose", "logs", "--no-color", "zitadel-init")
+                isIgnoreExitValue = true
+            }
+            execOps.exec {
+                commandLine("docker", "compose", "down")
+                isIgnoreExitValue = true
+            }
+            throw GradleException(
+                "zitadel-init seeding failed (exit ${waitResult.exitValue}). See the logs above."
+            )
+        }
         execOps.exec { commandLine("docker", "compose", "down") }
     }
 }

@@ -140,6 +140,18 @@ def api(method: str, path: str, token: str, body: dict | None = None,
                 continue
             print(f"ERROR {e.code} {method} {path}: {body_text}", file=sys.stderr)
             sys.exit(1)
+        except urllib.error.URLError as e:
+            # Connection-level failure (refused/reset/timeout) — NOT an HTTPError.
+            # Happens on cold start: Zitadel's port is open (wait_for_zitadel passed)
+            # but it briefly drops connections while finishing migrations/projections.
+            # Retry the same way as a 503 so seeding survives the warmup window.
+            if attempt < _retries:
+                print(f"  connection error on {method} {path} ({e.reason}), "
+                      f"retrying in {_retry_delay}s... ({attempt}/{_retries})")
+                time.sleep(_retry_delay)
+                continue
+            print(f"ERROR connection failed {method} {path}: {e.reason}", file=sys.stderr)
+            sys.exit(1)
 
 
 def configure_smtp(token: str) -> None:

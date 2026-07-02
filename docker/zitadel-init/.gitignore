@@ -3,4 +3,6 @@
 management-api.pat
 .smtp-configured
 .default-redirect-uri-configured
+.avatar-actions-configured
+.idp-intent-webhook-configured
 scripts/__pycache__/

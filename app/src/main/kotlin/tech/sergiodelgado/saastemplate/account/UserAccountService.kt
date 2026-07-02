@@ -12,9 +12,10 @@ class UserAccountService(
     private val idpUserDirectory: IdpUserDirectory,
     private val memberRepository: MemberRepository,
 ) {
-    // Holds picture URLs received from the IDP webhook before the member row is created.
-    // The webhook fires during Zitadel's login flow; the member row is only created later
-    // during onboarding. consumePendingAvatarUrl() drains the entry when the row is saved.
+    // Keyed by the user's email. The webhook fires before the Zitadel user ID is finalised
+    // for new users, so we can't key by Zitadel subject here. Email is stable and available
+    // at both ends: the webhook reads it from the IDP claim, and onboarding/success-handler
+    // read it from the OIDC token.
     private val pendingAvatarUrls = ConcurrentHashMap<String, String>()
 
     fun getProfile(userId: String): AccountProfile {
@@ -31,18 +32,16 @@ class UserAccountService(
     fun updateAvatarUrl(userId: String, avatarUrl: String) =
         memberRepository.updateAvatarUrl(userId, avatarUrl)
 
-    // Called by the IDP webhook (fires before member row exists for new users).
-    // If the member row is already present, updates immediately; otherwise buffers
-    // the URL so consumePendingAvatarUrl() can pick it up during org creation.
-    fun syncAvatarFromIdp(userId: String, avatarUrl: String) {
-        if (memberRepository.findByExternalUserId(userId) != null) {
-            memberRepository.updateAvatarUrl(userId, avatarUrl)
-        } else {
-            pendingAvatarUrls[userId] = avatarUrl
-        }
+    // Called by the IDP webhook; always buffers by email because at webhook time
+    // the final Zitadel user ID may not exist yet (new-user creation flow).
+    fun syncAvatarFromIdp(email: String, avatarUrl: String) {
+        pendingAvatarUrls[email] = avatarUrl
     }
 
-    fun consumePendingAvatarUrl(userId: String): String? = pendingAvatarUrls.remove(userId)
+    // Drains the pending entry keyed by email. Called from:
+    //  - OnboardingService.createOrganization  (new users — email param is available)
+    //  - ZitadelAuthenticationSuccessHandler   (returning users — oidcUser.email)
+    fun consumePendingAvatarUrl(email: String): String? = pendingAvatarUrls.remove(email)
 
     fun updateDisplayName(userId: String, givenName: String, familyName: String, email: String) {
         idpUserDirectory.updateProfile(userId, givenName, familyName)

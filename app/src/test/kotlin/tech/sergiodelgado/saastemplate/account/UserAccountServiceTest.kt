@@ -74,45 +74,26 @@ class UserAccountServiceTest {
 
     // ── syncAvatarFromIdp ────────────────────────────────────────────────────────
 
-    private fun member(userId: String) = Member(
-        organizationId = UUID.randomUUID(),
-        externalUserId = userId,
-    )
-
     @Test
-    fun `syncAvatarFromIdp updates repository immediately when member row exists`() {
-        every { memberRepository.findByExternalUserId("user-123") } returns member("user-123")
-        justRun { memberRepository.updateAvatarUrl("user-123", any()) }
-
-        service.syncAvatarFromIdp("user-123", "https://example.com/pic.jpg")
-
-        verify(exactly = 1) { memberRepository.updateAvatarUrl("user-123", "https://example.com/pic.jpg") }
-        expectThat(service.consumePendingAvatarUrl("user-123")).isNull()
-    }
-
-    @Test
-    fun `syncAvatarFromIdp buffers URL when member row does not exist yet`() {
-        every { memberRepository.findByExternalUserId("new-user") } returns null
-
-        service.syncAvatarFromIdp("new-user", "https://example.com/pic.jpg")
+    fun `syncAvatarFromIdp buffers URL by email without touching the repository`() {
+        service.syncAvatarFromIdp("user@example.com", "https://example.com/pic.jpg")
 
         verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
-        expectThat(service.consumePendingAvatarUrl("new-user"))
+        verify(exactly = 0) { memberRepository.findByExternalUserId(any()) }
+        expectThat(service.consumePendingAvatarUrl("user@example.com"))
             .isEqualTo("https://example.com/pic.jpg")
     }
 
     @Test
     fun `consumePendingAvatarUrl returns null when nothing buffered`() {
-        expectThat(service.consumePendingAvatarUrl("unknown")).isNull()
+        expectThat(service.consumePendingAvatarUrl("unknown@example.com")).isNull()
     }
 
     @Test
     fun `consumePendingAvatarUrl drains the entry so second call returns null`() {
-        every { memberRepository.findByExternalUserId("new-user") } returns null
+        service.syncAvatarFromIdp("user@example.com", "https://example.com/pic.jpg")
+        service.consumePendingAvatarUrl("user@example.com")
 
-        service.syncAvatarFromIdp("new-user", "https://example.com/pic.jpg")
-        service.consumePendingAvatarUrl("new-user")
-
-        expectThat(service.consumePendingAvatarUrl("new-user")).isNull()
+        expectThat(service.consumePendingAvatarUrl("user@example.com")).isNull()
     }
 }
