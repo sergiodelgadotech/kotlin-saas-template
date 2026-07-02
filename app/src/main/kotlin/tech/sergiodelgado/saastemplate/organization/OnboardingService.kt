@@ -45,7 +45,9 @@ class OnboardingService(
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
-                avatarUrl = userAccountService.consumePendingAvatarUrl(ownerUserId),
+                // IDP webhook buffers the avatar by email (see UserAccountService).
+                avatarUrl = email.takeIf { it.isNotBlank() }
+                    ?.let { userAccountService.consumePendingAvatarUrl(it) },
             )
         )
         // Billing is deferred to ensureBilling (called at plan-selection step) so that

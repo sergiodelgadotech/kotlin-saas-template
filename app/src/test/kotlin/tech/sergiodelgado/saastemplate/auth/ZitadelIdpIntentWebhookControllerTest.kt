@@ -25,6 +25,7 @@ class ZitadelIdpIntentWebhookControllerTest {
     private fun envelope(
         userId: String? = "user-abc",
         username: String? = null,
+        userName: String? = null,
         email: String? = null,
         picture: String? = null,
         avatarUrl: String? = null,
@@ -46,6 +47,7 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         val idpInfo = objectMapper.createObjectNode()
         username?.let { idpInfo.put("username", it) }
+        userName?.let { idpInfo.put("userName", it) }
         idpInfo.set("rawInformation", rawInfo)
 
         val response = objectMapper.createObjectNode()
@@ -121,14 +123,50 @@ class ZitadelIdpIntentWebhookControllerTest {
     // ── avatar capture ───────────────────────────────────────────────────────────
 
     @Test
+    fun `updates avatar using idpInformation userName (email) as the key`() {
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
+
+        controller.handleIdpIntent(
+            envelope(email = "user@example.com", picture = "https://example.com/avatar.jpg")
+        )
+
+        // key is the email from idpInformation.userName, not the Zitadel user ID
+        verify { userAccountService.syncAvatarFromIdp("user@example.com", "https://example.com/avatar.jpg") }
+    }
+
+    @Test
+    fun `keys avatar by rawInformation email not idpInformation userName when userName is a handle`() {
+        // Real GitHub shape: idpInformation.userName is the login handle ("serandel"),
+        // while the actual email lives in rawInformation. The buffer must be keyed by the
+        // email so onboarding (which looks up by OIDC email) can consume it.
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
+
+        controller.handleIdpIntent(
+            envelope(
+                userName = "serandel",
+                email = "github@sergiodelgado.tech",
+                avatarUrl = "https://avatars.githubusercontent.com/u/1114574",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify {
+            userAccountService.syncAvatarFromIdp(
+                "github@sergiodelgado.tech",
+                "https://avatars.githubusercontent.com/u/1114574",
+            )
+        }
+    }
+
+    @Test
     fun `updates avatar from nested User picture in rawInformation`() {
         every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
-            envelope(picture = "https://example.com/avatar.jpg")
+            envelope(email = "user@example.com", picture = "https://example.com/avatar.jpg")
         )
 
-        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://example.com/avatar.jpg") }
+        verify { userAccountService.syncAvatarFromIdp("user@example.com", "https://example.com/avatar.jpg") }
     }
 
     @Test
@@ -136,10 +174,10 @@ class ZitadelIdpIntentWebhookControllerTest {
         every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
-            envelope(avatarUrl = "https://avatars.githubusercontent.com/u/123")
+            envelope(email = "user@example.com", avatarUrl = "https://avatars.githubusercontent.com/u/123")
         )
 
-        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://avatars.githubusercontent.com/u/123") }
+        verify { userAccountService.syncAvatarFromIdp("user@example.com", "https://avatars.githubusercontent.com/u/123") }
     }
 
     @Test
@@ -147,10 +185,10 @@ class ZitadelIdpIntentWebhookControllerTest {
         every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
-            envelope(picture = "https://example.com/avatar.jpg", nestedUnderUserKey = false)
+            envelope(email = "user@example.com", picture = "https://example.com/avatar.jpg", nestedUnderUserKey = false)
         )
 
-        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://example.com/avatar.jpg") }
+        verify { userAccountService.syncAvatarFromIdp("user@example.com", "https://example.com/avatar.jpg") }
     }
 
     @Test
@@ -163,7 +201,7 @@ class ZitadelIdpIntentWebhookControllerTest {
     }
 
     @Test
-    fun `skips avatar update when userId is absent`() {
+    fun `skips avatar update when no email is available`() {
         controller.handleIdpIntent(
             envelope(userId = null, picture = "https://example.com/avatar.jpg")
         )

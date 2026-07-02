@@ -12,6 +12,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import tech.sergiodelgado.saastemplate.account.UserAccountService
 import tech.sergiodelgado.saasstarter.billing.Subscription
 import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
@@ -21,7 +22,8 @@ class ZitadelAuthenticationSuccessHandlerTest {
 
     private val memberRepository = mockk<MemberRepository>()
     private val subscriptionRepository = mockk<SubscriptionRepository>()
-    private val handler = ZitadelAuthenticationSuccessHandler(memberRepository, subscriptionRepository)
+    private val userAccountService = mockk<UserAccountService>()
+    private val handler = ZitadelAuthenticationSuccessHandler(memberRepository, subscriptionRepository, userAccountService)
     private val request = MockHttpServletRequest()
     private val response = MockHttpServletResponse()
 
@@ -55,6 +57,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
         stubLoginSync("user-abc")
         every { memberRepository.findOrganizationIdByUserId("user-abc") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl(any()) } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("user-abc"))
 
@@ -76,6 +79,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
         stubLoginSync("partial-user")
         every { memberRepository.findOrganizationIdByUserId("partial-user") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns null
+        every { userAccountService.consumePendingAvatarUrl(any()) } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("partial-user"))
 
@@ -87,6 +91,7 @@ class ZitadelAuthenticationSuccessHandlerTest {
         stubLoginSync("user-xyz")
         every { memberRepository.findOrganizationIdByUserId("user-xyz") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl(any()) } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("user-xyz", "jane@example.com", "Jane", "Doe"))
 
@@ -94,10 +99,12 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    fun `syncs OIDC picture claim to avatar on login`() {
+    fun `syncs OIDC picture claim to avatar when oidcUser has picture and member exists`() {
         stubLoginSync("user-pic")
         every { memberRepository.findOrganizationIdByUserId("user-pic") } returns orgIdStr
         every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        // No buffered avatar — picture comes from the OIDC claim
+        every { userAccountService.consumePendingAvatarUrl("user@example.com") } returns null
 
         handler.onAuthenticationSuccess(
             request, response,
@@ -108,9 +115,52 @@ class ZitadelAuthenticationSuccessHandlerTest {
     }
 
     @Test
-    fun `skips avatar update when OIDC has no picture claim`() {
+    fun `sets avatar from IDP webhook buffer for returning user`() {
+        stubLoginSync("returning-user")
+        every { memberRepository.findOrganizationIdByUserId("returning-user") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl("user@example.com") } returns "https://lh3.googleusercontent.com/avatar.jpg"
+
+        handler.onAuthenticationSuccess(request, response, authToken("returning-user", picture = null))
+
+        verify { memberRepository.updateAvatarUrl("returning-user", "https://lh3.googleusercontent.com/avatar.jpg") }
+    }
+
+    @Test
+    fun `buffers OIDC picture for new users when available (e g GitHub)`() {
+        stubLoginSync("new-user")
+        every { memberRepository.findOrganizationIdByUserId("new-user") } returns null
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
+
+        handler.onAuthenticationSuccess(
+            request, response,
+            authToken("new-user", email = "user@example.com", picture = "https://avatars.github.com/u/123"),
+        )
+
+        // No direct DB write — member row doesn't exist yet
+        verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
+        // Buffer it under email for onboarding to consume
+        verify { userAccountService.syncAvatarFromIdp("user@example.com", "https://avatars.github.com/u/123") }
+    }
+
+    @Test
+    fun `skips avatar for new users when oidcUser has no picture`() {
+        stubLoginSync("new-user")
+        every { memberRepository.findOrganizationIdByUserId("new-user") } returns null
+
+        handler.onAuthenticationSuccess(request, response, authToken("new-user", picture = null))
+
+        verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarFromIdp(any(), any()) }
+        verify(exactly = 0) { userAccountService.consumePendingAvatarUrl(any()) }
+    }
+
+    @Test
+    fun `skips avatar update when no picture and no pending avatar for returning user`() {
         stubLoginSync("user-no-pic")
-        every { memberRepository.findOrganizationIdByUserId("user-no-pic") } returns null
+        every { memberRepository.findOrganizationIdByUserId("user-no-pic") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl("user@example.com") } returns null
 
         handler.onAuthenticationSuccess(request, response, authToken("user-no-pic", picture = null))
 
