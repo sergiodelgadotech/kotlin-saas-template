@@ -1,7 +1,7 @@
 package tech.sergiodelgado.saastemplate.auth
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.node.ObjectNode
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -37,7 +37,7 @@ class ZitadelIdpIntentWebhookControllerTest {
             email?.let { userNode.put("email", it) }
             picture?.let { userNode.put("picture", it) }
             avatarUrl?.let { userNode.put("avatar_url", it) }
-            rawInfo.set<ObjectNode>("User", userNode)
+            rawInfo.set("User", userNode)
         } else {
             email?.let { rawInfo.put("email", it) }
             picture?.let { rawInfo.put("picture", it) }
@@ -46,15 +46,15 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         val idpInfo = objectMapper.createObjectNode()
         username?.let { idpInfo.put("username", it) }
-        idpInfo.set<ObjectNode>("rawInformation", rawInfo)
+        idpInfo.set("rawInformation", rawInfo)
 
         val response = objectMapper.createObjectNode()
         userId?.let { response.put("userId", it) }
-        response.set<ObjectNode>("idpInformation", idpInfo)
+        response.set("idpInformation", idpInfo)
         extraResponseField?.let { response.put("extra", it) }
 
         return objectMapper.createObjectNode().apply {
-            set<ObjectNode>("response", response)
+            set("response", response)
         }
     }
 

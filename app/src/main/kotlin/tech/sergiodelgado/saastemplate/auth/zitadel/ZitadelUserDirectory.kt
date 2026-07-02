@@ -1,6 +1,6 @@
 package tech.sergiodelgado.saastemplate.auth.zitadel
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.zitadel.ApiException
 import com.zitadel.api.UserServiceApi
 import com.zitadel.model.UserServiceAddHumanUserRequest
@@ -64,7 +64,7 @@ class ZitadelUserDirectory(
             .body(String::class.java) ?: return null
 
         val login = mapper.readTree(idpBody)
-            .path("result").elements().asSequence()
+            .path("result").asSequence()
             .firstOrNull { it.path("idpName").asText("") == "GitHub" }
             ?.path("providedUserName")?.asText(null)
             ?: return null
