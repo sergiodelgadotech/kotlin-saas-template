@@ -14,6 +14,7 @@ import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationRepository
 import tech.sergiodelgado.saasstarter.tenant.TenantContext
+import tech.sergiodelgado.saastemplate.account.UserAccountService
 import kotlin.random.Random
 
 @Service
@@ -23,6 +24,7 @@ class OnboardingService(
     private val memberRepository: MemberRepository,
     private val billingService: BillingService,
     private val subscriptionRepository: SubscriptionRepository,
+    private val userAccountService: UserAccountService,
 ) {
     // Evict the cached null that ZitadelAuthenticationSuccessHandler wrote during login
     // (MemberRepository.findOrganizationIdByUserId is @Cacheable and caches null).
@@ -33,7 +35,6 @@ class OnboardingService(
         email: String = "",
         firstName: String? = null,
         lastName: String? = null,
-        avatarUrl: String? = null,
     ): Organization {
         val org = organizationRepository.save(Organization(name = name, slug = slugFor(name)))
         memberRepository.save(
@@ -44,7 +45,7 @@ class OnboardingService(
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
-                avatarUrl = avatarUrl,
+                avatarUrl = userAccountService.consumePendingAvatarUrl(ownerUserId),
             )
         )
         // Billing is deferred to ensureBilling (called at plan-selection step) so that
