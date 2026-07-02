@@ -91,10 +91,10 @@ class NavModelAdviceTest {
     }
 
     @Test
-    fun `navAvatarUrl returns avatar URL from members table`() {
+    fun `navAvatarUrl returns proxy path when member has avatar`() {
         val principal = oidcUser("sub", "a@example.com")
         every { memberRepository.findByExternalUserId("sub") } returns member("Alice", "Smith", "https://example.com/avatar.jpg")
-        expectThat(advice.navAvatarUrl(principal)).isEqualTo("https://example.com/avatar.jpg")
+        expectThat(advice.navAvatarUrl(principal)).isEqualTo("/avatar")
     }
 
     @Test

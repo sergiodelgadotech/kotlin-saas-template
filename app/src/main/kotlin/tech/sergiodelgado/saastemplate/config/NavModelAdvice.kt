@@ -57,6 +57,9 @@ class NavModelAdvice(private val memberRepository: MemberRepository) {
     fun navAvatarUrl(@AuthenticationPrincipal principal: OidcUser?): String? {
         if (principal == null) return null
         val sub = principal.subject ?: return null
-        return memberRepository.findByExternalUserId(sub)?.avatarUrl
+        val avatarUrl = memberRepository.findByExternalUserId(sub)?.avatarUrl
+        // Proxy through the app so the browser always loads from the same origin,
+        // avoiding tracker-blocking of external avatar domains (e.g. lh3.googleusercontent.com).
+        return if (!avatarUrl.isNullOrBlank()) "/avatar" else null
     }
 }

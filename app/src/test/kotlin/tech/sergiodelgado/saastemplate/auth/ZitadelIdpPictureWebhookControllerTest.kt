@@ -13,27 +13,50 @@ class ZitadelIdpPictureWebhookControllerTest {
     private val memberRepository = mockk<MemberRepository>()
     private val controller = ZitadelIdpPictureWebhookController(memberRepository)
 
+    private fun payload(userId: String?, rawInformation: Map<String, Any?>?) = ZitadelExecutionPayload(
+        response = IdpIntentResponse(
+            userId = userId,
+            idpInformation = rawInformation?.let { IdpInformation(rawInformation = it) },
+        ),
+    )
+
     @Test
-    fun `updates avatar when picture present in raw IDP information`() {
+    fun `updates avatar from Google-style nested User key in rawInformation`() {
         every { memberRepository.updateAvatarUrl(any(), any()) } just Runs
 
         controller.handleIdpPicture(
-            IdpPicturePayload(
-                userId = "user-abc",
-                idpInformation = IdpInformation(rawInformation = mapOf("picture" to "https://example.com/avatar.jpg")),
-            )
+            payload("user-abc", mapOf("User" to mapOf("picture" to "https://example.com/avatar.jpg")))
         )
 
         verify { memberRepository.updateAvatarUrl("user-abc", "https://example.com/avatar.jpg") }
     }
 
     @Test
-    fun `skips avatar update when raw IDP information has no picture`() {
+    fun `updates avatar from GitHub-style nested User avatar_url in rawInformation`() {
+        every { memberRepository.updateAvatarUrl(any(), any()) } just Runs
+
         controller.handleIdpPicture(
-            IdpPicturePayload(
-                userId = "user-abc",
-                idpInformation = IdpInformation(rawInformation = mapOf("email" to "user@example.com")),
-            )
+            payload("user-abc", mapOf("User" to mapOf("avatar_url" to "https://avatars.githubusercontent.com/u/123")))
+        )
+
+        verify { memberRepository.updateAvatarUrl("user-abc", "https://avatars.githubusercontent.com/u/123") }
+    }
+
+    @Test
+    fun `updates avatar from top-level picture in rawInformation`() {
+        every { memberRepository.updateAvatarUrl(any(), any()) } just Runs
+
+        controller.handleIdpPicture(
+            payload("user-abc", mapOf("picture" to "https://example.com/avatar.jpg"))
+        )
+
+        verify { memberRepository.updateAvatarUrl("user-abc", "https://example.com/avatar.jpg") }
+    }
+
+    @Test
+    fun `skips avatar update when rawInformation has no picture`() {
+        controller.handleIdpPicture(
+            payload("user-abc", mapOf("email" to "user@example.com"))
         )
 
         verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
@@ -41,19 +64,23 @@ class ZitadelIdpPictureWebhookControllerTest {
 
     @Test
     fun `skips avatar update when idpInformation is null`() {
-        controller.handleIdpPicture(IdpPicturePayload(userId = "user-abc", idpInformation = null))
+        controller.handleIdpPicture(payload("user-abc", null))
 
         verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
     }
 
     @Test
-    fun `skips avatar update when userId is null`() {
+    fun `skips avatar update when response userId is null`() {
         controller.handleIdpPicture(
-            IdpPicturePayload(
-                userId = null,
-                idpInformation = IdpInformation(rawInformation = mapOf("picture" to "https://example.com/avatar.jpg")),
-            )
+            payload(null, mapOf("User" to mapOf("picture" to "https://example.com/avatar.jpg")))
         )
+
+        verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
+    }
+
+    @Test
+    fun `skips avatar update when response is null`() {
+        controller.handleIdpPicture(ZitadelExecutionPayload(response = null))
 
         verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
     }

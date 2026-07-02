@@ -10,7 +10,7 @@
         <div sec:authorize="isAuthenticated()" class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar" aria-label="User menu">
                 <div class="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center overflow-hidden">
-                    <img th:if="${navAvatarUrl}" th:src="${navAvatarUrl}" alt="" class="w-8 h-8 object-cover"/>
+                    <img th:if="${navAvatarUrl}" th:src="${navAvatarUrl}" alt="" class="w-full h-full object-cover"/>
                     <span th:unless="${navAvatarUrl}" class="text-sm font-bold" th:text="${navInitials}">?</span>
                 </div>
             </div>
