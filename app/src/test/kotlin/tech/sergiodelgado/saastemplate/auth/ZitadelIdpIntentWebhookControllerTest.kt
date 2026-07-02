@@ -122,35 +122,35 @@ class ZitadelIdpIntentWebhookControllerTest {
 
     @Test
     fun `updates avatar from nested User picture in rawInformation`() {
-        every { userAccountService.updateAvatarUrl(any(), any()) } just Runs
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
             envelope(picture = "https://example.com/avatar.jpg")
         )
 
-        verify { userAccountService.updateAvatarUrl("user-abc", "https://example.com/avatar.jpg") }
+        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://example.com/avatar.jpg") }
     }
 
     @Test
     fun `updates avatar from nested User avatar_url in rawInformation`() {
-        every { userAccountService.updateAvatarUrl(any(), any()) } just Runs
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
             envelope(avatarUrl = "https://avatars.githubusercontent.com/u/123")
         )
 
-        verify { userAccountService.updateAvatarUrl("user-abc", "https://avatars.githubusercontent.com/u/123") }
+        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://avatars.githubusercontent.com/u/123") }
     }
 
     @Test
     fun `updates avatar from top-level picture in rawInformation`() {
-        every { userAccountService.updateAvatarUrl(any(), any()) } just Runs
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } just Runs
 
         controller.handleIdpIntent(
             envelope(picture = "https://example.com/avatar.jpg", nestedUnderUserKey = false)
         )
 
-        verify { userAccountService.updateAvatarUrl("user-abc", "https://example.com/avatar.jpg") }
+        verify { userAccountService.syncAvatarFromIdp("user-abc", "https://example.com/avatar.jpg") }
     }
 
     @Test
@@ -159,7 +159,7 @@ class ZitadelIdpIntentWebhookControllerTest {
             envelope(email = "user@example.com")
         )
 
-        verify(exactly = 0) { userAccountService.updateAvatarUrl(any(), any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarFromIdp(any(), any()) }
     }
 
     @Test
@@ -168,12 +168,12 @@ class ZitadelIdpIntentWebhookControllerTest {
             envelope(userId = null, picture = "https://example.com/avatar.jpg")
         )
 
-        verify(exactly = 0) { userAccountService.updateAvatarUrl(any(), any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarFromIdp(any(), any()) }
     }
 
     @Test
     fun `avatar update failure does not prevent returning a valid response`() {
-        every { userAccountService.updateAvatarUrl(any(), any()) } throws RuntimeException("DB down")
+        every { userAccountService.syncAvatarFromIdp(any(), any()) } throws RuntimeException("DB down")
 
         val result = controller.handleIdpIntent(
             envelope(email = "user@example.com", picture = "https://example.com/avatar.jpg")
@@ -205,6 +205,6 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         expectThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
         expectThat(result.body).isNull()
-        verify(exactly = 0) { userAccountService.updateAvatarUrl(any(), any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarFromIdp(any(), any()) }
     }
 }

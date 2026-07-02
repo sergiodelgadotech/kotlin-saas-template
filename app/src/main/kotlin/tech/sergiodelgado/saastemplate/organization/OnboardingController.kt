@@ -55,7 +55,6 @@ class OnboardingController(
             email = oidcUser.email.orEmpty(),
             firstName = oidcUser.givenName,
             lastName = oidcUser.familyName,
-            avatarUrl = oidcUser.picture,
         )
         return "redirect:/onboarding/plan"
     }

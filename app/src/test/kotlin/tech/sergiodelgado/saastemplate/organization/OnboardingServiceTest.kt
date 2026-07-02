@@ -22,6 +22,7 @@ import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationRepository
+import tech.sergiodelgado.saastemplate.account.UserAccountService
 import java.util.Optional
 import java.util.UUID
 
@@ -31,15 +32,17 @@ class OnboardingServiceTest {
     private val memberRepository = mockk<MemberRepository>()
     private val billingService = mockk<BillingService>()
     private val subscriptionRepository = mockk<SubscriptionRepository>()
+    private val userAccountService = mockk<UserAccountService>()
 
-    private val service = OnboardingService(organizationRepository, memberRepository, billingService, subscriptionRepository)
+    private val service = OnboardingService(organizationRepository, memberRepository, billingService, subscriptionRepository, userAccountService)
 
     private val orgSlot = slot<Organization>()
     private val memberSlot = slot<Member>()
 
-    private fun stubOrgSave() {
+    private fun stubOrgSave(pendingAvatar: String? = null) {
         every { organizationRepository.save(capture(orgSlot)) } answers { orgSlot.captured }
         every { memberRepository.save(capture(memberSlot)) } answers { memberSlot.captured }
+        every { userAccountService.consumePendingAvatarUrl(any()) } returns pendingAvatar
     }
 
     @Test
@@ -65,6 +68,24 @@ class OnboardingServiceTest {
             expectThat(firstName).isEqualTo("Alice")
             expectThat(lastName).isEqualTo("Smith")
         }
+    }
+
+    @Test
+    fun `createOrganization sets avatarUrl from pending IDP cache`() {
+        stubOrgSave(pendingAvatar = "https://example.com/avatar.jpg")
+
+        service.createOrganization("user-sub", "Acme", "ceo@acme.com")
+
+        expectThat(memberSlot.captured.avatarUrl).isEqualTo("https://example.com/avatar.jpg")
+    }
+
+    @Test
+    fun `createOrganization sets null avatarUrl when no pending avatar`() {
+        stubOrgSave(pendingAvatar = null)
+
+        service.createOrganization("user-sub", "Acme", "ceo@acme.com")
+
+        expectThat(memberSlot.captured.avatarUrl).isNull()
     }
 
     @Test

@@ -73,11 +73,10 @@ class ZitadelIdpIntentWebhookController(
                 ?: rawInfo?.path("avatar_url")?.asText("")?.takeIf { it.isNotBlank() }
             if (picture != null) {
                 try {
-                    userAccountService.updateAvatarUrl(userId, picture)
-                    log.info("Updated avatar for user {}", userId)
+                    userAccountService.syncAvatarFromIdp(userId, picture)
+                    log.debug("Synced avatar for user {}", userId)
                 } catch (e: Exception) {
-                    // Avatar update failure must not corrupt the returned response.
-                    log.warn("Avatar update failed for user {}: {}", userId, e.message)
+                    log.warn("Avatar sync failed for user {}: {}", userId, e.message)
                 }
             }
         }
