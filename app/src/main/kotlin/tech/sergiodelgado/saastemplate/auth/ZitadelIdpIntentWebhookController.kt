@@ -11,24 +11,22 @@ import org.springframework.web.bind.annotation.RestController
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 
 /**
- * Zitadel Actions v2 `restCall` handler for the `RetrieveIdentityProviderIntent` response.
+ * Zitadel Actions v2 `restWebhook` handler for the `RetrieveIdentityProviderIntent` response.
  *
- * Registered as a `restCall` target (not `restWebhook`) so Zitadel applies the returned JSON
- * as the modified response.  `interruptOnError: false` on the target means that if this
- * endpoint errors Zitadel falls back to the original response — a bug here cannot break
- * social login for all providers.
+ * Registered as a fire-and-forget `restWebhook` target — Zitadel ignores the response body,
+ * so this endpoint can never break social login regardless of what it returns.
  *
- * Responsibilities (merged because only one execution can be registered per condition):
- *  1. **Username injection** — when `idpInformation.username` is blank (Slack does not
- *     return `preferred_username`), set it from the IDP email so Zitadel's `AddIDPLink`
- *     call receives a valid `providedUserName` and auto-link succeeds (fixes #153).
- *  2. **Avatar capture** — when `rawInformation` contains a picture URL, persist it via
- *     `UserAccountService` (preserves #149 behaviour).
+ * Responsibilities:
+ *  1. **Avatar capture** — when `rawInformation` contains a picture URL, persist it via
+ *     `UserAccountService` (see #149).
+ *  2. **Username injection** (attempted, no effect with restWebhook) — when
+ *     `idpInformation.username` is blank the email is placed back into the response node,
+ *     but Zitadel discards the body so this does not fix Slack auto-link (#153).
+ *     Switching to `restCall` to make the injection effective caused `missing_idp_info`
+ *     for all providers — root cause is under investigation.
  *
- * IMPORTANT: Zitadel uses the returned body as the new response.  We therefore operate on
- * the raw [JsonNode] tree rather than trimmed DTOs — serialising typed DTOs would drop
- * fields we don't model (oauth tokens, addHumanUser, etc.) and break downstream login.
- * The full `response` node is returned unchanged except for the injected username field.
+ * We still operate on the raw [JsonNode] tree so the code is ready if we re-enable
+ * `restCall` in a future iteration.
  */
 @RestController
 @RequestMapping("/internal/zitadel")

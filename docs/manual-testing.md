@@ -140,10 +140,12 @@ Note: Slack uses Zitadel's generic OIDC provider, so the login button renders as
 **Expected result:**
 - You are redirected back to the app and routed correctly (onboarding if new user, dashboard if returning).
 - The Zitadel admin console shows the user with an external identity linked.
-- **Slack with an existing Zitadel account (same email):** auto-link succeeds — no error page, no empty-username form.
+- **Slack with an existing Zitadel account (same email):** known limitation — Slack omits
+  `preferred_username`, so auto-link (`AddIDPLink`) fails with a username-validation error (#153).
+  Workaround: use a Slack email that has no prior Zitadel account (new-user flow works).
 
 - [ ] Pass for Google / GitHub / Microsoft / Apple (no username prompt)
-- [ ] Pass for Slack — new user (completion form pre-filled with email as username) and existing user (auto-link, no form)
+- [ ] Pass for Slack — new user only (completion form pre-filled with email as username)
 - [ ] Verify stack boots cleanly with Slack vars **unset** (init.py logs skip message, no errors)
 
 ---
