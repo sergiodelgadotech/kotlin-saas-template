@@ -462,18 +462,18 @@ def provision_management_service_account(token: str) -> None:
 
 
 def configure_idp_intent_webhook(token: str) -> None:
-    """Register a Zitadel v2 restCall target + execution on the
+    """Register a Zitadel v2 restWebhook target + execution on the
     RetrieveIdentityProviderIntent response.
 
-    Using restCall (not restWebhook) so Zitadel applies the returned JSON as the
-    modified response. interruptOnError:false means a bug here falls back to the
-    original response and never breaks social login for all providers.
+    Using restWebhook (fire-and-forget) so Zitadel ignores our response body and
+    social login is never affected by this endpoint's behaviour.
 
-    The Spring endpoint (/internal/zitadel/idp-intent) handles two concerns in one
-    call because Zitadel allows only one execution per condition:
-      1. Username injection: sets idpInformation.username from IDP email when blank,
-         fixing Slack auto-link (Slack omits preferred_username — see #153).
-      2. Avatar capture: persists the IDP picture URL (preserves #149 behaviour).
+    The Spring endpoint (/internal/zitadel/idp-intent) captures the IDP picture URL
+    and persists it via UserAccountService (avatar sync, see #149).
+
+    NOTE: restCall (response manipulation) was attempted to fix Slack auto-link (#153)
+    but caused missing_idp_info for all providers — Zitadel rejects the returned body.
+    Slack auto-link requires further investigation before re-enabling restCall.
     """
     if IDP_INTENT_WEBHOOK_CONFIGURED_FILE.exists():
         print("IDP intent webhook already configured, skipping.")
@@ -485,11 +485,11 @@ def configure_idp_intent_webhook(token: str) -> None:
     webhook_base = os.getenv("WEBHOOK_BASE_URL", "http://host.docker.internal:8080").rstrip("/")
 
     webhook_url = f"{webhook_base}/internal/zitadel/idp-intent"
-    print(f"Configuring IDP intent restCall target at {webhook_url}...")
+    print(f"Configuring IDP intent restWebhook target at {webhook_url}...")
 
     resp = api("POST", "/v2/actions/targets", token, {
         "name": "idp-intent-webhook",
-        "restCall": {"interruptOnError": False},
+        "restWebhook": {"interruptOnError": False},
         "endpoint": webhook_url,
         "timeout": "10s",
     })
@@ -504,7 +504,7 @@ def configure_idp_intent_webhook(token: str) -> None:
         return
 
     target_id = resp["id"]
-    print(f"  Created restCall target (ID: {target_id})")
+    print(f"  Created restWebhook target (ID: {target_id})")
 
     api("PUT", "/v2/actions/executions", token, {
         "condition": {
