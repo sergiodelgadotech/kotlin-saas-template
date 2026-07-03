@@ -4,7 +4,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ModelAttribute
+import tech.sergiodelgado.saastemplate.account.UserAccountService
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
 
 /**
  * Injects nav display attributes (initials, display name) into every
@@ -23,7 +25,10 @@ import tech.sergiodelgado.saasstarter.organization.MemberRepository
  * principals in tests degrade gracefully to an empty string.
  */
 @ControllerAdvice
-class NavModelAdvice(private val memberRepository: MemberRepository) {
+class NavModelAdvice(
+    private val memberRepository: MemberRepository,
+    private val userAccountService: UserAccountService,
+) {
 
     @ModelAttribute("navInitials")
     fun navInitials(@AuthenticationPrincipal principal: OidcUser?): String {
@@ -57,6 +62,15 @@ class NavModelAdvice(private val memberRepository: MemberRepository) {
     fun navAvatarUrl(@AuthenticationPrincipal principal: OidcUser?): String? {
         if (principal == null) return null
         val sub = principal.subject ?: return null
+
+        // Stored binary image — include a ?v= cache-buster so a new photo isn't masked by a
+        // stale cached copy at the fixed /avatar URL. Guard TenantContext.isPresent() because
+        // navAvatarUrl runs on every authenticated page, including pre-tenant flows (e.g.
+        // onboarding) where the interceptor hasn't set a tenant context yet.
+        val stored = if (TenantContext.isPresent()) userAccountService.getStoredAvatar(sub) else null
+        if (stored != null) return "/avatar?v=${stored.updatedAt.toEpochMilli()}"
+
+        // Fall back to the external-URL proxy path.
         val avatarUrl = memberRepository.findByExternalUserId(sub)?.avatarUrl
         // Proxy through the app so the browser always loads from the same origin,
         // avoiding tracker-blocking of external avatar domains (e.g. lh3.googleusercontent.com).

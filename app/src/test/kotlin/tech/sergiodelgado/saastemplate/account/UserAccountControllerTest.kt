@@ -83,6 +83,8 @@ class UserAccountControllerTest {
     fun stubNav() {
         // NavModelAdvice reads MemberRepository for initials; return null for test users
         every { memberRepository.findByExternalUserId(any()) } returns null
+        // NavModelAdvice.navAvatarUrl now calls userAccountService.getStoredAvatar; stub it
+        every { userAccountService.getStoredAvatar(any()) } returns null
     }
 
     @Test

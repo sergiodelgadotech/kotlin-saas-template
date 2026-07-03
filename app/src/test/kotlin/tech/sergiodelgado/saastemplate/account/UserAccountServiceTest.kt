@@ -13,13 +13,15 @@ import strikt.assertions.isNull
 import tech.sergiodelgado.saasstarter.auth.idp.IdpUserDirectory
 import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
+import java.time.Instant
 import java.util.UUID
 
 class UserAccountServiceTest {
 
     private val idpUserDirectory = mockk<IdpUserDirectory>()
     private val memberRepository = mockk<MemberRepository>()
-    private val service = UserAccountService(idpUserDirectory, memberRepository)
+    private val avatarStore = mockk<AvatarStore>(relaxed = true)
+    private val service = UserAccountService(idpUserDirectory, memberRepository, avatarStore)
 
     @Test
     fun `getProfile returns firstName and lastName from member row`() {
@@ -95,5 +97,60 @@ class UserAccountServiceTest {
         service.consumePendingAvatarUrl("user@example.com")
 
         expectThat(service.consumePendingAvatarUrl("user@example.com")).isNull()
+    }
+
+    // ── AvatarStore delegation ───────────────────────────────────────────────────
+
+    @Test
+    fun `getStoredAvatar delegates to avatarStore`() {
+        val orgId = UUID.randomUUID()
+        val image = AvatarImage(
+            organizationId = orgId,
+            externalUserId = "user-123",
+            contentType = "image/png",
+            bytes = ByteArray(4) { it.toByte() },
+            source = AvatarSource.IDP.name,
+            updatedAt = Instant.now(),
+        )
+        every { avatarStore.get("user-123") } returns image
+
+        expectThat(service.getStoredAvatar("user-123")).isEqualTo(image)
+    }
+
+    @Test
+    fun `storeAvatar delegates to avatarStore`() {
+        val bytes = ByteArray(4) { it.toByte() }
+        justRun { avatarStore.put("user-123", "image/jpeg", bytes, AvatarSource.IDP) }
+
+        service.storeAvatar("user-123", "image/jpeg", bytes, AvatarSource.IDP)
+
+        verify { avatarStore.put("user-123", "image/jpeg", bytes, AvatarSource.IDP) }
+    }
+
+    // ── Binary avatar pending buffer ─────────────────────────────────────────────
+
+    @Test
+    fun `syncAvatarBytesFromIdp buffers bytes by email without calling store`() {
+        val bytes = ByteArray(4) { it.toByte() }
+        service.syncAvatarBytesFromIdp("user@example.com", "image/jpeg", bytes, AvatarSource.IDP)
+
+        verify(exactly = 0) { avatarStore.put(any(), any(), any(), any()) }
+        val pending = service.consumePendingAvatarBytes("user@example.com")
+        expectThat(pending?.contentType).isEqualTo("image/jpeg")
+        expectThat(pending?.source).isEqualTo(AvatarSource.IDP)
+    }
+
+    @Test
+    fun `consumePendingAvatarBytes returns null when nothing buffered`() {
+        expectThat(service.consumePendingAvatarBytes("unknown@example.com")).isNull()
+    }
+
+    @Test
+    fun `consumePendingAvatarBytes drains the entry so second call returns null`() {
+        val bytes = ByteArray(4) { it.toByte() }
+        service.syncAvatarBytesFromIdp("user@example.com", "image/png", bytes, AvatarSource.IDP)
+        service.consumePendingAvatarBytes("user@example.com")
+
+        expectThat(service.consumePendingAvatarBytes("user@example.com")).isNull()
     }
 }
