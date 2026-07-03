@@ -43,10 +43,11 @@ class FlywayMigrationTest {
     // ── App migrations ────────────────────────────────────────────────────────
 
     @Test
-    fun `V200 app init creates imports and analysis_results tables`() {
+    fun `V200 app init creates imports and analysis_results and avatar_image tables`() {
         val tables = publicTables()
         expectThat(tables).contains("imports")
         expectThat(tables).contains("analysis_results")
+        expectThat(tables).contains("avatar_image")
     }
 
     // ── Flyway history ────────────────────────────────────────────────────────
