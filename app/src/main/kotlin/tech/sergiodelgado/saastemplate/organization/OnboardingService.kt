@@ -50,6 +50,19 @@ class OnboardingService(
                     ?.let { userAccountService.consumePendingAvatarUrl(it) },
             )
         )
+        // Drain binary avatar buffer (e.g. Microsoft Graph photo buffered by the IDP webhook).
+        // AvatarStore.put derives the tenant from TenantContext; the interceptor has not set it
+        // for new users, so we set it to the just-created org and clear it afterwards.
+        email.takeIf { it.isNotBlank() }
+            ?.let { userAccountService.consumePendingAvatarBytes(it) }
+            ?.let { pending ->
+                TenantContext.set(org.id)
+                try {
+                    userAccountService.storeAvatar(ownerUserId, pending.contentType, pending.bytes, pending.source)
+                } finally {
+                    TenantContext.clear()
+                }
+            }
         // Billing is deferred to ensureBilling (called at plan-selection step) so that
         // abandoning the org-name step doesn't leave an orphaned Stripe customer, and so
         // the plan page re-appears on the next login if the user never chose a plan.
