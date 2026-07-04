@@ -39,19 +39,24 @@ class MicrosoftGraphAvatarClient(
      * Returns null on Graph 404 (no photo set), empty body, or any failure — best-effort.
      */
     fun fetchPhoto(accessToken: String): AvatarBytes? = try {
+        log.info("[MS Avatar diag] Calling Graph GET /me/photo/\$value")
         val entity = restClient.get()
             .uri("/me/photo/\$value")
             .header("Authorization", "Bearer $accessToken")
             .retrieve()
             .toEntity(ByteArray::class.java)
-        val bytes = entity.body?.takeIf { it.isNotEmpty() } ?: return null
+        val body = entity.body
+        log.info("[MS Avatar diag] Graph response: status={} contentType={} bodyBytes={}",
+            entity.statusCode, entity.headers.contentType, body?.size ?: "(null)")
+        val bytes = body?.takeIf { it.isNotEmpty() }
+            ?: run { log.info("[MS Avatar diag] Graph body was null or empty — returning null"); return null }
         val contentType = entity.headers.contentType?.toString() ?: "image/jpeg"
         AvatarBytes(contentType, bytes)
     } catch (e: HttpClientErrorException.NotFound) {
-        log.debug("Microsoft Graph returned 404 for /me/photo/\$value — no photo set")
+        log.info("[MS Avatar diag] Graph returned 404 for /me/photo/\$value — no photo set")
         null
     } catch (e: Exception) {
-        log.warn("Failed to fetch Microsoft Graph photo: {}", e.message)
+        log.warn("[MS Avatar diag] Failed to fetch Microsoft Graph photo: {} ({})", e.message, e.javaClass.simpleName)
         null
     }
 }

@@ -1,5 +1,6 @@
 package tech.sergiodelgado.saastemplate.organization
 
+import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,6 +27,8 @@ class OnboardingService(
     private val subscriptionRepository: SubscriptionRepository,
     private val userAccountService: UserAccountService,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     // Evict the cached null that ZitadelAuthenticationSuccessHandler wrote during login
     // (MemberRepository.findOrganizationIdByUserId is @Cacheable and caches null).
     @CacheEvict(cacheNames = ["tenant-by-user"], key = "#ownerUserId")
@@ -53,16 +56,19 @@ class OnboardingService(
         // Drain binary avatar buffer (e.g. Microsoft Graph photo buffered by the IDP webhook).
         // AvatarStore.put derives the tenant from TenantContext; the interceptor has not set it
         // for new users, so we set it to the just-created org and clear it afterwards.
-        email.takeIf { it.isNotBlank() }
+        val pendingBytes = email.takeIf { it.isNotBlank() }
+            ?.also { log.info("[MS Avatar diag] OnboardingService: consumePendingAvatarBytes key='{}'", it) }
             ?.let { userAccountService.consumePendingAvatarBytes(it) }
-            ?.let { pending ->
-                TenantContext.set(org.id)
-                try {
-                    userAccountService.storeAvatar(ownerUserId, pending.contentType, pending.bytes, pending.source)
-                } finally {
-                    TenantContext.clear()
-                }
+        log.info("[MS Avatar diag] OnboardingService: pendingBytes={}", if (pendingBytes != null) "${pendingBytes.bytes.size} bytes (${pendingBytes.contentType})" else "(null)")
+        pendingBytes?.let { pending ->
+            log.info("[MS Avatar diag] OnboardingService: storeAvatar userId='{}' orgId={}", ownerUserId, org.id)
+            TenantContext.set(org.id)
+            try {
+                userAccountService.storeAvatar(ownerUserId, pending.contentType, pending.bytes, pending.source)
+            } finally {
+                TenantContext.clear()
             }
+        }
         // Billing is deferred to ensureBilling (called at plan-selection step) so that
         // abandoning the org-name step doesn't leave an orphaned Stripe customer, and so
         // the plan page re-appears on the next login if the user never chose a plan.

@@ -97,16 +97,33 @@ class ZitadelIdpIntentWebhookController(
         //    idpInformation.oauth.accessToken carries the IDP token; User.Read scope is already
         //    requested so /me/photo/$value is accessible.
         val idpName = idpInfo?.path("idpName")?.asText("").orEmpty()
+
+        // [DIAGNOSTIC #160] — remove once Microsoft avatar is confirmed working.
+        // Dumps the envelope shape so we can verify idpName, oauth path, and rawInfo field names.
+        log.info("[MS Avatar diag] idpName='{}' email='{}' oauthPresent={} accessTokenPresent={} idpInfo={}",
+            idpName.ifBlank { "(blank)" },
+            email ?: "(null)",
+            !(idpInfo?.path("oauth")?.isMissingNode ?: true),
+            idpInfo?.path("oauth")?.path("accessToken")?.asText("")?.isNotBlank() ?: false,
+            idpInfo?.toPrettyString() ?: "(null)",
+        )
+
         if (idpName == "Microsoft" && email != null) {
             val accessToken = idpInfo?.path("oauth")?.path("accessToken")?.asText("")
                 ?.takeIf { it.isNotBlank() }
+            log.info("[MS Avatar diag] Microsoft branch — accessToken={} email='{}'",
+                if (accessToken != null) "[PRESENT ${accessToken.length} chars]" else "(absent/blank)", email)
             if (accessToken != null) {
                 try {
                     val photo = microsoftGraphAvatarClient.fetchPhoto(accessToken)
                     if (photo != null) {
+                        log.info("[MS Avatar diag] Graph returned {} bytes ({}), calling syncAvatarBytesFromIdp key='{}'",
+                            photo.bytes.size, photo.contentType, email)
                         userAccountService.syncAvatarBytesFromIdp(
                             email, photo.contentType, photo.bytes, AvatarSource.IDP
                         )
+                    } else {
+                        log.info("[MS Avatar diag] Graph returned null (no photo or 404)")
                     }
                 } catch (e: Exception) {
                     log.warn("Microsoft Graph avatar sync failed for email {}: {}", email, e.message)
