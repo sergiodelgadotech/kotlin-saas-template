@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
+import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import java.util.UUID
 
 @Component
@@ -41,6 +42,18 @@ class ZitadelAuthenticationSuccessHandler(
             if (pictureToSet != null) {
                 memberRepository.updateAvatarUrl(subject, pictureToSet)
             }
+            // Drain binary avatar buffer (e.g. Microsoft Graph photo buffered by the IDP webhook).
+            // TenantInterceptor does not run for the security filter chain, so we set the org id
+            // explicitly so AvatarStore.put can resolve the tenant.
+            email?.let { userAccountService.consumePendingAvatarBytes(it) }
+                ?.let { pending ->
+                    TenantContext.set(UUID.fromString(orgIdStr))
+                    try {
+                        userAccountService.storeAvatar(subject, pending.contentType, pending.bytes, pending.source)
+                    } finally {
+                        TenantContext.clear()
+                    }
+                }
         } else if (email != null && oidcUser.picture != null) {
             // New user: OIDC picture claim available (e.g. GitHub/Slack forwarded via Zitadel).
             // Buffer it so OnboardingService.createOrganization can consume it — the webhook

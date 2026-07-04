@@ -1,7 +1,9 @@
 package tech.sergiodelgado.saastemplate.organization
 
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
@@ -22,6 +24,8 @@ import tech.sergiodelgado.saasstarter.organization.Member
 import tech.sergiodelgado.saasstarter.organization.MemberRepository
 import tech.sergiodelgado.saasstarter.organization.Organization
 import tech.sergiodelgado.saasstarter.organization.OrganizationRepository
+import tech.sergiodelgado.saastemplate.account.AvatarSource
+import tech.sergiodelgado.saastemplate.account.PendingAvatarBytes
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 import java.util.Optional
 import java.util.UUID
@@ -39,11 +43,16 @@ class OnboardingServiceTest {
     private val orgSlot = slot<Organization>()
     private val memberSlot = slot<Member>()
 
-    private fun stubOrgSave(pendingAvatar: String? = null) {
+    private fun stubOrgSave(
+        pendingAvatar: String? = null,
+        pendingAvatarBytes: PendingAvatarBytes? = null,
+    ) {
         every { organizationRepository.save(capture(orgSlot)) } answers { orgSlot.captured }
         every { memberRepository.save(capture(memberSlot)) } answers { memberSlot.captured }
-        // consumePendingAvatarUrl is now keyed by email, not Zitadel user ID
+        // consumePendingAvatarUrl is keyed by email, not Zitadel user ID
         every { userAccountService.consumePendingAvatarUrl(any()) } returns pendingAvatar
+        every { userAccountService.consumePendingAvatarBytes(any()) } returns pendingAvatarBytes
+        every { userAccountService.storeAvatar(any(), any(), any(), any()) } just Runs
     }
 
     @Test
@@ -98,7 +107,29 @@ class OnboardingServiceTest {
         service.createOrganization("user-sub", "Acme", email = "")
 
         verify(exactly = 0) { userAccountService.consumePendingAvatarUrl(any()) }
+        verify(exactly = 0) { userAccountService.consumePendingAvatarBytes(any()) }
         expectThat(memberSlot.captured.avatarUrl).isNull()
+    }
+
+    @Test
+    fun `createOrganization stores binary avatar from IDP webhook buffer (e g Microsoft)`() {
+        val bytes = byteArrayOf(1, 2, 3)
+        val pending = PendingAvatarBytes("image/jpeg", bytes, AvatarSource.IDP)
+        stubOrgSave(pendingAvatarBytes = pending)
+
+        service.createOrganization("user-sub", "Acme", "ms@contoso.com")
+
+        verify { userAccountService.consumePendingAvatarBytes("ms@contoso.com") }
+        verify { userAccountService.storeAvatar("user-sub", "image/jpeg", bytes, AvatarSource.IDP) }
+    }
+
+    @Test
+    fun `createOrganization does not call storeAvatar when no binary avatar is buffered`() {
+        stubOrgSave(pendingAvatarBytes = null)
+
+        service.createOrganization("user-sub", "Acme", "ceo@acme.com")
+
+        verify(exactly = 0) { userAccountService.storeAvatar(any(), any(), any(), any()) }
     }
 
     @Test

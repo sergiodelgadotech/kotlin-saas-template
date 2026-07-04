@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
+import tech.sergiodelgado.saastemplate.account.AvatarSource
+import tech.sergiodelgado.saastemplate.account.PendingAvatarBytes
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 import tech.sergiodelgado.saasstarter.billing.Subscription
 import tech.sergiodelgado.saasstarter.billing.SubscriptionRepository
@@ -50,6 +52,8 @@ class ZitadelAuthenticationSuccessHandlerTest {
     private fun stubLoginSync(subject: String) {
         every { memberRepository.updateProfile(subject, any<String>(), any(), any()) } just Runs
         every { memberRepository.updateAvatarUrl(subject, any()) } just Runs
+        every { userAccountService.consumePendingAvatarBytes(any()) } returns null
+        every { userAccountService.storeAvatar(any(), any(), any(), any()) } just Runs
     }
 
     @Test
@@ -165,5 +169,35 @@ class ZitadelAuthenticationSuccessHandlerTest {
         handler.onAuthenticationSuccess(request, response, authToken("user-no-pic", picture = null))
 
         verify(exactly = 0) { memberRepository.updateAvatarUrl(any(), any()) }
+    }
+
+    // ── Binary avatar drain (e.g. Microsoft/Entra returning users) ───────────────
+
+    @Test
+    fun `stores binary avatar from IDP webhook buffer for returning user (e g Microsoft)`() {
+        val bytes = byteArrayOf(1, 2, 3)
+        val pending = PendingAvatarBytes("image/jpeg", bytes, AvatarSource.IDP)
+        stubLoginSync("ms-user")
+        every { memberRepository.findOrganizationIdByUserId("ms-user") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl("user@example.com") } returns null
+        every { userAccountService.consumePendingAvatarBytes("user@example.com") } returns pending
+
+        handler.onAuthenticationSuccess(request, response, authToken("ms-user", picture = null))
+
+        verify { userAccountService.storeAvatar("ms-user", "image/jpeg", bytes, AvatarSource.IDP) }
+    }
+
+    @Test
+    fun `does not call storeAvatar when no binary avatar is buffered for returning user`() {
+        stubLoginSync("returning-user")
+        every { memberRepository.findOrganizationIdByUserId("returning-user") } returns orgIdStr
+        every { subscriptionRepository.findByOrganizationId(orgId) } returns mockk<Subscription>()
+        every { userAccountService.consumePendingAvatarUrl("user@example.com") } returns null
+        every { userAccountService.consumePendingAvatarBytes("user@example.com") } returns null
+
+        handler.onAuthenticationSuccess(request, response, authToken("returning-user", picture = null))
+
+        verify(exactly = 0) { userAccountService.storeAvatar(any(), any(), any(), any()) }
     }
 }

@@ -11,17 +11,25 @@ import org.junit.jupiter.api.Test
 import strikt.api.expectThat
 import strikt.assertions.isEqualTo
 import strikt.assertions.isNull
+import tech.sergiodelgado.saastemplate.account.AvatarSource
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 
 class ZitadelIdpIntentWebhookControllerTest {
 
     private val userAccountService = mockk<UserAccountService>(relaxed = true)
+    private val microsoftGraphAvatarClient = mockk<MicrosoftGraphAvatarClient>(relaxed = true)
     private val objectMapper = ObjectMapper()
-    private val controller = ZitadelIdpIntentWebhookController(userAccountService)
+    private val controller = ZitadelIdpIntentWebhookController(userAccountService, microsoftGraphAvatarClient)
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 
-    /** Build the full Zitadel execution envelope as the controller receives it. */
+    /**
+     * Build the full Zitadel execution envelope as the controller receives it.
+     *
+     * Zitadel does NOT include `idpName` in the real webhook envelope, so this helper
+     * omits it. Microsoft is detected by [mail]/[userPrincipalName] presence in rawInformation.
+     * [accessToken] sets `idpInformation.oauth.accessToken` (IDP OAuth token).
+     */
     private fun envelope(
         userId: String? = "user-abc",
         username: String? = null,
@@ -31,6 +39,9 @@ class ZitadelIdpIntentWebhookControllerTest {
         avatarUrl: String? = null,
         nestedUnderUserKey: Boolean = true,
         extraResponseField: String? = null,
+        accessToken: String? = null,
+        mail: String? = null,
+        userPrincipalName: String? = null,
     ): ObjectNode {
         val rawInfo = objectMapper.createObjectNode()
         if (nestedUnderUserKey) {
@@ -38,16 +49,23 @@ class ZitadelIdpIntentWebhookControllerTest {
             email?.let { userNode.put("email", it) }
             picture?.let { userNode.put("picture", it) }
             avatarUrl?.let { userNode.put("avatar_url", it) }
+            mail?.let { userNode.put("mail", it) }
+            userPrincipalName?.let { userNode.put("userPrincipalName", it) }
             rawInfo.set("User", userNode)
         } else {
             email?.let { rawInfo.put("email", it) }
             picture?.let { rawInfo.put("picture", it) }
             avatarUrl?.let { rawInfo.put("avatar_url", it) }
+            mail?.let { rawInfo.put("mail", it) }
+            userPrincipalName?.let { rawInfo.put("userPrincipalName", it) }
         }
 
         val idpInfo = objectMapper.createObjectNode()
         username?.let { idpInfo.put("username", it) }
         userName?.let { idpInfo.put("userName", it) }
+        accessToken?.let {
+            idpInfo.set("oauth", objectMapper.createObjectNode().put("accessToken", it))
+        }
         idpInfo.set("rawInformation", rawInfo)
 
         val response = objectMapper.createObjectNode()
@@ -244,5 +262,122 @@ class ZitadelIdpIntentWebhookControllerTest {
         expectThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
         expectThat(result.body).isNull()
         verify(exactly = 0) { userAccountService.syncAvatarFromIdp(any(), any()) }
+    }
+
+    // ── Microsoft/Entra binary avatar ────────────────────────────────────────────
+
+    private val photoBytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte())
+
+    @Test
+    fun `buffers Microsoft Graph photo bytes by email`() {
+        every { microsoftGraphAvatarClient.fetchPhoto("ms-token") } returns
+            AvatarBytes("image/jpeg", photoBytes)
+
+        controller.handleIdpIntent(
+            envelope(
+                accessToken = "ms-token",
+                mail = "user@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify {
+            userAccountService.syncAvatarBytesFromIdp(
+                "user@contoso.com", "image/jpeg", photoBytes, AvatarSource.IDP
+            )
+        }
+    }
+
+    @Test
+    fun `resolves Microsoft email from userPrincipalName when mail is absent`() {
+        every { microsoftGraphAvatarClient.fetchPhoto(any()) } returns
+            AvatarBytes("image/jpeg", photoBytes)
+
+        controller.handleIdpIntent(
+            envelope(
+                accessToken = "ms-token",
+                userPrincipalName = "upn@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify {
+            userAccountService.syncAvatarBytesFromIdp(
+                "upn@contoso.com", "image/jpeg", photoBytes, AvatarSource.IDP
+            )
+        }
+    }
+
+    @Test
+    fun `skips binary avatar buffer when Graph returns 404 (no photo set)`() {
+        every { microsoftGraphAvatarClient.fetchPhoto(any()) } returns null
+
+        val result = controller.handleIdpIntent(
+            envelope(
+                accessToken = "ms-token",
+                mail = "user@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify(exactly = 0) { userAccountService.syncAvatarBytesFromIdp(any(), any(), any(), any()) }
+        expectThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
+    }
+
+    @Test
+    fun `skips Microsoft photo fetch when access token is blank`() {
+        controller.handleIdpIntent(
+            envelope(
+                accessToken = "",
+                mail = "user@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify(exactly = 0) { microsoftGraphAvatarClient.fetchPhoto(any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarBytesFromIdp(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `skips Microsoft photo fetch when access token is absent`() {
+        controller.handleIdpIntent(
+            envelope(
+                // no accessToken
+                mail = "user@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify(exactly = 0) { microsoftGraphAvatarClient.fetchPhoto(any()) }
+    }
+
+    @Test
+    fun `does not fetch Graph photo for non-Microsoft providers (GitHub has email and avatar_url, not mail)`() {
+        controller.handleIdpIntent(
+            envelope(
+                accessToken = "gh-token",
+                email = "user@example.com",
+                avatarUrl = "https://avatars.githubusercontent.com/u/1",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        verify(exactly = 0) { microsoftGraphAvatarClient.fetchPhoto(any()) }
+        verify(exactly = 0) { userAccountService.syncAvatarBytesFromIdp(any(), any(), any(), any()) }
+    }
+
+    @Test
+    fun `Microsoft Graph fetch failure does not prevent returning a valid response`() {
+        every { microsoftGraphAvatarClient.fetchPhoto(any()) } throws RuntimeException("timeout")
+
+        val result = controller.handleIdpIntent(
+            envelope(
+                accessToken = "ms-token",
+                mail = "user@contoso.com",
+                nestedUnderUserKey = false,
+            )
+        )
+
+        expectThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
     }
 }

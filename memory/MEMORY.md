@@ -13,3 +13,4 @@
 - [Plans go in GitHub issues, not markdown files](feedback_plan_location.md) — never create docs/superpowers/plans/*.md; use GitHub issues instead
 - [local is the default Spring Boot profile](feedback_local_profile_default.md) — never add `--args='--spring.profiles.active=local'` to bootRun; it's already the default
 - [No incognito after reset](feedback_no_incognito_after_reset.md) — `./gradlew reset` wipes Zitadel, so a normal browser window tests a first-time login fine
+- [No TenantContext in controllers](feedback_no_tenantcontext_in_controllers.md) — Konsist enforces this; fix the path-pattern config instead of guarding inside the controller

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import tech.sergiodelgado.saastemplate.account.AvatarSource
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 
 /**
@@ -32,6 +33,7 @@ import tech.sergiodelgado.saastemplate.account.UserAccountService
 @RequestMapping("/internal/zitadel")
 class ZitadelIdpIntentWebhookController(
     private val userAccountService: UserAccountService,
+    private val microsoftGraphAvatarClient: MicrosoftGraphAvatarClient,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -69,8 +71,14 @@ class ZitadelIdpIntentWebhookController(
         //    (the final Zitadel ID is assigned after the action fires). The key must equal
         //    the OIDC `email` the app sees later, so we must NOT use idpInformation.userName:
         //    for some providers (GitHub) that is a login handle ("serandel"), not an email.
+        // Microsoft/Entra uses `mail` / `userPrincipalName` rather than `email`.
+        // Both the nested User key and top-level rawInfo positions are checked defensively.
         val email = userNode?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
             ?: rawInfo?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: userNode?.path("mail")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: rawInfo?.path("mail")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: userNode?.path("userPrincipalName")?.asText("")?.takeIf { it.isNotBlank() }
+            ?: rawInfo?.path("userPrincipalName")?.asText("")?.takeIf { it.isNotBlank() }
             ?: response.path("addHumanUser").path("email").path("email").asText("").takeIf { it.isNotBlank() }
             ?: response.path("createUser").path("human").path("email").path("email").asText("").takeIf { it.isNotBlank() }
         val picture = userNode?.path("picture")?.asText("")?.takeIf { it.isNotBlank() }
@@ -82,6 +90,32 @@ class ZitadelIdpIntentWebhookController(
                 userAccountService.syncAvatarFromIdp(email, picture)
             } catch (e: Exception) {
                 log.warn("Avatar sync failed for email {}: {}", email, e.message)
+            }
+        }
+
+        // 3. Microsoft/Entra binary avatar — Graph /me/photo/$value (no photo URL exposed).
+        //    Zitadel does not include idpName in the webhook envelope, so Microsoft is detected
+        //    by the presence of `mail` or `userPrincipalName` in rawInformation — these are
+        //    Microsoft Graph-specific field names; neither Google (uses email) nor GitHub
+        //    (uses email/avatar_url) include them.
+        //    idpInformation.oauth.accessToken carries the IDP token; User.Read scope is already
+        //    requested so /me/photo/$value is accessible.
+        val isMicrosoft = rawInfo?.path("mail")?.asText("")?.isNotBlank() == true ||
+            rawInfo?.path("userPrincipalName")?.asText("")?.isNotBlank() == true
+        if (isMicrosoft && email != null) {
+            val accessToken = idpInfo?.path("oauth")?.path("accessToken")?.asText("")
+                ?.takeIf { it.isNotBlank() }
+            if (accessToken != null) {
+                try {
+                    val photo = microsoftGraphAvatarClient.fetchPhoto(accessToken)
+                    if (photo != null) {
+                        userAccountService.syncAvatarBytesFromIdp(
+                            email, photo.contentType, photo.bytes, AvatarSource.IDP
+                        )
+                    }
+                } catch (e: Exception) {
+                    log.warn("Microsoft Graph avatar sync failed for email {}: {}", email, e.message)
+                }
             }
         }
 
