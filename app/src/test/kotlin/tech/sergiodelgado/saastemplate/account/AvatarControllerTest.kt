@@ -5,11 +5,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
-import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import java.time.Instant
 import java.util.UUID
 
@@ -18,19 +15,6 @@ class AvatarControllerTest {
     private val userAccountService = mockk<UserAccountService>()
     private val controller = AvatarController(userAccountService)
     private val principal = mockk<OidcUser> { every { subject } returns "user-123" }
-    private val orgId = UUID.randomUUID()
-
-    @BeforeEach
-    fun setTenantContext() {
-        // Simulate TenantInterceptor having run for /avatar (the path-pattern fix this PR adds).
-        // Tests that specifically verify the absent-context guard clear it explicitly.
-        TenantContext.set(orgId)
-    }
-
-    @AfterEach
-    fun clearTenantContext() {
-        TenantContext.clear()
-    }
 
     private fun request(ifNoneMatch: String? = null) = mockk<HttpServletRequest> {
         every { getHeader("If-None-Match") } returns ifNoneMatch
@@ -62,7 +46,7 @@ class AvatarControllerTest {
         val updatedAt = Instant.ofEpochMilli(1_700_000_000_000L)
         val stored = AvatarImage(
             id = UUID.randomUUID(),
-            organizationId = orgId,
+            organizationId = UUID.randomUUID(),
             externalUserId = "user-123",
             contentType = "image/png",
             bytes = byteArrayOf(1, 2, 3, 4),
@@ -87,7 +71,7 @@ class AvatarControllerTest {
         val updatedAt = Instant.ofEpochMilli(1_700_000_000_000L)
         val stored = AvatarImage(
             id = UUID.randomUUID(),
-            organizationId = orgId,
+            organizationId = UUID.randomUUID(),
             externalUserId = "user-123",
             contentType = "image/png",
             bytes = byteArrayOf(1, 2, 3),
@@ -106,7 +90,7 @@ class AvatarControllerTest {
     fun `stored bytes take precedence over external URL`() {
         val stored = AvatarImage(
             id = UUID.randomUUID(),
-            organizationId = orgId,
+            organizationId = UUID.randomUUID(),
             externalUserId = "user-123",
             contentType = "image/jpeg",
             bytes = byteArrayOf(9, 8, 7),
@@ -136,22 +120,6 @@ class AvatarControllerTest {
         controller.avatar(principal, request(), response)
 
         verify { userAccountService.getAvatarUrl("user-123") }
-        verify { response.sendError(HttpServletResponse.SC_NOT_FOUND) }
-    }
-
-    @Test
-    fun `falls back gracefully when TenantContext is absent (defense-in-depth guard)`() {
-        // If /avatar were to be missing from saasstarter.tenant.path-patterns in the future,
-        // the guard in the controller ensures we skip the stored-binary lookup
-        // (which would otherwise throw "No tenant in context") and fall through to URL/404.
-        TenantContext.clear() // override @BeforeEach — simulate absent interceptor
-        every { userAccountService.getAvatarUrl("user-123") } returns null
-        val response = mockk<HttpServletResponse>(relaxed = true)
-
-        controller.avatar(principal, request(), response)
-
-        // Stored binary lookup is skipped — no TenantContext, no DB call
-        verify(exactly = 0) { userAccountService.getStoredAvatar(any()) }
         verify { response.sendError(HttpServletResponse.SC_NOT_FOUND) }
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
-import tech.sergiodelgado.saasstarter.tenant.TenantContext
 import java.net.HttpURLConnection
 import java.net.URI
 
@@ -39,10 +38,7 @@ class AvatarController(private val userAccountService: UserAccountService) {
         }
 
         // 1. Stored binary avatar takes precedence over the external URL.
-        // Guard with isPresent() to mirror NavModelAdvice — if TenantContext is unset
-        // (shouldn't happen if /avatar is in saasstarter.tenant.path-patterns, but
-        // defense-in-depth so a future config gap degrades to URL/404 instead of 500).
-        val stored = if (TenantContext.isPresent()) userAccountService.getStoredAvatar(subject) else null
+        val stored = userAccountService.getStoredAvatar(subject)
         if (stored != null) {
             val etag = "\"${stored.updatedAt.toEpochMilli()}\""
             if (request.getHeader("If-None-Match") == etag) {
