@@ -2,7 +2,6 @@ package tech.sergiodelgado.saastemplate.auth
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.slf4j.LoggerFactory
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.oidc.user.OidcUser
@@ -20,8 +19,6 @@ class ZitadelAuthenticationSuccessHandler(
     private val subscriptionRepository: SubscriptionRepository,
     private val userAccountService: UserAccountService,
 ) : SimpleUrlAuthenticationSuccessHandler() {
-
-    private val log = LoggerFactory.getLogger(javaClass)
 
     override fun onAuthenticationSuccess(
         request: HttpServletRequest,
@@ -48,19 +45,15 @@ class ZitadelAuthenticationSuccessHandler(
             // Drain binary avatar buffer (e.g. Microsoft Graph photo buffered by the IDP webhook).
             // TenantInterceptor does not run for the security filter chain, so we set the org id
             // explicitly so AvatarStore.put can resolve the tenant.
-            log.info("[MS Avatar diag] SuccessHandler: consumePendingAvatarBytes key='{}'", email ?: "(null)")
-            val pendingBytes = email?.let { userAccountService.consumePendingAvatarBytes(it) }
-            log.info("[MS Avatar diag] SuccessHandler: pendingBytes={}",
-                if (pendingBytes != null) "${pendingBytes.bytes.size} bytes (${pendingBytes.contentType})" else "(null)")
-            pendingBytes?.let { pending ->
-                log.info("[MS Avatar diag] SuccessHandler: storeAvatar userId='{}' orgId={}", subject, orgIdStr)
-                TenantContext.set(UUID.fromString(orgIdStr))
-                try {
-                    userAccountService.storeAvatar(subject, pending.contentType, pending.bytes, pending.source)
-                } finally {
-                    TenantContext.clear()
+            email?.let { userAccountService.consumePendingAvatarBytes(it) }
+                ?.let { pending ->
+                    TenantContext.set(UUID.fromString(orgIdStr))
+                    try {
+                        userAccountService.storeAvatar(subject, pending.contentType, pending.bytes, pending.source)
+                    } finally {
+                        TenantContext.clear()
+                    }
                 }
-            }
         } else if (email != null && oidcUser.picture != null) {
             // New user: OIDC picture claim available (e.g. GitHub/Slack forwarded via Zitadel).
             // Buffer it so OnboardingService.createOrganization can consume it — the webhook

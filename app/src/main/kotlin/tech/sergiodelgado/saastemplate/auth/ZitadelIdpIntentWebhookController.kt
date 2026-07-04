@@ -94,36 +94,24 @@ class ZitadelIdpIntentWebhookController(
         }
 
         // 3. Microsoft/Entra binary avatar — Graph /me/photo/$value (no photo URL exposed).
+        //    Zitadel does not include idpName in the webhook envelope, so Microsoft is detected
+        //    by the presence of `mail` or `userPrincipalName` in rawInformation — these are
+        //    Microsoft Graph-specific field names; neither Google (uses email) nor GitHub
+        //    (uses email/avatar_url) include them.
         //    idpInformation.oauth.accessToken carries the IDP token; User.Read scope is already
         //    requested so /me/photo/$value is accessible.
-        val idpName = idpInfo?.path("idpName")?.asText("").orEmpty()
-
-        // [DIAGNOSTIC #160] — remove once Microsoft avatar is confirmed working.
-        // Dumps the envelope shape so we can verify idpName, oauth path, and rawInfo field names.
-        log.info("[MS Avatar diag] idpName='{}' email='{}' oauthPresent={} accessTokenPresent={} idpInfo={}",
-            idpName.ifBlank { "(blank)" },
-            email ?: "(null)",
-            !(idpInfo?.path("oauth")?.isMissingNode ?: true),
-            idpInfo?.path("oauth")?.path("accessToken")?.asText("")?.isNotBlank() ?: false,
-            idpInfo?.toPrettyString() ?: "(null)",
-        )
-
-        if (idpName == "Microsoft" && email != null) {
+        val isMicrosoft = rawInfo?.path("mail")?.asText("")?.isNotBlank() == true ||
+            rawInfo?.path("userPrincipalName")?.asText("")?.isNotBlank() == true
+        if (isMicrosoft && email != null) {
             val accessToken = idpInfo?.path("oauth")?.path("accessToken")?.asText("")
                 ?.takeIf { it.isNotBlank() }
-            log.info("[MS Avatar diag] Microsoft branch — accessToken={} email='{}'",
-                if (accessToken != null) "[PRESENT ${accessToken.length} chars]" else "(absent/blank)", email)
             if (accessToken != null) {
                 try {
                     val photo = microsoftGraphAvatarClient.fetchPhoto(accessToken)
                     if (photo != null) {
-                        log.info("[MS Avatar diag] Graph returned {} bytes ({}), calling syncAvatarBytesFromIdp key='{}'",
-                            photo.bytes.size, photo.contentType, email)
                         userAccountService.syncAvatarBytesFromIdp(
                             email, photo.contentType, photo.bytes, AvatarSource.IDP
                         )
-                    } else {
-                        log.info("[MS Avatar diag] Graph returned null (no photo or 404)")
                     }
                 } catch (e: Exception) {
                     log.warn("Microsoft Graph avatar sync failed for email {}: {}", email, e.message)

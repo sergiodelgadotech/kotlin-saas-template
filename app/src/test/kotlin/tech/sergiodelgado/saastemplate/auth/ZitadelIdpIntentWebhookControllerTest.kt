@@ -26,10 +26,9 @@ class ZitadelIdpIntentWebhookControllerTest {
     /**
      * Build the full Zitadel execution envelope as the controller receives it.
      *
-     * [idpName] sets `idpInformation.idpName` (e.g. "Microsoft").
+     * Zitadel does NOT include `idpName` in the real webhook envelope, so this helper
+     * omits it. Microsoft is detected by [mail]/[userPrincipalName] presence in rawInformation.
      * [accessToken] sets `idpInformation.oauth.accessToken` (IDP OAuth token).
-     * [mail] and [userPrincipalName] are Microsoft-specific rawInformation fields
-     * (placed at the top level of rawInformation when [nestedUnderUserKey] is false).
      */
     private fun envelope(
         userId: String? = "user-abc",
@@ -40,7 +39,6 @@ class ZitadelIdpIntentWebhookControllerTest {
         avatarUrl: String? = null,
         nestedUnderUserKey: Boolean = true,
         extraResponseField: String? = null,
-        idpName: String? = null,
         accessToken: String? = null,
         mail: String? = null,
         userPrincipalName: String? = null,
@@ -65,7 +63,6 @@ class ZitadelIdpIntentWebhookControllerTest {
         val idpInfo = objectMapper.createObjectNode()
         username?.let { idpInfo.put("username", it) }
         userName?.let { idpInfo.put("userName", it) }
-        idpName?.let { idpInfo.put("idpName", it) }
         accessToken?.let {
             idpInfo.set("oauth", objectMapper.createObjectNode().put("accessToken", it))
         }
@@ -278,7 +275,6 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 accessToken = "ms-token",
                 mail = "user@contoso.com",
                 nestedUnderUserKey = false,
@@ -299,7 +295,6 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 accessToken = "ms-token",
                 userPrincipalName = "upn@contoso.com",
                 nestedUnderUserKey = false,
@@ -319,7 +314,6 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         val result = controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 accessToken = "ms-token",
                 mail = "user@contoso.com",
                 nestedUnderUserKey = false,
@@ -334,7 +328,6 @@ class ZitadelIdpIntentWebhookControllerTest {
     fun `skips Microsoft photo fetch when access token is blank`() {
         controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 accessToken = "",
                 mail = "user@contoso.com",
                 nestedUnderUserKey = false,
@@ -349,7 +342,6 @@ class ZitadelIdpIntentWebhookControllerTest {
     fun `skips Microsoft photo fetch when access token is absent`() {
         controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 // no accessToken
                 mail = "user@contoso.com",
                 nestedUnderUserKey = false,
@@ -360,10 +352,9 @@ class ZitadelIdpIntentWebhookControllerTest {
     }
 
     @Test
-    fun `does not fetch Graph photo for non-Microsoft providers`() {
+    fun `does not fetch Graph photo for non-Microsoft providers (GitHub has email and avatar_url, not mail)`() {
         controller.handleIdpIntent(
             envelope(
-                idpName = "GitHub",
                 accessToken = "gh-token",
                 email = "user@example.com",
                 avatarUrl = "https://avatars.githubusercontent.com/u/1",
@@ -381,7 +372,6 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         val result = controller.handleIdpIntent(
             envelope(
-                idpName = "Microsoft",
                 accessToken = "ms-token",
                 mail = "user@contoso.com",
                 nestedUnderUserKey = false,
