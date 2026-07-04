@@ -12,22 +12,20 @@ import tech.sergiodelgado.saastemplate.account.AvatarSource
 import tech.sergiodelgado.saastemplate.account.UserAccountService
 
 /**
- * Zitadel Actions v2 `restWebhook` handler for the `RetrieveIdentityProviderIntent` response.
+ * Zitadel Actions v2 `restCall` handler for the `RetrieveIdentityProviderIntent` response.
  *
- * Registered as a fire-and-forget `restWebhook` target — Zitadel ignores the response body,
- * so this endpoint can never break social login regardless of what it returns.
+ * Registered with `interruptOnError: false` so any failure here never blocks social login.
+ * Zitadel replaces the response with what this endpoint returns, so the full `response` node
+ * must always be echoed back (we operate on the raw [JsonNode] tree to preserve unknown fields).
  *
  * Responsibilities:
- *  1. **Avatar capture** — when `rawInformation` contains a picture URL, persist it via
+ *  1. **Username injection** — when `idpInformation.userName` is blank (Slack omits
+ *     `preferred_username`), sets it from the IDP email so `AddIDPLink.UserName` passes
+ *     validation and the new-user completion form is pre-filled (fixes #170).
+ *  2. **Avatar capture** — when `rawInformation` contains a picture URL, persists it via
  *     `UserAccountService` (see #149).
- *  2. **Username injection** (attempted, no effect with restWebhook) — when
- *     `idpInformation.username` is blank the email is placed back into the response node,
- *     but Zitadel discards the body so this does not fix Slack auto-link (#153).
- *     Switching to `restCall` to make the injection effective caused `missing_idp_info`
- *     for all providers — root cause is under investigation.
- *
- * We still operate on the raw [JsonNode] tree so the code is ready if we re-enable
- * `restCall` in a future iteration.
+ *  3. **Microsoft/Entra binary avatar** — fetches `/me/photo/$value` via Graph and stores
+ *     the bytes in `AvatarStore` (see #167).
  */
 @RestController
 @RequestMapping("/internal/zitadel")
@@ -51,16 +49,16 @@ class ZitadelIdpIntentWebhookController(
         val userNode = rawInfo?.path("User")?.takeIf { !it.isMissingNode }
 
         // 1. Username injection — fills the gap when preferred_username is absent (Slack).
-        //    We set idpInformation.username so Zitadel passes a valid providedUserName to
-        //    AddIDPLink (auto-link) and pre-fills the completion form (new-user flow).
+        //    Sets idpInformation.userName (protojson camelCase) so Zitadel passes a valid
+        //    providedUserName to AddIDPLink (auto-link) and pre-fills the new-user form.
         if (idpInfo != null) {
-            val currentUsername = idpInfo.path("username").asText("").trim()
+            val currentUsername = idpInfo.path("userName").asText("").trim()
             if (currentUsername.isBlank()) {
                 val email = userNode?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
                     ?: rawInfo?.path("email")?.asText("")?.takeIf { it.isNotBlank() }
                 if (email != null) {
-                    idpInfo.put("username", email)
-                    log.debug("Injected username '{}' from IDP email for user '{}'",
+                    idpInfo.put("userName", email)
+                    log.debug("Injected userName '{}' from IDP email for user '{}'",
                         email, response.path("userId").asText("?"))
                 }
             }

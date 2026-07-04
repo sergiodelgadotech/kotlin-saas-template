@@ -84,58 +84,57 @@ class ZitadelIdpIntentWebhookControllerTest {
     // ── username injection ───────────────────────────────────────────────────────
 
     @Test
-    fun `injects username from nested User email when username is absent`() {
+    fun `injects userName from nested User email when userName is absent`() {
         val result = controller.handleIdpIntent(
             envelope(email = "slack-user@example.com")
         )
 
         val body = result.body as? ObjectNode
-        expectThat(body?.path("idpInformation")?.path("username")?.asText())
+        expectThat(body?.path("idpInformation")?.path("userName")?.asText())
             .isEqualTo("slack-user@example.com")
     }
 
     @Test
-    fun `injects username from nested User email when username is blank`() {
+    fun `injects userName from nested User email when userName is blank`() {
         val result = controller.handleIdpIntent(
-            envelope(username = "  ", email = "slack-user@example.com")
+            envelope(userName = "  ", email = "slack-user@example.com")
         )
 
         val body = result.body as? ObjectNode
-        expectThat(body?.path("idpInformation")?.path("username")?.asText())
+        expectThat(body?.path("idpInformation")?.path("userName")?.asText())
             .isEqualTo("slack-user@example.com")
     }
 
     @Test
-    fun `does not overwrite an already-set username`() {
+    fun `does not overwrite an already-set userName`() {
         val result = controller.handleIdpIntent(
-            envelope(username = "existing-user", email = "other@example.com")
+            envelope(userName = "existing-user", email = "other@example.com")
         )
 
         val body = result.body as? ObjectNode
-        expectThat(body?.path("idpInformation")?.path("username")?.asText())
+        expectThat(body?.path("idpInformation")?.path("userName")?.asText())
             .isEqualTo("existing-user")
     }
 
     @Test
-    fun `injects username from top-level rawInformation email when no User key`() {
+    fun `injects userName from top-level rawInformation email when no User key`() {
         val result = controller.handleIdpIntent(
             envelope(email = "user@example.com", nestedUnderUserKey = false)
         )
 
         val body = result.body as? ObjectNode
-        expectThat(body?.path("idpInformation")?.path("username")?.asText())
+        expectThat(body?.path("idpInformation")?.path("userName")?.asText())
             .isEqualTo("user@example.com")
     }
 
     @Test
-    fun `leaves username absent when no email is available`() {
+    fun `leaves userName absent when no email is available`() {
         val result = controller.handleIdpIntent(
-            envelope(username = null, email = null)
+            envelope(email = null)
         )
 
         val body = result.body as? ObjectNode
-        // username node should not have been injected
-        expectThat(body?.path("idpInformation")?.has("username")).isEqualTo(false)
+        expectThat(body?.path("idpInformation")?.has("userName")).isEqualTo(false)
     }
 
     // ── avatar capture ───────────────────────────────────────────────────────────
@@ -237,7 +236,7 @@ class ZitadelIdpIntentWebhookControllerTest {
 
         expectThat(result.statusCode.is2xxSuccessful).isEqualTo(true)
         val body = result.body as? ObjectNode
-        expectThat(body?.path("idpInformation")?.path("username")?.asText())
+        expectThat(body?.path("idpInformation")?.path("userName")?.asText())
             .isEqualTo("user@example.com")
     }
 
