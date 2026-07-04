@@ -55,6 +55,7 @@ saasstarter:
       - /billing/**
       - /organization/**
       - /onboarding/**
+      - /avatar
     exclude-path-patterns:
       - /webhooks/**
       - /
