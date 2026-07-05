@@ -33,6 +33,8 @@ Multi-tenant B2B SaaS with `organization_id` column isolation. Every authenticat
 JwtAuthFilter → TenantInterceptor → TenantContext → Service → Repository
 ```
 
+See [docs/auth.md](docs/auth.md) for social login providers, identity linking policy, and the Actions v2 restCall target.
+
 ## Frontend
 
 The UI layer is **server-side HTML all the way down** — no client-side routing, no JSON API, no JavaScript build step for app logic.
