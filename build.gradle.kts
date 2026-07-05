@@ -56,7 +56,6 @@ abstract class ResetTask @Inject constructor(
             "management-api.pat",
             ".smtp-configured",
             ".default-redirect-uri-configured",
-            ".avatar-actions-configured",
             ".idp-intent-webhook-configured",
         ).forEach { layout.projectDirectory.file("docker/zitadel-init/$it").asFile.delete() }
 
