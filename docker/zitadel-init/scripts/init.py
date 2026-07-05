@@ -25,7 +25,6 @@ MGMT_PAT_FILE = Path(os.getenv("MGMT_PAT_FILE", "/output/management-api.pat"))
 MGMT_PROPS_FILE = Path(os.getenv("MGMT_PROPS_FILE", "/output/.local-management.properties"))
 SMTP_CONFIGURED_FILE = Path("/output/.smtp-configured")
 DEFAULT_REDIRECT_CONFIGURED_FILE = Path("/output/.default-redirect-uri-configured")
-AVATAR_ACTIONS_CONFIGURED_FILE = Path("/output/.avatar-actions-configured")
 IDP_INTENT_WEBHOOK_CONFIGURED_FILE = Path("/output/.idp-intent-webhook-configured")
 REDIRECT_URI = "http://localhost:8080/login/oauth2/code/zitadel"
 POST_LOGOUT_URI = "http://localhost:8080/"
@@ -474,18 +473,16 @@ def provision_management_service_account(token: str) -> None:
 
 
 def configure_idp_intent_webhook(token: str) -> None:
-    """Register a Zitadel v2 restWebhook target + execution on the
+    """Register a Zitadel v2 restCall target + execution on the
     RetrieveIdentityProviderIntent response.
 
-    Using restWebhook (fire-and-forget) so Zitadel ignores our response body and
-    social login is never affected by this endpoint's behaviour.
+    Using restCall (response manipulation) so the Spring endpoint can set
+    idpInformation.userName for IDPs that omit preferred_username (Slack), fixing
+    the AddIDPLink.UserName validation error on auto-link (#170).
+    interruptOnError is false so any endpoint failure never blocks social login.
 
-    The Spring endpoint (/internal/zitadel/idp-intent) captures the IDP picture URL
-    and persists it via UserAccountService (avatar sync, see #149).
-
-    NOTE: restCall (response manipulation) was attempted to fix Slack auto-link (#153)
-    but caused missing_idp_info for all providers — Zitadel rejects the returned body.
-    Slack auto-link requires further investigation before re-enabling restCall.
+    The Spring endpoint (/internal/zitadel/idp-intent) also captures the IDP picture
+    URL and persists it via UserAccountService (avatar sync, see #149).
     """
     if IDP_INTENT_WEBHOOK_CONFIGURED_FILE.exists():
         print("IDP intent webhook already configured, skipping.")
@@ -497,11 +494,11 @@ def configure_idp_intent_webhook(token: str) -> None:
     webhook_base = os.getenv("WEBHOOK_BASE_URL", "http://host.docker.internal:8080").rstrip("/")
 
     webhook_url = f"{webhook_base}/internal/zitadel/idp-intent"
-    print(f"Configuring IDP intent restWebhook target at {webhook_url}...")
+    print(f"Configuring IDP intent restCall target at {webhook_url}...")
 
     resp = api("POST", "/v2/actions/targets", token, {
         "name": "idp-intent-webhook",
-        "restWebhook": {"interruptOnError": False},
+        "restCall": {"interruptOnError": False},
         "endpoint": webhook_url,
         "timeout": "10s",
     })
@@ -516,7 +513,7 @@ def configure_idp_intent_webhook(token: str) -> None:
         return
 
     target_id = resp["id"]
-    print(f"  Created restWebhook target (ID: {target_id})")
+    print(f"  Created restCall target (ID: {target_id})")
 
     api("PUT", "/v2/actions/executions", token, {
         "condition": {
@@ -530,85 +527,6 @@ def configure_idp_intent_webhook(token: str) -> None:
 
     IDP_INTENT_WEBHOOK_CONFIGURED_FILE.touch()
     print("IDP intent webhook configured.")
-
-
-def configure_avatar_actions(token: str) -> None:
-    """
-    Creates two Zitadel v1 inline actions that together inject the OIDC `picture`
-    claim into every token issued by Zitadel:
-
-    1. External Authentication / Post Authentication
-       Reads the `picture` claim from the social IdP's token and stores it as
-       Zitadel user metadata under the key `idpPicture`.
-
-    2. Complement Token / Pre Userinfo Creation + Pre Access Token Creation
-       Reads `idpPicture` from user metadata and adds it as the `picture` claim
-       so Spring Security's OidcUser.getPicture() is populated on login.
-    """
-    if AVATAR_ACTIONS_CONFIGURED_FILE.exists():
-        print("Avatar picture actions already configured, skipping.")
-        return
-
-    print("Configuring avatar picture actions...")
-
-    set_picture_script = (
-        "function set_idp_picture_metadata(ctx, api) {\n"
-        "  if (api === undefined) { return; }\n"
-        "  var picture = ctx.v1.providerInfo.rawInfo.picture;\n"
-        "  if (picture) {\n"
-        "    api.v1.user.appendMetadata('idpPicture', picture);\n"
-        "  }\n"
-        "}"
-    )
-
-    add_picture_script = (
-        "function add_picture_claim_from_idp_metadata(ctx, api) {\n"
-        "  if (ctx.v1.claims && ctx.v1.claims.picture) { return; }\n"
-        "  var metadata = ctx.v1.user.getMetadata();\n"
-        "  metadata.metadata.forEach(function(entry) {\n"
-        "    if (entry.key === 'idpPicture' && entry.value) {\n"
-        "      api.v1.claims.setClaim('picture', entry.value);\n"
-        "    }\n"
-        "  });\n"
-        "}"
-    )
-
-    # Action 1: capture picture from IdP at social login
-    resp1 = api("POST", "/management/v1/actions", token, {
-        "name": "set_idp_picture_metadata",
-        "script": set_picture_script,
-        "timeout": "10s",
-        "allowedToFail": True,
-    })
-    if resp1.get("already_exists"):
-        print("  Action 'set_idp_picture_metadata' already exists.")
-    else:
-        action1_id = resp1["id"]
-        print(f"  Created action 'set_idp_picture_metadata' (ID: {action1_id})")
-        # External Authentication (1) / Post Authentication (1)
-        api("POST", "/management/v1/flows/1/trigger/1", token, {"actionIds": [action1_id]})
-        print("  Registered on External Authentication / Post Authentication")
-
-    # Action 2: inject picture claim into every issued token
-    resp2 = api("POST", "/management/v1/actions", token, {
-        "name": "add_picture_claim_from_idp_metadata",
-        "script": add_picture_script,
-        "timeout": "10s",
-        "allowedToFail": True,
-    })
-    if resp2.get("already_exists"):
-        print("  Action 'add_picture_claim_from_idp_metadata' already exists.")
-    else:
-        action2_id = resp2["id"]
-        print(f"  Created action 'add_picture_claim_from_idp_metadata' (ID: {action2_id})")
-        # Complement Token (2) / Pre Userinfo Creation (4)
-        api("POST", "/management/v1/flows/2/trigger/4", token, {"actionIds": [action2_id]})
-        # Complement Token (2) / Pre Access Token Creation (5)
-        api("POST", "/management/v1/flows/2/trigger/5", token, {"actionIds": [action2_id]})
-        print("  Registered on Complement Token / Pre Userinfo + Pre Access Token")
-
-    AVATAR_ACTIONS_CONFIGURED_FILE.touch()
-    print("Avatar picture actions configured.")
 
 
 def main():
