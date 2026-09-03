@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@tailwindcss/cli": "4.3.2",
-    "daisyui": "5.6.10",
+    "daisyui": "5.7.28",
     "htmx.org": "2.0.10",
     "htmx-ext-sse": "2.2.4"
   }
