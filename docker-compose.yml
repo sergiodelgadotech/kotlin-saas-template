@@ -29,7 +29,7 @@ services:
       timeout: 5s
       retries: 5
   zitadel:
-    image: ghcr.io/zitadel/zitadel:v4.15.3
+    image: ghcr.io/zitadel/zitadel:v4.20.0
     user: root
     command: start-from-init --masterkey "MasterkeyNeedsToHave32Chars!!!!!" --tlsMode disabled --config /zitadel-setup/setup.yaml
     environment:
@@ -132,7 +132,7 @@ services:
       start_period: 5s
   zitadel-init:
     profiles: ["init"]
-    image: python:3.14-alpine
+    image: python:3.15-alpine
     command: sh -c "pip install cryptography -q && python /scripts/init.py"
     environment:
       # ZITADEL_URL is the external/public URL — used for the JWT audience and the
